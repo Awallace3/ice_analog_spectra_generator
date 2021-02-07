@@ -335,10 +335,11 @@ def ran_angle():
     # Passes Diehard tests but not all TestU01 tests
 
 
-def ran_dis():
+def ran_dis(boxlength):
     """ Change the coefficient and subtracted constant to build the rectangular box of your choosing """
 
-    return np.random.random_sample()*10 - 5  # change for rectangular box size
+    # change for rectangular box size
+    return np.random.random_sample()*boxlength - boxlength/2
 
 
 #############################################################
@@ -350,59 +351,85 @@ def distance(geom1, geom2):
     return math.sqrt((geom1[1] - geom2[1]) ** 2 + (geom1[2] - geom2[2])**2 + (geom1[3] - geom2[3])**2)
 
 
-def random_arrangement_2(geom1, geom2, num):
-    choice = int(np.random.choice([0, 1]))
+def random_arrangement_2(geom1, geom2, geom_num, num, percent_chance_mol_1, box_length, minium_distance_between_molecules):
+    choice = int(np.random.choice(range(100)))
     sequence = []
-    if choice == 0:
+    spacer_1 = len(geom1[:, 0])  # if spacing issue... investigate
+    spacer_2 = len(geom2[:, 0])
+    current_spacer = 0
+    if choice >= percent_chance_mol_1:
         geom = geom1
         sequence.append(0)
+        current_spacer = spacer_1
     else:
         geom = geom2
         sequence.append(1)
-
+        current_spacer = spacer_2
     arching = geom[:, :]
     cnt = 1
-    molecule = [0]
+    molecule = [current_spacer]
 
-    spacer = len(geom[:, 0])
-
+    check_tf = True
     while (cnt < num):
-        choice = int(np.random.choice([0, 1]))
-        mol_num = 0
+        #choice = int(np.random.choice([0, 1]))
+        if check_tf == True:
+            choice = int(np.random.choice(range(100)))
+            mol_num = 0
 
+            if choice >= percent_chance_mol_1:
+                geom = geom1
+                current_spacer = spacer_1
+
+            else:
+                geom = geom2
+                mol_num = 1
+                current_spacer = spacer_2
+            check_tf = False
+        """
         if choice == 0:
             geom = geom1
-
+            print(len(geom))
         else:
             geom = geom2
             mol_num = 1
+        """
 
         yz = yz_rotate(geom, ran_angle())
         xy = xy_rotate(yz, ran_angle())
         xz = xz_rotate(xy, ran_angle())
 
-        dis = displacement(xz, ran_dis(), ran_dis(), ran_dis())
-        check_tf = False
+        dis = displacement(xz, ran_dis(box_length), ran_dis(
+            box_length), ran_dis(box_length))
+        #check_tf = False
 
         for i in range(len(molecule)):
-            dist_CC = distance(dis[0, :], arching[0 + i*spacer, :])
+            # print(molecule)
 
-            print(dist_CC)
-            print((dis[0, :]))
-            print(arching[0 + i*spacer, :])
+            #dist_CC = distance(dis[0, :], arching[0 + i*spacer_1, :])
+            length_sum = 0
+            dist_CC = distance(dis[0, :], arching[0 + length_sum, :])
 
-            if dist_CC < 4.5:  # change for the minimum distance between molecules
+            #print(arching[0 + length_sum, :])
+            length_sum += molecule[i]
+            # print(dist_CC)
+            #print((dis[0, :]))
+            #print(arching[0 + i*spacer, :])
+
+            if dist_CC < minium_distance_between_molecules:  # change for the minimum distance between molecules
                 check_tf = True
 
         if check_tf == False:
-            molecule.append(cnt)
+            molecule.append(current_spacer)
             arching = np.concatenate((arching, dis))
             cnt += 1
             sequence.append(mol_num)
 
     arching = np.round_(arching, decimals=16)
-
-    return arching, len(molecule), spacer, sequence
+    print("\nXYZ molecule {0}\n".format(geom_num))
+    for k in arching:
+        print(int(k[0]), k[1], k[2], k[3])  # for quick testing purposes
+    print()
+    return arching, len(molecule), spacer_1, sequence
 
 
 def clean_many_txt():
@@ -680,7 +707,7 @@ def make_input_dir(dir_name_number):
 
     with open('many.txt') as fp:
         data = fp.read()
-
+    print(data)
     # Reading data from file2
     with open('dataframe_test.csv') as fp:
         data2 = fp.read()
@@ -780,18 +807,30 @@ def make_input_files():
             "cd $PBS_O_WORKDIR\n. $g16root/g16/bsd/g16.profile\ng16 mex.com mex.out\n\nrm -r $scrdir\n")
 
 
-def main():
+def xyz_remove_whitespace(mol_xyz1, mol_xyz2):
+    with open(mol_xyz1) as fp:
+        data = fp.read()
+    print(data)
+    geo1 = geo2 = 0
+    return geo1, geo2
 
-    geo1 = genfromtxt('mon_ho2.xyz', delimiter=' ')
-    geo2 = genfromtxt('mon_ho2.xyz', delimiter=' ')
 
-    for i in range(1, 3, 1):
+def main(molecules_in_cluster, number_clusters, box_length,  minium_distance_between_molecules,
+         percent_chance_mol_1, mol_xyz1, mol_xyz2):
+    geo1, geo2 = xyz_remove_whitespace(mol_xyz1, mol_xyz2)
+
+    geo1 = genfromtxt(mol_xyz1, delimiter=' ')
+    geo2 = genfromtxt(mol_xyz2, delimiter=' ')
+
+    # plus two since starting at 1 and range goes up to second val
+    for i in range(1, number_clusters + 1, 1):
 
         """ Takes array and saves it to file """
 
-        final, mole, spacer, sequence = random_arrangement_2(geo1, geo2, 1)
+        final, mole, spacer, sequence = random_arrangement_2(
+            geo1, geo2, i, molecules_in_cluster, percent_chance_mol_1, box_length, minium_distance_between_molecules)
 
-        print(sequence)
+        # print(sequence)
 
         out_file = "many.txt"
 
@@ -812,7 +851,7 @@ def main():
         clean_dataframe(df)
 
         # make_input_files()
-        make_input_dir(i)
+        # make_input_dir(i) # uncomment when want directories
         print("\n\n\n next directory \n\n\n")
 
     os.remove("many.txt")
