@@ -369,10 +369,10 @@ def random_arrangement_2(geom1, geom2, geom_num, num, percent_chance_mol_1, box_
     cnt = 1
     molecule = [current_spacer]
 
-    check_tf = True
+    check_tf = False
     while (cnt < num):
         #choice = int(np.random.choice([0, 1]))
-        if check_tf == True:
+        if check_tf == False:
             choice = int(np.random.choice(range(100)))
             mol_num = 0
 
@@ -384,7 +384,7 @@ def random_arrangement_2(geom1, geom2, geom_num, num, percent_chance_mol_1, box_
                 geom = geom2
                 mol_num = 1
                 current_spacer = spacer_2
-            check_tf = False
+            check_tf = True
         """
         if choice == 0:
             geom = geom1
@@ -406,17 +406,30 @@ def random_arrangement_2(geom1, geom2, geom_num, num, percent_chance_mol_1, box_
             # print(molecule)
 
             #dist_CC = distance(dis[0, :], arching[0 + i*spacer_1, :])
-            length_sum = 0
-            dist_CC = distance(dis[0, :], arching[0 + length_sum, :])
-
+            #length_sum = 0
+            #dist_CC = distance(dis[0, :], arching[0 + length_sum, :])
+            check_lst = []
+            length_check = 0
+            for m in molecule:
+                length_check += m
+            for k in range(len(dis)):
+                for j in range(length_check):
+                    dist_atoms = distance(dis[k, :], arching[j, :])
+                    print(dist_atoms)
+                    print(minium_distance_between_molecules)
+                    if dist_atoms > minium_distance_between_molecules:
+                        check_lst.append(True)
+                    else:
+                        check_lst.append(False)
             #print(arching[0 + length_sum, :])
-            length_sum += molecule[i]
-            # print(dist_CC)
-            #print((dis[0, :]))
-            #print(arching[0 + i*spacer, :])
-
-            if dist_CC < minium_distance_between_molecules:  # change for the minimum distance between molecules
-                check_tf = True
+            print(check_lst)
+            print(sum(check_lst))
+            print(len(check_lst))
+            #length_sum += molecule[i]
+            if sum(check_lst) == len(check_lst):
+                check_tf = False
+            # if dist_CC < minium_distance_between_molecules:  # change for the minimum distance between molecules
+            #    check_tf = True
 
         if check_tf == False:
             molecule.append(current_spacer)

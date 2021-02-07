@@ -167,20 +167,20 @@ def generateGraph(spec_name, T, title):
 def main():
     mol_xyz1 = "mon_ho2.xyz"
     mol_xyz2 = "mon_methanol.xyz"
-    number_clusters = 2
-    molecules_in_cluster = 10
-    percent_chance_mol_1 = 90
-    box_length = 5                   # in angstroms
-    minium_distance_between_molecules = 4
+    number_clusters = 1
+    molecules_in_cluster = 8
+    percent_chance_mol_1 = 50
+    box_length = 7                   # in angstroms
+    minium_distance_between_molecules = 2
     T = 9260  # Kelvin (K)
     ice_build_geoms.main(molecules_in_cluster, number_clusters, box_length, minium_distance_between_molecules,
                          percent_chance_mol_1, mol_xyz1, mol_xyz2)
-    # complete = jobResubmit(1, 2)  # delay_min, num_delays
+    complete = jobResubmit(3600, 72)  # delay_min, num_delays
 
-    # boltzmannAnalysisSetup(complete)
+    boltzmannAnalysisSetup(complete)
 
-    # boltzmannAnalysis(T)
-    #generateGraph("spec", T, "Title")
+    boltzmannAnalysis(T)
+    generateGraph("spec", T, "Title")
 
     # ps ax | grep test.py
     # nohup python3 test.py > output.log &
