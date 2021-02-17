@@ -237,7 +237,7 @@ def find_geom(lines, error, filename, imaginary):
         clean_many_txt()
 
 
-def make_input_files_no_constraints(output_num):
+def make_input_files_no_constraints(output_num, method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt):
     """ Combines the geometry output and the constrained output. Then makes the .com and .pbs files in a subdirectory """
 
     data = ""
@@ -249,9 +249,10 @@ def make_input_files_no_constraints(output_num):
     charges = "0 1"
 
     with open('mex.com', 'w') as fp:
-        fp.write("%mem=1600mb\n")
+        fp.write("%mem={0}mb\n".format(mem_com_opt))
         fp.write("%nprocs=4\n")
-        fp.write("#N wB97XD/6-31G(d) OPT FREQ\n")
+        fp.write("#N {0}".format(method_opt) +
+                 "/{0} OPT FREQ\n".format(basis_set_opt))
         fp.write("\n")
         fp.write("Name ModRedundant - Minimalist working constrained optimisation\n")
         fp.write("\n")
@@ -262,7 +263,7 @@ def make_input_files_no_constraints(output_num):
     with open('mex.pbs', 'w') as fp:
         fp.write("#!/bin/sh\n")
         fp.write("#PBS -N mex\n#PBS -S /bin/bash\n#PBS -j oe\n#PBS -m abe\n#PBS -l")
-        fp.write("mem=15gb\n")
+        fp.write("mem={0}gb\n".format(mem_pbs_opt))
         fp.write(
             "#PBS -l nodes=1:ppn=4\n#PBS -q gpu\n\nscrdir=/tmp/$USER.$PBS_JOBID\n\n")
         fp.write(
@@ -283,7 +284,7 @@ def make_input_files_no_constraints(output_num):
                  str(output_num) + "\n\nrm -r $scrdir\n")
 
 
-def make_mexc():
+def make_mexc(method_mexc, basis_set_mexc, mem_com_mexc, mem_pbs_mexc):
     """ Combines the geometry output and the constrained output. Then makes the .com and .pbs files in a subdirectory """
 
     data = ""
@@ -298,9 +299,10 @@ def make_mexc():
     os.mkdir(new_dir)
 
     with open(new_dir + '/mexc.com', 'w') as fp:
-        fp.write("%mem=1600mb\n")
+        fp.write("%mem={0}mb\n".format(mem_com_mexc))
         fp.write("%nprocs=4\n")
-        fp.write("#N TD(NStates=25) B3lYP/6-311G(d,p)\n")
+        fp.write("#N TD(NStates=25) {0}".format(
+            method_mexc) + "/{0}\n".format(basis_set_mexc))
         fp.write("\n")
         fp.write("Name ModRedundant - Minimalist working constrained optimisation\n")
         fp.write("\n")
@@ -311,7 +313,7 @@ def make_mexc():
     with open(new_dir + '/mexc.pbs', 'w') as fp:
         fp.write("#!/bin/sh\n")
         fp.write("#PBS -N mexc\n#PBS -S /bin/bash\n#PBS -j oe\n#PBS -m abe\n#PBS -l")
-        fp.write("mem=15gb\n")
+        fp.write("mem={0}gb\n".format(mem_pbs_mexc))
         fp.write(
             "#PBS -l nodes=1:ppn=4\n#PBS -q gpu\n\nscrdir=/tmp/$USER.$PBS_JOBID\n\n")
         fp.write(
@@ -333,20 +335,22 @@ def make_mexc():
 
 
 def clean_energies(hf_1, hf_2, zero_point):
-
-    hf_1 = (hf_1[3:].replace("\n", "").split('\\'))
-    hf_2 = (hf_2[3:].replace("\n", "").split('\\'))
-    #print(hf_1[0], hf_2[0])
     zero_point = zero_point[30:].replace(" (Hartree/Particle)", "")
     for i in range(10):
         zero_point = zero_point.replace("  ", " ")
     zero_point = float(zero_point)
-    # print(float(zero_point))
+    hf_1 = (hf_1[3:].replace("\n", "").split('\\'))
 
-    if hf_1[0] > hf_2[0]:
-        return float(hf_1[0]) + zero_point
+    if hf_2 != 0:
+        hf_2 = (hf_2[3:].replace("\n", "").split('\\'))
+        #print(hf_1[0], hf_2[0])
+
+        if hf_1[0] > hf_2[0]:
+            return float(hf_1[0]) + zero_point
+        else:
+            return float(hf_2[0]) + zero_point
     else:
-        return float(hf_2[0]) + zero_point
+        return float(hf_1[0]) + zero_point
 
 
 word_error = "Error"
@@ -357,7 +361,9 @@ standards = []
 orientation = []
 
 
-def main(index):
+def main(index,
+         method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt,
+         method_mexc, basis_set_mexc, mem_com_mexc, mem_pbs_mexc):
     out_files = glob.glob("*.out*")
     # print(out_files)
     if len(out_files) > 0:
@@ -390,7 +396,8 @@ def main(index):
             if error == True:
                 find_geom(lines, error=True, filename=filename,
                           imaginary=imaginary)
-                make_input_files_no_constraints(output_num)
+                make_input_files_no_constraints(
+                    output_num, method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt)
                 os.system("qsub mex.pbs")
                 failure = subprocess.call(cmd, shell=True)
                 return False
@@ -400,7 +407,8 @@ def main(index):
                           imaginary=imaginary)
                 add_imaginary(freq_clean, freq_lst_len, filename)
 
-                make_input_files_no_constraints(output_num)
+                make_input_files_no_constraints(
+                    output_num, method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt)
                 os.system("qsub mex.pbs")
                 failure = subprocess.call(cmd, shell=True)
                 print('imaginary frequency handling...')
@@ -419,14 +427,24 @@ def main(index):
                 # print(zero_point)
                 sum_energy = clean_energies(hf_1, hf_2, zero_point)
                 print('Total energy {0}: '.format(index+1), sum_energy)
-                make_mexc()
+                make_mexc(method_mexc, basis_set_mexc,
+                          mem_com_mexc, mem_pbs_mexc)
                 os.chdir("mexc")
-                #os.system("qsub mexc.pbs")
+                os.system("qsub mexc.pbs")
                 # os.path.abspath(os.getcwd())
                 failure = subprocess.call(cmd, shell=True)
                 os.chdir("..")
                 os.remove("tmp.txt")
-                os.chdir("../../results/energies")
+
+                os.chdir("../..")
+                if "results" not in glob.glob("results"):
+                    os.mkdir("results")
+                os.chdir("results")
+                if "energies" not in glob.glob("energies"):
+                    os.mkdir("energies")
+                os.chdir("energies")
+
+                # os.chdir("../../results/energies")
                 print(os.getcwd())
                 f = open("energy{0}.txt".format(index+1), 'w')
                 f.write(str(sum_energy))

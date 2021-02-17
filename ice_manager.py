@@ -13,8 +13,11 @@ matplotlib.use('Agg')
 # print(sys.path)
 
 
-def jobResubmit(min_delay, number_delays):
+def jobResubmit(min_delay, number_delays,
+                method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt,
+                method_mexc, basis_set_mexc, mem_com_mexc, mem_pbs_mexc):
 
+    min_delay = min_delay * 60
     cluster_list = glob.glob("calc_zone/geom*")
     print(cluster_list)
     complete = []
@@ -27,7 +30,9 @@ def jobResubmit(min_delay, number_delays):
         for num, j in enumerate(cluster_list):
             os.chdir(j)
             if complete[num] < 1:
-                error_mexc_v8.main(num)
+                error_mexc_v8.main(
+                    num, method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt,
+                    method_mexc, basis_set_mexc, mem_com_mexc, mem_pbs_mexc)
             mexc_check = glob.glob("mexc")
             # print(mexc_check)
             if len(mexc_check) > 0:
@@ -60,6 +65,10 @@ def jobResubmit(min_delay, number_delays):
 def boltzmannAnalysisSetup(complete):
 
     analysis_ready = []
+    if "mexc_values" not in glob.glob("results/mexc_values"):
+        os.chdir("results")
+        os.mkdir("mexc_values")
+        os.chdir("..")
 
     for i in range(len(complete)):
         if complete[i] == 2:
@@ -120,7 +129,16 @@ def boltzmannAnalysis(T):
         # if want only certain number randomly, modify here
         combining_mexc = np.concatenate((combining_mexc, value), axis=0)
     # print(combining_mexc)
-    os.chdir("../final/data")
+
+    # os.chdir("../final/data")
+    os.chdir("..")
+    if "final" not in glob.glob("final"):
+        os.mkdir("final")
+    os.chdir("final")
+    if "data" not in glob.glob("data"):
+        os.mkdir("data")
+    os.chdir("data")
+
     np.savetxt("data", combining_mexc, fmt="%s")
     print("\ndata file made for specsim.pl\n")
     cmd = "perl ../../../src/specsim.pl"
@@ -158,7 +176,11 @@ def generateGraph(spec_name, T, title):
     plt.grid(b=None, which='major', axis='y', linewidth=1)
     plt.grid(b=None, which='major', axis='x', linewidth=1)
     ax1.legend(shadow=True, fancybox=True)
-    os.chdir("results/final/graphs")
+    # os.chdir("results/final/graphs")
+    os.chdir("results/final")
+    if "graphs" not in glob.glob("graphs"):
+        os.mkdir("graphs")
+    os.chdir("graphs")
     plt.savefig(title + '.png')
 
     return
@@ -166,21 +188,39 @@ def generateGraph(spec_name, T, title):
 
 def main():
     mol_xyz1 = "mon_ho2.xyz"
-    mol_xyz2 = "mon_methanol.xyz"
+    mol_xyz2 = "mon_ho2.xyz"
+    #mol_xyz2 = "mon_methanol.xyz"
     number_clusters = 1
-    molecules_in_cluster = 8
-    percent_chance_mol_1 = 50
+    molecules_in_cluster = [1, 0]
     box_length = 7                   # in angstroms
     minium_distance_between_molecules = 2
+
+    resubmit_delay_min = 240
+    resubmit_max_attempts = 40
     T = 9260  # Kelvin (K)
+
+    # geometry optimization options
+    method_opt = "wB97XD"
+    basis_set_opt = "6-31G(d)"
+    mem_com_opt = "1600"  # mb
+    mem_pbs_opt = "15"  # gb
+
+    # TD-DFT options
+    method_mexc = "B3lYP"
+    basis_set_mexc = "6-311G(d,p)"
+    mem_com_mexc = "1600"  # mb
+    mem_pbs_mexc = "15"  # gb"
+
     ice_build_geoms.main(molecules_in_cluster, number_clusters, box_length, minium_distance_between_molecules,
-                         percent_chance_mol_1, mol_xyz1, mol_xyz2)
-    complete = jobResubmit(3600, 72)  # delay_min, num_delays
+                         mol_xyz1, mol_xyz2, method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt)
+    complete = jobResubmit(resubmit_delay_min, resubmit_max_attempts,
+                           method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt,
+                           method_mexc, basis_set_mexc, mem_com_mexc, mem_pbs_mexc)  # delay_min, num_delays
 
-    boltzmannAnalysisSetup(complete)
+    # boltzmannAnalysisSetup(complete)
 
-    boltzmannAnalysis(T)
-    generateGraph("spec", T, "Title")
+    # boltzmannAnalysis(T)
+    #generateGraph("spec", T, "Title")
 
     # ps ax | grep test.py
     # nohup python3 test.py > output.log &
@@ -190,7 +230,6 @@ def main():
     # kill <pid> -9
 
     # ps axo user,comm,pid,time
-
 
     # ts or tsp // look into for off supercomputer
     # command below for background and updating .log file as it goes

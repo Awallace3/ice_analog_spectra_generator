@@ -6,6 +6,7 @@ from numpy import genfromtxt
 import numpy as npimport
 from numpy import genfromtxt
 import pandas as pd
+import glob
 #import secrets
 
 
@@ -351,7 +352,15 @@ def distance(geom1, geom2):
     return math.sqrt((geom1[1] - geom2[1]) ** 2 + (geom1[2] - geom2[2])**2 + (geom1[3] - geom2[3])**2)
 
 
-def random_arrangement_2(geom1, geom2, geom_num, num, percent_chance_mol_1, box_length, minium_distance_between_molecules):
+"""
+def random_arrangement_2(geom1, geom2, geom_num, num_molecules, percent_chance_mol_1, box_length, minium_distance_between_molecules):
+    num = 0
+    random_list = []
+    for n, i in enumerate(num_molecules):
+        num += i
+        for j in range(i):
+            random_list.append(n)
+    print(random_list)
     choice = int(np.random.choice(range(100)))
     sequence = []
     spacer_1 = len(geom1[:, 0])  # if spacing issue... investigate
@@ -377,6 +386,112 @@ def random_arrangement_2(geom1, geom2, geom_num, num, percent_chance_mol_1, box_
             mol_num = 0
 
             if choice >= percent_chance_mol_1:
+                geom = geom1
+                current_spacer = spacer_1
+
+            else:
+                geom = geom2
+                mol_num = 1
+                current_spacer = spacer_2
+            check_tf = True
+
+
+        yz = yz_rotate(geom, ran_angle())
+        xy = xy_rotate(yz, ran_angle())
+        xz = xz_rotate(xy, ran_angle())
+
+        dis = displacement(xz, ran_dis(box_length), ran_dis(
+            box_length), ran_dis(box_length))
+        #check_tf = False
+
+        for i in range(len(molecule)):
+            # print(molecule)
+
+            #dist_CC = distance(dis[0, :], arching[0 + i*spacer_1, :])
+            #length_sum = 0
+            #dist_CC = distance(dis[0, :], arching[0 + length_sum, :])
+            check_lst = []
+            length_check = 0
+            for m in molecule:
+                length_check += m
+            for k in range(len(dis)):
+                for j in range(length_check):
+                    dist_atoms = distance(dis[k, :], arching[j, :])
+                    # print(dist_atoms)
+                    # print(minium_distance_between_molecules)
+                    if dist_atoms > minium_distance_between_molecules:
+                        check_lst.append(True)
+                    else:
+                        check_lst.append(False)
+            #print(arching[0 + length_sum, :])
+            # print(check_lst)
+            # print(sum(check_lst))
+            # print(len(check_lst))
+            #length_sum += molecule[i]
+            if sum(check_lst) == len(check_lst):
+                check_tf = False
+            # if dist_CC < minium_distance_between_molecules:  # change for the minimum distance between molecules
+            #    check_tf = True
+
+        if check_tf == False:
+            molecule.append(current_spacer)
+            arching = np.concatenate((arching, dis))
+            cnt += 1
+            sequence.append(mol_num)
+
+    arching = np.round_(arching, decimals=16)
+    print("\nXYZ molecule {0}\n".format(geom_num))
+    for k in arching:
+        print(int(k[0]), k[1], k[2], k[3])  # for quick testing purposes
+    print()
+    return arching, len(molecule), spacer_1, sequence
+
+"""
+
+
+def sample_without_replacement(arr):
+    random.shuffle(arr)
+    return arr.pop()
+
+
+def random_arrangement_2(geom1, geom2, geom_num, num_molecules, box_length, minium_distance_between_molecules):
+    num = 0
+    random_list = []
+    for n, i in enumerate(num_molecules):
+        num += i
+        for j in range(i):
+            random_list.append(n)
+    #choice = int(np.random.choice(random_list, replace=False))
+    choice = sample_without_replacement(random_list)
+    print(choice)
+    print(random_list)
+    sequence = []
+    spacer_1 = len(geom1[:, 0])  # if spacing issue... investigate
+    spacer_2 = len(geom2[:, 0])
+    current_spacer = 0
+    if choice == 0:
+        geom = geom1
+        sequence.append(0)
+        current_spacer = spacer_1
+    else:
+        geom = geom2
+        sequence.append(1)
+        current_spacer = spacer_2
+    arching = geom[:, :]
+    cnt = 1
+    molecule = [current_spacer]
+
+    check_tf = False
+    while (cnt < num):
+        #choice = int(np.random.choice([0, 1]))
+        if check_tf == False:
+            # choice = int(np.random.choice(random_list, replace=False))
+            choice = sample_without_replacement(random_list)
+            print(choice)
+            print(random_list)
+            mol_num = 0
+
+            if choice == 0:
                 geom = geom1
                 current_spacer = spacer_1
 
@@ -415,16 +530,16 @@ def random_arrangement_2(geom1, geom2, geom_num, num, percent_chance_mol_1, box_
             for k in range(len(dis)):
                 for j in range(length_check):
                     dist_atoms = distance(dis[k, :], arching[j, :])
-                    print(dist_atoms)
-                    print(minium_distance_between_molecules)
+                    # print(dist_atoms)
+                    # print(minium_distance_between_molecules)
                     if dist_atoms > minium_distance_between_molecules:
                         check_lst.append(True)
                     else:
                         check_lst.append(False)
             #print(arching[0 + length_sum, :])
-            print(check_lst)
-            print(sum(check_lst))
-            print(len(check_lst))
+            # print(check_lst)
+            # print(sum(check_lst))
+            # print(len(check_lst))
             #length_sum += molecule[i]
             if sum(check_lst) == len(check_lst):
                 check_tf = False
@@ -436,7 +551,7 @@ def random_arrangement_2(geom1, geom2, geom_num, num, percent_chance_mol_1, box_
             arching = np.concatenate((arching, dis))
             cnt += 1
             sequence.append(mol_num)
-
+    print(molecule)
     arching = np.round_(arching, decimals=16)
     print("\nXYZ molecule {0}\n".format(geom_num))
     for k in arching:
@@ -713,7 +828,7 @@ def clean_dataframe(df):
     f.close()
 
 
-def make_input_dir(dir_name_number):
+def make_input_dir(dir_name_number, method, basis_set, mem_com, mem_pbs):
     """ Combines the geometry output and the constrained output. Then makes the .com and .pbs files in a subdirectory """
 
     data = data2 = ""
@@ -728,13 +843,16 @@ def make_input_dir(dir_name_number):
     data += "\n\n"
     data += data2
     charges = "0 1"
-
+    if "calc_zone" not in glob.glob("calc_zone"):
+        print(glob.glob("calc_zone"))
+        os.mkdir("calc_zone")
     new_dir = "calc_zone/geom" + str(dir_name_number)
     os.mkdir(new_dir)
     with open(new_dir + '/mex.com', 'w') as fp:
-        fp.write("%mem=1600mb\n")
+        fp.write("%mem={0}mb\n".format(mem_com))
         fp.write("%nprocs=4\n")
-        fp.write("#N wB97XD/6-31G(d) opt=ModRedundant FREQ\n")
+        fp.write(
+            "#N {0}/".format(method) + "{0} opt=ModRedundant FREQ\n".format(basis_set))
         fp.write("\n")
         fp.write("Name ModRedundant\n")
         fp.write("\n")
@@ -744,7 +862,7 @@ def make_input_dir(dir_name_number):
     with open(new_dir + '/mex.pbs', 'w') as fp:
         fp.write("#!/bin/sh\n")
         fp.write("#PBS -N mex\n#PBS -S /bin/bash\n#PBS -j oe\n#PBS -m abe\n#PBS -l")
-        fp.write("mem=15gb\n")
+        fp.write("mem={0}gb\n".format(mem_pbs))
         fp.write(
             "#PBS -l nodes=1:ppn=4\n#PBS -q gpu\n\nscrdir=/tmp/$USER.$PBS_JOBID\n\n")
         fp.write(
@@ -820,17 +938,18 @@ def make_input_files():
             "cd $PBS_O_WORKDIR\n. $g16root/g16/bsd/g16.profile\ng16 mex.com mex.out\n\nrm -r $scrdir\n")
 
 
+# make this read into a dictionary actually...
 def xyz_remove_whitespace(mol_xyz1, mol_xyz2):
     with open(mol_xyz1) as fp:
         data = fp.read()
-    print(data)
+    # print(data)
     geo1 = geo2 = 0
     return geo1, geo2
 
 
 def main(molecules_in_cluster, number_clusters, box_length,  minium_distance_between_molecules,
-         percent_chance_mol_1, mol_xyz1, mol_xyz2):
-    geo1, geo2 = xyz_remove_whitespace(mol_xyz1, mol_xyz2)
+         mol_xyz1, mol_xyz2, method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt):
+    #geo1, geo2 = xyz_remove_whitespace(mol_xyz1, mol_xyz2)
 
     geo1 = genfromtxt(mol_xyz1, delimiter=' ')
     geo2 = genfromtxt(mol_xyz2, delimiter=' ')
@@ -841,7 +960,7 @@ def main(molecules_in_cluster, number_clusters, box_length,  minium_distance_bet
         """ Takes array and saves it to file """
 
         final, mole, spacer, sequence = random_arrangement_2(
-            geo1, geo2, i, molecules_in_cluster, percent_chance_mol_1, box_length, minium_distance_between_molecules)
+            geo1, geo2, i, molecules_in_cluster, box_length, minium_distance_between_molecules)
 
         # print(sequence)
 
@@ -864,7 +983,8 @@ def main(molecules_in_cluster, number_clusters, box_length,  minium_distance_bet
         clean_dataframe(df)
 
         # make_input_files()
-        # make_input_dir(i) # uncomment when want directories
+        make_input_dir(i, method_opt, basis_set_opt, mem_com_opt,
+                       mem_pbs_opt)  # uncomment when want directories
         print("\n\n\n next directory \n\n\n")
 
     os.remove("many.txt")
