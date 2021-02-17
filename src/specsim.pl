@@ -104,8 +104,8 @@ sub energy_range
   my $np = $_[3];
   #my $min = $_[0]-$fwhm*$fwhm;
   #my $max = $_[1]+$fwhm*$fwhm;
-  my $min = 120;
-  my $max = 1100;
+  my $min = 100;
+  my $max = 400;
   my $spacing = ($max-$min)/$np; 
 
   print "MIN X $min\n";

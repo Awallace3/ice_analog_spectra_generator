@@ -463,7 +463,7 @@ def random_arrangement_2(geom1, geom2, geom_num, num_molecules, box_length, mini
             random_list.append(n)
     #choice = int(np.random.choice(random_list, replace=False))
     choice = sample_without_replacement(random_list)
-    print(choice)
+    # print(choice)
     print(random_list)
     sequence = []
     spacer_1 = len(geom1[:, 0])  # if spacing issue... investigate
@@ -487,7 +487,7 @@ def random_arrangement_2(geom1, geom2, geom_num, num_molecules, box_length, mini
         if check_tf == False:
             # choice = int(np.random.choice(random_list, replace=False))
             choice = sample_without_replacement(random_list)
-            print(choice)
+            # print(choice)
             print(random_list)
             mol_num = 0
 
@@ -554,9 +554,9 @@ def random_arrangement_2(geom1, geom2, geom_num, num_molecules, box_length, mini
     print(molecule)
     arching = np.round_(arching, decimals=16)
     print("\nXYZ molecule {0}\n".format(geom_num))
-    for k in arching:
+    """ for k in arching:
         print(int(k[0]), k[1], k[2], k[3])  # for quick testing purposes
-    print()
+    print() """
     return arching, len(molecule), spacer_1, sequence
 
 

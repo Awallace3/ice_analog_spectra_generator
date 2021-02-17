@@ -187,13 +187,14 @@ def generateGraph(spec_name, T, title):
 
 
 def main():
-    mol_xyz1 = "mon_ho2.xyz"
-    mol_xyz2 = "mon_ho2.xyz"
+    mol_xyz1 = "mon_h2o.xyz"
+    mol_xyz2 = "mon_h2o.xyz"
     #mol_xyz2 = "mon_methanol.xyz"
     number_clusters = 1
-    molecules_in_cluster = [1, 0]
-    box_length = 7                   # in angstroms
-    minium_distance_between_molecules = 2
+    # enter the number of molecules of each geometry in the respective index
+    molecules_in_cluster = [32, 0]
+    box_length = 9                   # in angstroms
+    minium_distance_between_molecules = 2.0
 
     resubmit_delay_min = 240
     resubmit_max_attempts = 40
@@ -213,14 +214,15 @@ def main():
 
     ice_build_geoms.main(molecules_in_cluster, number_clusters, box_length, minium_distance_between_molecules,
                          mol_xyz1, mol_xyz2, method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt)
+
     complete = jobResubmit(resubmit_delay_min, resubmit_max_attempts,
                            method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt,
                            method_mexc, basis_set_mexc, mem_com_mexc, mem_pbs_mexc)  # delay_min, num_delays
 
-    # boltzmannAnalysisSetup(complete)
+    boltzmannAnalysisSetup(complete)
 
-    # boltzmannAnalysis(T)
-    #generateGraph("spec", T, "Title")
+    boltzmannAnalysis(T)
+    generateGraph("spec", T, "Title")
 
     # ps ax | grep test.py
     # nohup python3 test.py > output.log &
