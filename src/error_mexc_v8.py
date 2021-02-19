@@ -110,7 +110,7 @@ def add_imaginary(freq_clean, freq_lst_len, filename):
     imag_values = np.array(imag_values)
     # print(imag_values)
     # print('\n')
-    #print(carts_no_atom, '\n')
+    # print(carts_no_atom, '\n')
     for i in range(len(imag_values[0, :]) // 3):
         carts_no_atom = np.add(carts_no_atom, imag_values[:, i: i+4])
     # print(carts_no_atom)
@@ -262,7 +262,7 @@ def make_input_files_no_constraints(output_num, method_opt, basis_set_opt, mem_c
 
     with open('mex.pbs', 'w') as fp:
         fp.write("#!/bin/sh\n")
-        fp.write("#PBS -N mex\n#PBS -S /bin/bash\n#PBS -j oe\n#PBS -m abe\n#PBS -l")
+        fp.write("#PBS -N mex_o\n#PBS -S /bin/bash\n#PBS -j oe\n#PBS -m abe\n#PBS -l")
         fp.write("mem={0}gb\n".format(mem_pbs_opt))
         fp.write(
             "#PBS -l nodes=1:ppn=4\n#PBS -q gpu\n\nscrdir=/tmp/$USER.$PBS_JOBID\n\n")
@@ -312,7 +312,8 @@ def make_mexc(method_mexc, basis_set_mexc, mem_com_mexc, mem_pbs_mexc):
 
     with open(new_dir + '/mexc.pbs', 'w') as fp:
         fp.write("#!/bin/sh\n")
-        fp.write("#PBS -N mexc\n#PBS -S /bin/bash\n#PBS -j oe\n#PBS -m abe\n#PBS -l")
+        fp.write(
+            "#PBS -N mexc_o\n#PBS -S /bin/bash\n#PBS -j oe\n#PBS -m abe\n#PBS -l")
         fp.write("mem={0}gb\n".format(mem_pbs_mexc))
         fp.write(
             "#PBS -l nodes=1:ppn=4\n#PBS -q gpu\n\nscrdir=/tmp/$USER.$PBS_JOBID\n\n")
@@ -343,7 +344,7 @@ def clean_energies(hf_1, hf_2, zero_point):
 
     if hf_2 != 0:
         hf_2 = (hf_2[3:].replace("\n", "").split('\\'))
-        #print(hf_1[0], hf_2[0])
+        # print(hf_1[0], hf_2[0])
 
         if hf_1[0] > hf_2[0]:
             return float(hf_1[0]) + zero_point
@@ -363,9 +364,12 @@ orientation = []
 
 def main(index,
          method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt,
-         method_mexc, basis_set_mexc, mem_com_mexc, mem_pbs_mexc):
+         method_mexc, basis_set_mexc, mem_com_mexc, mem_pbs_mexc
+         ):
+
     out_files = glob.glob("*.out*")
-    # print(out_files)
+    out_completion = glob.glob("mex_o.*")
+    print(out_files)
     if len(out_files) > 0:
 
         filename = out_files[-1]
@@ -377,8 +381,14 @@ def main(index,
             output_num = 2
         else:
             output_num = int(output_num[-1]) + 1
+        if len(out_completion) != len(out_files):
+            print("Not finished yet")
+            return True
+        """         if existing_output < resubmissions[index]:
+            print('exit without submission')
+            return True, resubmissions """
 
-        #print("Input file: " + filename)
+        # print("Input file: " + filename)
         f = open(filename, 'r')
         lines = f.readlines()
         f.close()
@@ -458,10 +468,12 @@ def main(index,
                     ft = open("energy_all.csv", "a")
                     ft.write("%d,%.14f\n" % (index+1, sum_energy))
                     ft.close()
-                return sum_energy
+                return False
         except:
             print('Calculation still running')
-            return False
-
+            return True
+    else:
+        print('No output files detected for geom%d' % (index+1))
+        return True
 
 # main()

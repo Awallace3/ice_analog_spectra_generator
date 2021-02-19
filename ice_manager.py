@@ -12,6 +12,8 @@ import matplotlib
 matplotlib.use('Agg')
 # print(sys.path)
 
+# NEED TO CHECK IF Q SUBMITTED BEFORE RESUBMITTING
+
 
 def jobResubmit(min_delay, number_delays,
                 method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt,
@@ -21,8 +23,10 @@ def jobResubmit(min_delay, number_delays,
     cluster_list = glob.glob("calc_zone/geom*")
     print(cluster_list)
     complete = []
+    resubmissions = []
     for i in range(len(cluster_list)):
         complete.append(0)
+        resubmissions.append(1)
     calculations_complete = False
 
     for i in range(number_delays):
@@ -30,9 +34,11 @@ def jobResubmit(min_delay, number_delays,
         for num, j in enumerate(cluster_list):
             os.chdir(j)
             if complete[num] < 1:
-                error_mexc_v8.main(
+                action = error_mexc_v8.main(
                     num, method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt,
-                    method_mexc, basis_set_mexc, mem_com_mexc, mem_pbs_mexc)
+                    method_mexc, basis_set_mexc, mem_com_mexc, mem_pbs_mexc
+                )
+                print(resubmissions)
             mexc_check = glob.glob("mexc")
             # print(mexc_check)
             if len(mexc_check) > 0:
@@ -65,9 +71,11 @@ def jobResubmit(min_delay, number_delays,
 def boltzmannAnalysisSetup(complete):
 
     analysis_ready = []
-    if "mexc_values" not in glob.glob("results/mexc_values"):
-        os.chdir("results")
+    os.chdir("results")
+    if "mexc_values" not in glob.glob("mexc_values"):
         os.mkdir("mexc_values")
+        os.chdir("..")
+    else:
         os.chdir("..")
 
     for i in range(len(complete)):
@@ -190,14 +198,14 @@ def main():
     mol_xyz1 = "mon_h2o.xyz"
     mol_xyz2 = "mon_h2o.xyz"
     #mol_xyz2 = "mon_methanol.xyz"
-    number_clusters = 1
+    number_clusters = 70
     # enter the number of molecules of each geometry in the respective index
     molecules_in_cluster = [32, 0]
     box_length = 9                   # in angstroms
     minium_distance_between_molecules = 2.0
 
-    resubmit_delay_min = 240
-    resubmit_max_attempts = 40
+    resubmit_delay_min = 0.01
+    resubmit_max_attempts = 5
     T = 9260  # Kelvin (K)
 
     # geometry optimization options
@@ -212,8 +220,8 @@ def main():
     mem_com_mexc = "1600"  # mb
     mem_pbs_mexc = "15"  # gb"
 
-    ice_build_geoms.main(molecules_in_cluster, number_clusters, box_length, minium_distance_between_molecules,
-                         mol_xyz1, mol_xyz2, method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt)
+    # ice_build_geoms.main(molecules_in_cluster, number_clusters, box_length, minium_distance_between_molecules,
+    #                     mol_xyz1, mol_xyz2, method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt)
 
     complete = jobResubmit(resubmit_delay_min, resubmit_max_attempts,
                            method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt,
@@ -232,6 +240,7 @@ def main():
     # kill <pid> -9
 
     # ps axo user,comm,pid,time
+
 
     # ts or tsp // look into for off supercomputer
     # command below for background and updating .log file as it goes
