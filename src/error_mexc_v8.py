@@ -364,7 +364,8 @@ orientation = []
 
 def main(index,
          method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt,
-         method_mexc, basis_set_mexc, mem_com_mexc, mem_pbs_mexc
+         method_mexc, basis_set_mexc, mem_com_mexc, mem_pbs_mexc,
+         resubmissions, delay
          ):
 
     out_files = glob.glob("*.out*")
@@ -379,11 +380,18 @@ def main(index,
 
         if output_num == "t":
             output_num = 2
+
         else:
             output_num = int(output_num[-1]) + 1
+            if delay == 0:
+                resubmissions[index] = output_num
+                # if not starting from the beginning, the resubmission[index] needs to be set to current output number
         if len(out_completion) != len(out_files):
             print("Not finished yet")
-            return True
+            return True, resubmissions
+        if resubmissions[index] > output_num:
+            print("Awaiting queue")
+            return True, resubmissions
         """         if existing_output < resubmissions[index]:
             print('exit without submission')
             return True, resubmissions """
@@ -410,7 +418,8 @@ def main(index,
                     output_num, method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt)
                 os.system("qsub mex.pbs")
                 failure = subprocess.call(cmd, shell=True)
-                return False
+                resubmissions[index] += 1
+                return False, resubmissions
 
             elif imaginary == True:
                 find_geom(lines, error=False, filename=filename,
@@ -422,7 +431,8 @@ def main(index,
                 os.system("qsub mex.pbs")
                 failure = subprocess.call(cmd, shell=True)
                 print('imaginary frequency handling...')
-                return False
+                resubmissions[index] += 1
+                return False, resubmissions
             else:
                 cmd = "qsub mexc.pbs"
                 find_geom(lines, error=False, filename=filename,
@@ -443,6 +453,7 @@ def main(index,
                 os.system("qsub mexc.pbs")
                 # os.path.abspath(os.getcwd())
                 failure = subprocess.call(cmd, shell=True)
+                resubmissions[index] += 1
                 os.chdir("..")
                 os.remove("tmp.txt")
 
@@ -468,12 +479,12 @@ def main(index,
                     ft = open("energy_all.csv", "a")
                     ft.write("%d,%.14f\n" % (index+1, sum_energy))
                     ft.close()
-                return False
+                return False, resubmissions
         except:
             print('Calculation still running')
-            return True
+            return True, resubmissions
     else:
         print('No output files detected for geom%d' % (index+1))
-        return True
+        return True, resubmissions
 
 # main()

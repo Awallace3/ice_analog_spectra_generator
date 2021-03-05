@@ -26,17 +26,19 @@ def jobResubmit(min_delay, number_delays,
     resubmissions = []
     for i in range(len(cluster_list)):
         complete.append(0)
-        resubmissions.append(1)
+        resubmissions.append(2)
     calculations_complete = False
 
     for i in range(number_delays):
-        time.sleep(min_delay)
+        # time.sleep(min_delay)
         for num, j in enumerate(cluster_list):
             os.chdir(j)
+            delay = i
             if complete[num] < 1:
-                action = error_mexc_v8.main(
+                action, resubmissions = error_mexc_v8.main(
                     num, method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt,
-                    method_mexc, basis_set_mexc, mem_com_mexc, mem_pbs_mexc
+                    method_mexc, basis_set_mexc, mem_com_mexc, mem_pbs_mexc,
+                    resubmissions, delay
                 )
                 print(resubmissions)
             mexc_check = glob.glob("mexc")
@@ -64,13 +66,15 @@ def jobResubmit(min_delay, number_delays,
             return complete
         print('Completion List\n', complete, '\n')
         print('delay %d' % (i))
-
+        time.sleep(min_delay)
     return complete
 
 
 def boltzmannAnalysisSetup(complete):
 
     analysis_ready = []
+    if "results" not in glob.glob("results"):
+        os.mkdir("results")
     os.chdir("results")
     if "mexc_values" not in glob.glob("mexc_values"):
         os.mkdir("mexc_values")
@@ -205,7 +209,7 @@ def main():
     minium_distance_between_molecules = 2.0
 
     resubmit_delay_min = 0.01
-    resubmit_max_attempts = 5
+    resubmit_max_attempts = 40
     T = 9260  # Kelvin (K)
 
     # geometry optimization options
@@ -226,7 +230,11 @@ def main():
     complete = jobResubmit(resubmit_delay_min, resubmit_max_attempts,
                            method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt,
                            method_mexc, basis_set_mexc, mem_com_mexc, mem_pbs_mexc)  # delay_min, num_delays
-
+    for i in complete:
+        if i != 2:
+            print(
+                "\nNot all calculations are complete with given time limits. Exiting program now...\n")
+            return
     boltzmannAnalysisSetup(complete)
 
     boltzmannAnalysis(T)
