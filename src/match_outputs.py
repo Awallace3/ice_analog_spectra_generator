@@ -5,6 +5,7 @@ import subprocess
 os.chdir("../calc_zone")
 directories = glob.glob("geom*")
 for i in directories:
+    print(i)
     os.chdir(i)
     out_files = glob.glob("*.out*")
     out_completion = glob.glob("mex_o.*")

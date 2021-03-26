@@ -1,6 +1,6 @@
 import matplotlib.pyplot as plt
 from src import ice_build_geoms
-from src import error_mexc_v8
+from src import error_mexc_v9
 import time
 import glob
 import os
@@ -33,16 +33,10 @@ def jobResubmit(min_delay, number_delays,
         # time.sleep(min_delay)
         for num, j in enumerate(cluster_list):
             os.chdir(j)
+            print(j)
             delay = i
-            if complete[num] < 1:
-                action, resubmissions = error_mexc_v8.main(
-                    num, method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt,
-                    method_mexc, basis_set_mexc, mem_com_mexc, mem_pbs_mexc,
-                    resubmissions, delay
-                )
-                print(resubmissions)
             mexc_check = glob.glob("mexc")
-            # print(mexc_check)
+            print(mexc_check)
             if len(mexc_check) > 0:
                 print('{0} entered mexc checkpoint 1'.format(num+1))
                 complete[num] = 1
@@ -51,6 +45,14 @@ def jobResubmit(min_delay, number_delays,
                 if complete[num] != 2 and len(mexc_check_out) > 1:
                     print('{0} entered mexc checkpoint 2'.format(num+1))
                     complete[num] = 2
+            if complete[num] < 1:
+                action, resubmissions = error_mexc_v9.main(
+                    num, method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt,
+                    method_mexc, basis_set_mexc, mem_com_mexc, mem_pbs_mexc,
+                    resubmissions, delay
+                )
+                print(resubmissions)
+           
             mexc_check = []
             os.chdir('../..')
         stage = 0
@@ -209,7 +211,7 @@ def main():
     minium_distance_between_molecules = 2.0
 
     resubmit_delay_min = 0.01
-    resubmit_max_attempts = 40
+    resubmit_max_attempts = 1
     T = 9260  # Kelvin (K)
 
     # geometry optimization options

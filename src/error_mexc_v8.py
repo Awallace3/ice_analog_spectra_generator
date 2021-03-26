@@ -25,9 +25,9 @@ def clean_many_txt():
     """ This will replace the numerical forms of the elements as their letters numbered in order """
 
     f = open('tmp.txt', 'r')
-    a = ['6.0 ', '8.0 ', '1.0 ', '7.0']
+    a = ['6.0 ', '8.0 ', '1.0 ', '7.0 ']
     table = {
-        '6.0 ': 'C', '8.0 ': 'O', '1.0 ': 'H', '7.0': 'N'
+        '6.0 ': 'C', '8.0 ': 'O', '1.0 ': 'H', '7.0 ': 'N'
     }
 
     lst = []
@@ -156,8 +156,32 @@ def freq_hf_zero(lines, filename):
 
 
 def find_geom(lines, error, filename, imaginary):
-
+    #geom_start = "Standard orientation:"
+    #geom_end = " Standard basis:"
+    print("Opening..." + filename)
+    found = False
+    geom_size = 0
+    geom_list = []
+    with open(filename) as search:
+        for num, line in enumerate(search, 1):
+            if " Charge =  0 Multiplicity = 1" in line:
+                geom_size = num + 1
+                found = True
+            elif found == True and num < geom_size + 200:
+                #print(line, end="")
+                geom_list.append(line)
+            elif found == True and line == ' \n':
+                #geom_size = num - geom_size
+                break
+    clean_geom_size = []
+    for i in geom_list:
+        if not " \n" == i:
+            clean_geom_size.append(i)
+        elif i == ' \n':
+            break
+    geom_size = len(clean_geom_size)
     if error == True:
+        print("Error == True")
         pop_2 = "Population analysis using the SCF Density."
         pops = []
         pop_2_test = False
@@ -168,7 +192,7 @@ def find_geom(lines, error, filename, imaginary):
                 if len(pops) == 2:
                     pop_2_test = True
         if pop_2_test == True:
-
+            print(pop_2_test, "occuring")
             with open(filename) as search:
                 for num, line in enumerate(search, 1):
                     if geom_start in line:
@@ -179,20 +203,24 @@ def find_geom(lines, error, filename, imaginary):
                 for num, line in enumerate(search, 1):
                     if geom_end_pops in line:
                         orientation.append(num - 1)
+            print("if")
         else:
-
+            print('else')
             with open(filename) as search:
                 for num, line in enumerate(search, 1):
                     if geom_start in line:
                         standards.append(num + 5)
+                        
 
             with open(filename) as search:
                 for num, line in enumerate(search, 1):
                     if geom_end in line:
                         orientation.append(num - 2)
-
+            #print(standards[-5:], orientation[-5:])
     else:
-
+        print("No error")
+        """
+        #to return to normal, use this
         with open(filename) as search:
             for num, line in enumerate(search, 1):
                 if geom_start in line:
@@ -202,32 +230,82 @@ def find_geom(lines, error, filename, imaginary):
             for num, line in enumerate(search, 1):
                 if geom_end in line:
                     orientation.append(num - 2)
+        """
+        #print("geom_size:", geom_size)
+        #print(testing)
+        with open(filename) as search:
+            for num, line in enumerate(search, 1):
+                if geom_start in line:
+                    standards.append(num + 5)
 
-    length = orientation[-1] - standards[-1]
-
-    del lines[standards[-1] - 1 + length:]
-    del lines[:standards[-1] - 1]
-
+        with open(filename) as search:
+            for num, line in enumerate(search, 1):
+                if geom_end in line:
+                    orientation.append(num - 2)
+    if len(orientation) < 6:
+        orien = len(orientation)
+    else:
+        orien = 5
+    if len(standards) < 6:
+        stand = len(standards)
+    else:
+        stand = 5
+    #stand = len(standards)
+    #for i in range(5, 1, -1):
+    #    for j in range(5, 1, -1):
+    for i in range(-1, -orien, -1):
+        for j in range(-1, -stand, -1):
+            print(i, j)
+            length = orientation[i] - standards[j]
+            #print(length)
+            if length == geom_size:
+                orien = i
+                stand = j
+                break
+    if stand == 5:
+        stand = -1
+    #print("length:", length)
+    #print(standards[stand])
+    #print(orientation[-3:], standards[-3:])
+    del lines[standards[stand] - 1 + length:]
+    del lines[:standards[stand] - 1]
+    #print(lines[0:2])
+    #print(lines)
     for i in range(1, 10, 1):
         k = "  " * i
         lines = [item.replace(k, " ") for item in lines]
+        #print(lines)
 
+    print(lines[0:2])
+    #print(lines)
+    
     start_ls = []
     for i in lines:
         # i = i.strip()
         i = i.rstrip()
+        print(i)
         k = Convert(i)
+        #print(k)
+        if "----------------------------------" in k[1]:
+            break
+        #print(k)
         start_ls.append(k)
-
+    #print(len(start_ls))
+    #print(len(start_ls[0]))
     start_array = np.array(start_ls)
+    
+    #print(start_array)
+    #print(start_array)
+    #print(start_array[0])
+    print("\n\n", int(len(start_array[:, 3])), "\n")
     new_geom = np.zeros(((int(len(start_array[:, 3]))), 4))
-
+    #print("\n\nlen:",len(new_geom[:,0]))
     new_geom[:, 0] = start_array[:, 5]
     new_geom[:, 1] = start_array[:, 9]
     new_geom[:, 2] = start_array[:, 11]
     new_geom[:, 3] = start_array[:, 13]
 
-    # print(new_geom)
+    #print(new_geom)
 
     out_file = "tmp.txt"
 
@@ -367,14 +445,24 @@ def main(index,
          method_mexc, basis_set_mexc, mem_com_mexc, mem_pbs_mexc,
          resubmissions, delay
          ):
-
+    print(os.getcwd())
     out_files = glob.glob("*.out*")
     out_completion = glob.glob("mex_o.*")
     print(out_files)
+    print(out_completion)
     if len(out_files) > 0:
+        if len(out_files) == 1:
+            filename = out_files[-1]
+        else:
+            filename = '0'
+            for i in out_files:
+                if i[-1] == 't':
+                    continue
+                elif i[-1] > filename[-1]:
+                    filename = i
 
-        filename = out_files[-1]
-
+        #filename = out_files[-1]
+        print("filename:", filename)
         output_num = list(filename)
         output_num = output_num[-1]
 
@@ -385,8 +473,9 @@ def main(index,
             output_num = int(output_num[-1]) + 1
             if delay == 0:
                 resubmissions[index] = output_num
+
                 # if not starting from the beginning, the resubmission[index] needs to be set to current output number
-        if len(out_completion) != len(out_files):
+        if len(out_completion) < len(out_files):
             print("Not finished yet")
             return True, resubmissions
         if resubmissions[index] > output_num:
@@ -410,79 +499,82 @@ def main(index,
                 if word_error in line:
                     error = True
         cmd = "qsub mex.pbs"
-        try:
-            if error == True:
-                find_geom(lines, error=True, filename=filename,
-                          imaginary=imaginary)
-                make_input_files_no_constraints(
-                    output_num, method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt)
-                os.system("qsub mex.pbs")
-                failure = subprocess.call(cmd, shell=True)
-                resubmissions[index] += 1
-                return False, resubmissions
+        print("here")
+        #try:
+        if error == True:
+            find_geom(lines, error=True, filename=filename,
+                        imaginary=imaginary)
+            make_input_files_no_constraints(
+                output_num, method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt)
+            #os.system("qsub mex.pbs")
+            failure = subprocess.call(cmd, shell=True)
+            resubmissions[index] += 1
+            return False, resubmissions
 
-            elif imaginary == True:
-                find_geom(lines, error=False, filename=filename,
-                          imaginary=imaginary)
-                add_imaginary(freq_clean, freq_lst_len, filename)
+        elif imaginary == True:
+            find_geom(lines, error=False, filename=filename,
+                        imaginary=imaginary)
+            add_imaginary(freq_clean, freq_lst_len, filename)
 
-                make_input_files_no_constraints(
-                    output_num, method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt)
-                os.system("qsub mex.pbs")
-                failure = subprocess.call(cmd, shell=True)
-                print('imaginary frequency handling...')
-                resubmissions[index] += 1
-                return False, resubmissions
+            make_input_files_no_constraints(
+                output_num, method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt)
+            #os.system("qsub mex.pbs")
+            failure = subprocess.call(cmd, shell=True)
+            print('imaginary frequency handling...')
+            resubmissions[index] += 1
+            return False, resubmissions
+        else:
+            cmd = "qsub mexc.pbs"
+            find_geom(lines, error=False, filename=filename,
+                        imaginary=imaginary)
+            freq, hf_1, hf_2, zero_point = freq_hf_zero(
+                lines, filename=filename)
+            # print("\n")
+            # print(freq)
+
+            # print(hf_1)
+            # print(hf_2)
+            # print(zero_point)
+            sum_energy = clean_energies(hf_1, hf_2, zero_point)
+            print('Total energy {0}: '.format(index+1), sum_energy)
+            make_mexc(method_mexc, basis_set_mexc,
+                        mem_com_mexc, mem_pbs_mexc)
+            os.chdir("mexc")
+            #os.system("qsub mexc.pbs")
+            # os.path.abspath(os.getcwd())
+            failure = subprocess.call(cmd, shell=True)
+            resubmissions[index] += 1
+            os.chdir("..")
+            os.remove("tmp.txt")
+
+            os.chdir("../..")
+            if "results" not in glob.glob("results"):
+                os.mkdir("results")
+            os.chdir("results")
+            if "energies" not in glob.glob("energies"):
+                os.mkdir("energies")
+            os.chdir("energies")
+
+            # os.chdir("../../results/energies")
+            print(os.getcwd())
+            f = open("energy{0}.txt".format(index+1), 'w')
+            f.write(str(sum_energy))
+            f.close()
+            if "energy_all.csv" not in glob.glob("energy_all.csv"):
+                ft = open("energy_all.csv", "w")
+                ft.write("%d,%.14f\n" % (index+1, sum_energy))
+                ft.close()
             else:
-                cmd = "qsub mexc.pbs"
-                find_geom(lines, error=False, filename=filename,
-                          imaginary=imaginary)
-                freq, hf_1, hf_2, zero_point = freq_hf_zero(
-                    lines, filename=filename)
-                # print("\n")
-                # print(freq)
 
-                # print(hf_1)
-                # print(hf_2)
-                # print(zero_point)
-                sum_energy = clean_energies(hf_1, hf_2, zero_point)
-                print('Total energy {0}: '.format(index+1), sum_energy)
-                make_mexc(method_mexc, basis_set_mexc,
-                          mem_com_mexc, mem_pbs_mexc)
-                os.chdir("mexc")
-                os.system("qsub mexc.pbs")
-                # os.path.abspath(os.getcwd())
-                failure = subprocess.call(cmd, shell=True)
-                resubmissions[index] += 1
-                os.chdir("..")
-                os.remove("tmp.txt")
-
-                os.chdir("../..")
-                if "results" not in glob.glob("results"):
-                    os.mkdir("results")
-                os.chdir("results")
-                if "energies" not in glob.glob("energies"):
-                    os.mkdir("energies")
-                os.chdir("energies")
-
-                # os.chdir("../../results/energies")
-                print(os.getcwd())
-                f = open("energy{0}.txt".format(index+1), 'w')
-                f.write(str(sum_energy))
-                f.close()
-                if "energy_all.csv" not in glob.glob("energy_all.csv"):
-                    ft = open("energy_all.csv", "w")
-                    ft.write("%d,%.14f\n" % (index+1, sum_energy))
-                    ft.close()
-                else:
-
-                    ft = open("energy_all.csv", "a")
-                    ft.write("%d,%.14f\n" % (index+1, sum_energy))
-                    ft.close()
-                return False, resubmissions
+                ft = open("energy_all.csv", "a")
+                ft.write("%d,%.14f\n" % (index+1, sum_energy))
+                ft.close()
+            return False, resubmissions
+        """
         except:
             print('Calculation still running')
             return True, resubmissions
+        """
     else:
         print('No output files detected for geom%d' % (index+1))
         return True, resubmissions
