@@ -247,8 +247,6 @@ def find_geom(lines, error, filename, imaginary):
                 if geom_end in line:
                     orientation.append(num - 2)
         """
-        #print("geom_size:", geom_size)
-        #print(testing)
         with open(filename) as search:
             for num, line in enumerate(search, 1):
                 if geom_start in line:
@@ -266,44 +264,28 @@ def find_geom(lines, error, filename, imaginary):
         stand = len(standards)
     else:
         stand = 5
-    #stand = len(standards)
-    #for i in range(5, 1, -1):
-    #    for j in range(5, 1, -1):
     for i in range(-1, -orien, -1):
         for j in range(-1, -stand, -1):
-            #print(i, j)
             length = orientation[i] - standards[j]
-            #print(length)
             if length == geom_size:
                 orien = i
                 stand = j
                 break
     if stand == 5:
         stand = -1
-    #print("length:", length)
-    #print(standards[stand])
-    #print(orientation[-3:], standards[-3:])
     del lines[standards[stand] - 1 + length:]
     del lines[:standards[stand] - 1]
-    #print(lines[0:2])
-    #print(lines)
     """
     for i in range(1, 10, 1):
         k = "  " * i
         lines = [item.replace(k, " ") for item in lines]
         #print(lines)
     """
-    #for i in range(len(lines)):
-    #print(len(lines))
     cleaned_lines = []
     for i in range(len(lines)):
-        #print([lines[i]])
         clean = cleanLine(lines[i])
-        #print(clean)
         cleaned_lines.append(clean)
 
-    #print(lines[0:2])
-    #print(lines)
     """
     start_ls = []
     for i in lines:
