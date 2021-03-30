@@ -36,10 +36,15 @@ def del_broken_outfiles(path):
     if len_outfile(max_out) < 200:
         subprocess.call("echo " + max_out)
         match_outputs()
+    os.chdir("..")
 
 
-
-    
+def main():
+    os.chdir("../calc_zone")
+    directories = glob.glob("*")
+    for i in directories:
+        del_broken_outfiles(i)
+main()
         
             
         
