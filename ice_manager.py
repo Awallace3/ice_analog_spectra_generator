@@ -41,8 +41,10 @@ def jobResubmit(min_delay, number_delays,
                 print('{0} entered mexc checkpoint 1'.format(num+1))
                 complete[num] = 1
                 mexc_check_out = glob.glob("mexc/mexc.o*")
+                mexc_check_out_complete = glob.glob("mexc/mexc_o.o*")
 
-                if complete[num] != 2 and len(mexc_check_out) > 1:
+                #if complete[num] != 2 and len(mexc_check_out) > 1:
+                if complete[num] != 2 and len(mexc_check_out) > 0 and len(mexc_check_out_complete) > 0:
                     print('{0} entered mexc checkpoint 2'.format(num+1))
                     complete[num] = 2
             if complete[num] < 1:
@@ -210,8 +212,8 @@ def main():
     box_length = 9                   # in angstroms
     minium_distance_between_molecules = 2.0
 
-    resubmit_delay_min = 0.01
-    resubmit_max_attempts = 1
+    resubmit_delay_min = 60*3
+    resubmit_max_attempts = 100
     T = 9260  # Kelvin (K)
 
     # geometry optimization options

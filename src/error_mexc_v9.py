@@ -127,8 +127,14 @@ def add_imaginary(freq_clean, freq_lst_len, filename):
     # print(imag_values)
     # print('\n')
     # print(carts_no_atom, '\n')
+    print(imag_values)
+    print(carts_no_atom)
+    print(len(imag_values[0,:])//3)
     for i in range(len(imag_values[0, :]) // 3):
-        carts_no_atom = np.add(carts_no_atom, imag_values[:, i: i+4])
+        print(i)
+        print(imag_values[:,i:i+3])
+        carts_no_atom = np.add(carts_no_atom, imag_values[:, i: i+3])
+        print("carts_no_atom: ", carts_no_atom)
     # print(carts_no_atom)
     carts[:, 1:4] = carts_no_atom
 
