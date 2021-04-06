@@ -132,3 +132,17 @@ angles*.txt
 bonds*.txt
 many.txt
 dataframe_test.csv
+calc_zone/*
+src/__pycache__/*
+results/energies/*
+angles*
+energy*
+bonds*
+dataframe_test.csv
+many.txt
+results/*
+energy*.txt
+output.log*
+bonds*
+dataframe_test.csv
+many.txt
