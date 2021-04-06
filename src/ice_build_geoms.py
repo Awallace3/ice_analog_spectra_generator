@@ -564,9 +564,9 @@ def clean_many_txt():
     """ This will replace the numerical forms of the elements as their letters numbered in order """
 
     f = open('many.txt', 'r')
-    a = ['6.0 ', '8.0 ', '1.0 ']
+    a = ['6.0 ', '8.0 ', '1.0 ', '7.0 ']
     table = {
-        '6.0 ': 'C', '8.0 ': 'O', '1.0 ': 'H'
+        '6.0 ': 'C', '8.0 ': 'O', '1.0 ': 'H', '7.0 ': 'N'
     }
 
     lst = []
