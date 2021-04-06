@@ -41,8 +41,14 @@ def jobResubmit(min_delay, number_delays,
                 print('{0} entered mexc checkpoint 1'.format(num+1))
                 complete[num] = 1
                 mexc_check_out = glob.glob("mexc/mexc.o*")
+                mexc_check_out_complete = glob.glob("mexc/mexc_o.o*")
 
+<<<<<<< HEAD
                 if complete[num] != 2 and len(mexc_check_out) > 0:
+=======
+                #if complete[num] != 2 and len(mexc_check_out) > 1:
+                if complete[num] != 2 and len(mexc_check_out) > 0 and len(mexc_check_out_complete) > 0:
+>>>>>>> 97765c83e44d945148ee4629db381e081fe91a8f
                     print('{0} entered mexc checkpoint 2'.format(num+1))
                     complete[num] = 2
             if complete[num] < 1:
