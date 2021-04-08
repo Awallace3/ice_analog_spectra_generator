@@ -216,8 +216,8 @@ def main():
     resubmit_max_attempts = 3
 
     T = 1000  # Kelvin (K)
-    title = r"30 Randomized Clusters of 8 NH$_3$ Moleuces"
-    filename = "30_8_rand_nh3.png"
+    title = r"30 Randomized Clusters of 8 CO$_2$ Moleuces"
+    filename = "30_8_rand_co2.png"
 
     # geometry optimization options
     method_opt = "wB97XD"
