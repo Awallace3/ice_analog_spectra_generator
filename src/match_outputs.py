@@ -12,4 +12,5 @@ for i in directories:
     for i in range(len(out_completion)-len(out_files)):
         del_o = out_completion.pop()
         subprocess.call("echo " + del_o, shell=True)
+        subprocess.call("rm " + del_o, shell=True)
     os.chdir("..")
