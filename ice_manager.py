@@ -216,7 +216,11 @@ def main():
     resubmit_max_attempts = 1000
 
     T = 1000  # Kelvin (K)
+<<<<<<< HEAD
     title = r"30 Randomized Clusters of 8 CO$_2$ Molecules"
+=======
+    title = r"30 Randomized Clusters of 8 CO$_2$ Moleuces"
+>>>>>>> 8583d31a35df37c6f8fb759665079a392493f190
     filename = "30_8_rand_co2.png"
 
     # geometry optimization options
