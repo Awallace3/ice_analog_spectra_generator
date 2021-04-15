@@ -167,7 +167,7 @@ def boltzmannAnalysis(T):
     return
 
 
-def generateGraph(spec_name, T, title, filename):
+def generateGraph(spec_name, T, title, filename, x_range=[100,300], x_units='nm'):
     print(os.getcwd())
     fig, ax1 = plt.subplots()
 
@@ -186,16 +186,26 @@ def generateGraph(spec_name, T, title, filename):
     
     for i in range(len(y)):
         y[i] /= highest_y
-    
+    if x_units == 'eV' or x_units=='ev':
+        h = 6.626E-34
+        c = 3E17
+        ev_to_joules = 1.60218E-19
+        x = [ h*c/(i*ev_to_joules) for i in x ]
+        x.reverse()
+        y.reverse()
     # print(x)
     #print('\n', y)
     ax1.plot(x, y, "k-", label="T = {0} K".format(T))
-    ax1.set_xlim([x[0], x[-1]])
+    #ax1.set_xlim([x[0], x[-1]])
+    ax1.set_xlim(x_range)
     ax1.set_ylim(0, 1.2)
 
     plt.title(title)
-
-    plt.xlabel("Wavelength (nm)")
+    if x_units == 'ev' or x_units=='eV':
+        plt.xlabel("Electronvolts (eV)")
+    else:
+        plt.xlabel("Wavelength (nm)")
+    
     plt.ylabel("Oscillator Strength")
     plt.grid(b=None, which='major', axis='y', linewidth=1)
     plt.grid(b=None, which='major', axis='x', linewidth=1)
@@ -205,7 +215,7 @@ def generateGraph(spec_name, T, title, filename):
     if "graphs" not in glob.glob("graphs"):
         os.mkdir("graphs")
     os.chdir("graphs")
-    plt.savefig(filename + '.png')
+    plt.savefig(filename)
 
     return
 
@@ -225,8 +235,8 @@ def main():
 
     T = 1000  # Kelvin (K)
 
-    title = r"30 Randomized Clusters of 8 CO$_2$ Moleuces"
-    filename = "30_8_rand_co2.png"
+    title = r"30 Randomized Clusters of 8 NH$_3$ Moleuces"
+    filename = "30_8_rand_nh3.png"
 
     # geometry optimization options
     method_opt = "wB97XD"
@@ -258,7 +268,7 @@ def main():
     boltzmannAnalysisSetup(complete)
 
     boltzmannAnalysis(T)
-    generateGraph("spec", T, title, filename)
+    generateGraph("spec", T, title, filename, x_range=[5.5,8.5], x_units='ev')
 
     # ps ax | grep test.py
     # nohup python3 test.py > output.log &

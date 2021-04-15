@@ -11,7 +11,7 @@ my $PWD = cwd();
 my $INPUT = "data";
 my $SPECTRUM = "spec";
 my $NPOINTS = 4000;
-my $DELTAG = 1;
+my $DELTAG = 2;
 my @EX;
 my @PROP;
 my $NSTATES;
@@ -105,7 +105,7 @@ sub energy_range
   #my $min = $_[0]-$fwhm*$fwhm;
   #my $max = $_[1]+$fwhm*$fwhm;
   my $min = 100;
-  my $max = 400;
+  my $max = 300;
   my $spacing = ($max-$min)/$np; 
 
   print "MIN X $min\n";
