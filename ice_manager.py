@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 from src import ice_build_geoms
 from src import error_mexc_v9
+from src import gather_energies
 import time
 import glob
 import os
@@ -106,10 +107,12 @@ def boltzmannAnalysis(T):
 
     os.chdir('results/mexc_values')
     mexc_out_names = glob.glob("*.csv")
-
+    #print(mexc_out_names)
     mexc_dict = {}
     for i in mexc_out_names:
-        mexc_dict['{0}'.format(i[0:9])] = np.genfromtxt(i, delimiter=" ")
+        val = i[:-4]
+        #print(val)
+        mexc_dict['{0}'.format(val)] = np.genfromtxt(i, delimiter=" ")
     os.chdir('../energies')
     energy_all = np.genfromtxt('energy_all.csv', delimiter=",")
     energy_all = energy_all[np.argsort(energy_all[:, 0])]
@@ -117,7 +120,6 @@ def boltzmannAnalysis(T):
     lowest_energy_ind = (np.where(energy_all[:, 1] == lowest_energy))[0][0]
     lowest_energy = lowest_energy * 4.3597E-18  # convert hartrees to joules
     #print(lowest_energy, lowest_energy_ind+1)
-
     kb = 1.380649E-23
     combining_mexc = mexc_dict['mexc_out{0}'.format(lowest_energy_ind+1)]
     # print(combining_mexc)
@@ -125,13 +127,13 @@ def boltzmannAnalysis(T):
     for key, value in mexc_dict.items():
         if key == 'mexc_out{0}'.format(lowest_energy_ind+1):
             continue
+        print(key) # crashes if not all mexc_out*.csv accounted for
         # remember energy_all array index starts at zero
         current_energy_ind = int(key[8:]) - 1
         # find current energy and convert hartrees to joules
         current_energy = ((energy_all[current_energy_ind, :])[1]) * 4.3597E-18
 
         print(lowest_energy)
-
         print(current_energy)
 
         ni_nj = math.exp((lowest_energy - current_energy) / (T * kb))
@@ -174,11 +176,17 @@ def generateGraph(spec_name, T, title, filename):
     # print(data)
     x = []
     y = []
-
+    highest_y = 0
     for i in data:
         print(i)
         x.append(i[0])
         y.append(i[1])
+        if i[1] > highest_y:
+            highest_y = i[1]
+    
+    for i in range(len(y)):
+        y[i] /= highest_y
+    
     # print(x)
     #print('\n', y)
     ax1.plot(x, y, "k-", label="T = {0} K".format(T))
@@ -212,8 +220,8 @@ def main():
     box_length = 9                   # in angstroms
     minium_distance_between_molecules = 3.0
 
-    resubmit_delay_min = 60*2
-    resubmit_max_attempts = 1000
+    resubmit_delay_min = 0.01
+    resubmit_max_attempts = 1
 
     T = 1000  # Kelvin (K)
 
@@ -238,11 +246,15 @@ def main():
     complete = jobResubmit(resubmit_delay_min, resubmit_max_attempts,
                            method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt,
                            method_mexc, basis_set_mexc, mem_com_mexc, mem_pbs_mexc)  # delay_min, num_delays
+    """
     #for i in complete:
     #    if i != 2:
     #        print(
     #            "\nNot all calculations are complete with given time limits. Exiting program now...\n")
     #        return
+    """
+
+    gather_energies.main()
     boltzmannAnalysisSetup(complete)
 
     boltzmannAnalysis(T)
