@@ -3,7 +3,7 @@ import os
 import glob
 
 def conv_out_num(name):
-    if name[-1] == t:
+    if name[-1] == "t":
         val = 1
     elif name[-1].isnumeric():
         val = int(name[-1])
@@ -33,8 +33,8 @@ def del_broken_outfiles(path):
         if conv_out_num(i) > val:
             max_out = i
     
-    if len_outfile(max_out) < 200:
-        subprocess.call("echo " + max_out)
+    if len_outfile(max_out) < 300:
+        subprocess.call("echo " + max_out, shell=True)
         match_outputs()
     os.chdir("..")
 

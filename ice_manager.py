@@ -41,8 +41,10 @@ def jobResubmit(min_delay, number_delays,
                 print('{0} entered mexc checkpoint 1'.format(num+1))
                 complete[num] = 1
                 mexc_check_out = glob.glob("mexc/mexc.o*")
+                mexc_check_out_complete = glob.glob("mexc/mexc_o.o*")
 
-                if complete[num] != 2 and len(mexc_check_out) > 1:
+                #if complete[num] != 2 and len(mexc_check_out) > 1:
+                if complete[num] != 2 and len(mexc_check_out) > 0 and len(mexc_check_out_complete) > 0:
                     print('{0} entered mexc checkpoint 2'.format(num+1))
                     complete[num] = 2
             if complete[num] < 1:
@@ -163,7 +165,7 @@ def boltzmannAnalysis(T):
     return
 
 
-def generateGraph(spec_name, T, title):
+def generateGraph(spec_name, T, title, filename):
     print(os.getcwd())
     fig, ax1 = plt.subplots()
 
@@ -195,24 +197,27 @@ def generateGraph(spec_name, T, title):
     if "graphs" not in glob.glob("graphs"):
         os.mkdir("graphs")
     os.chdir("graphs")
-    plt.savefig(title + '.png')
+    plt.savefig(filename + '.png')
 
     return
 
 
 def main():
-    mol_xyz1 = "mon_h2o.xyz"
-    mol_xyz2 = "mon_h2o.xyz"
+    mol_xyz1 = "mon_nh3.xyz"
+    mol_xyz2 = "mon_nh3.xyz"
     #mol_xyz2 = "mon_methanol.xyz"
-    number_clusters = 70
+    number_clusters = 30
     # enter the number of molecules of each geometry in the respective index
-    molecules_in_cluster = [32, 0]
+    molecules_in_cluster = [8, 0]
     box_length = 9                   # in angstroms
-    minium_distance_between_molecules = 2.0
+    minium_distance_between_molecules = 3.0
 
     resubmit_delay_min = 0.01
-    resubmit_max_attempts = 1
-    T = 9260  # Kelvin (K)
+    resubmit_max_attempts = 3
+
+    T = 1000  # Kelvin (K)
+    title = r"30 Randomized Clusters of 8 NH$_3$ Moleuces"
+    filename = "30_8_rand_nh3.png"
 
     # geometry optimization options
     method_opt = "wB97XD"
@@ -226,21 +231,21 @@ def main():
     mem_com_mexc = "1600"  # mb
     mem_pbs_mexc = "15"  # gb"
 
-    # ice_build_geoms.main(molecules_in_cluster, number_clusters, box_length, minium_distance_between_molecules,
-    #                     mol_xyz1, mol_xyz2, method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt)
+    #ice_build_geoms.main(molecules_in_cluster, number_clusters, box_length, minium_distance_between_molecules,
+     #                   mol_xyz1, mol_xyz2, method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt)
 
     complete = jobResubmit(resubmit_delay_min, resubmit_max_attempts,
                            method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt,
                            method_mexc, basis_set_mexc, mem_com_mexc, mem_pbs_mexc)  # delay_min, num_delays
-    for i in complete:
-        if i != 2:
-            print(
-                "\nNot all calculations are complete with given time limits. Exiting program now...\n")
-            return
+    #for i in complete:
+    #    if i != 2:
+    #        print(
+    #            "\nNot all calculations are complete with given time limits. Exiting program now...\n")
+    #        return
     boltzmannAnalysisSetup(complete)
 
     boltzmannAnalysis(T)
-    generateGraph("spec", T, "Title")
+    generateGraph("spec", T, title, filename)
 
     # ps ax | grep test.py
     # nohup python3 test.py > output.log &
