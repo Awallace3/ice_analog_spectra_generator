@@ -558,7 +558,7 @@ def main(index,
             if method_mexc == 'PBE0':
                 os.chdir("mexc")
             if method_mexc == 'PBE0':
-                os.chdir("pb30")
+                os.chdir("pbe0")
             elif method_mexc == 'wB97XD':
                 os.chdir("wb97xd")
             elif method_mexc == 'B3LYP':

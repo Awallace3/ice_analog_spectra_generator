@@ -273,7 +273,7 @@ def main():
 
     # TD-DFT options
     #method_mexc = "B3lYP"
-    method_mexc = "wB97XD"
+    method_mexc = "PBE0"
     basis_set_mexc = "6-311G(d,p)"
     mem_com_mexc = "1600"  # mb
     mem_pbs_mexc = "15"  # gb"
