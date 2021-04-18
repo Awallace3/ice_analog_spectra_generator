@@ -556,8 +556,6 @@ def main(index,
             make_mexc(method_mexc, basis_set_mexc,
                         mem_com_mexc, mem_pbs_mexc)
             if method_mexc == 'PBE0':
-                os.chdir("mexc")
-            if method_mexc == 'PBE0':
                 os.chdir("pbe0")
             elif method_mexc == 'wB97XD':
                 os.chdir("wb97xd")
