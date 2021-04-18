@@ -1,6 +1,7 @@
 import matplotlib.pyplot as plt
 from src import ice_build_geoms
-from src import error_mexc_v9
+#from src import error_mexc_v9
+from src import error_mexc_v10
 from src import gather_energies
 import time
 import glob
@@ -36,20 +37,34 @@ def jobResubmit(min_delay, number_delays,
             os.chdir(j)
             print(j)
             delay = i
-            mexc_check = glob.glob("mexc")
+            if method_mexc == 'PBE0':
+                mexc_check = glob.glob("pbe0")
+                path_mexc = 'pbe0'
+            elif method_mexc == 'wB97XD':
+                mexc_check = glob.glob("wb97xd")
+                path_mexc = 'wb97xd'
+            elif method_mexc == 'B3LYP':
+                mexc_check = glob.glob("mexc")
+                path_mexc = 'mexc'
+            else:
+                print("This method is not supported for TD-DFT yet.")
+
             print(mexc_check)
             if len(mexc_check) > 0:
                 print('{0} entered mexc checkpoint 1'.format(num+1))
                 complete[num] = 1
-                mexc_check_out = glob.glob("mexc/mexc.o*")
-                mexc_check_out_complete = glob.glob("mexc/mexc_o.o*")
+
+                #mexc_check_out = glob.glob("mexc/mexc.o*")
+                #mexc_check_out_complete = glob.glob("mexc_o/mexc.o*")
+                mexc_check_out = glob.glob("%s/mexc.o*" % path_mexc)
+                mexc_check_out_complete = glob.glob("%s/mexc_o.o*" % path_mexc)
 
                 #if complete[num] != 2 and len(mexc_check_out) > 1:
                 if complete[num] != 2 and len(mexc_check_out) > 0 and len(mexc_check_out_complete) > 0:
                     print('{0} entered mexc checkpoint 2'.format(num+1))
                     complete[num] = 2
             if complete[num] < 1:
-                action, resubmissions = error_mexc_v9.main(
+                action, resubmissions = error_mexc_v10.main(
                     num, method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt,
                     method_mexc, basis_set_mexc, mem_com_mexc, mem_pbs_mexc,
                     resubmissions, delay
@@ -75,7 +90,7 @@ def jobResubmit(min_delay, number_delays,
     return complete
 
 
-def boltzmannAnalysisSetup(complete):
+def boltzmannAnalysisSetup(complete, method_mexc='B3LYP'):
 
     analysis_ready = []
     if "results" not in glob.glob("results"):
@@ -86,17 +101,27 @@ def boltzmannAnalysisSetup(complete):
         os.chdir("..")
     else:
         os.chdir("..")
-
+    if method_mexc == 'PBE0':
+        path_mexc = 'pbe0'
+    elif method_mexc == 'wB97XD':
+        path_mexc = 'wb97xd'
+    elif method_mexc == 'B3LYP':
+        path_mexc = 'mexc'
+    else:
+        print("This method is not supported for TD-DFT yet.")
     for i in range(len(complete)):
         if complete[i] == 2:
             analysis_ready.append(i)
         else:
-            print('geom%d/mexc %d is not finished with TD-DFT' % (i+1, i+1))
+            #print('geom%d/mexc %d is not finished with TD-DFT' % (i+1, i+1))
+            print('geom%d/%s %d is not finished with TD-DFT' % (i+1, path_mexc, i+1))
     os.chdir("calc_zone")
     for i in analysis_ready:
-
-        cmd = '''awk '/Excited State/ {print $7, $9}' geom%d/mexc/mexc.out | sed 's/f=//g' > ../results/mexc_values/mexc_out%d.csv''' % (
-            i+1, i+1)
+        
+        #cmd = '''awk '/Excited State/ {print $7, $9}' geom%d/mexc/mexc.out | sed 's/f=//g' > ../results/mexc_values/mexc_out%d.csv''' % (
+        #    i+1, i+1)
+        cmd = '''awk '/Excited State/ {print $7, $9}' geom%d/%s/mexc.out | sed 's/f=//g' > ../results/mexc_values/mexc_out%d.csv''' % (
+            i+1, method_mexc, i+1)
         failure = subprocess.call(cmd, shell=True)
     os.chdir("..")
     print('\nBoltzmann Analysis Setup Complete.\n')
@@ -109,8 +134,10 @@ def boltzmannAnalysis(T):
     mexc_out_names = glob.glob("*.csv")
     #print(mexc_out_names)
     mexc_dict = {}
+    print(mexc_out_names)
     for i in mexc_out_names:
         val = i[:-4]
+        #print("val")
         #print(val)
         mexc_dict['{0}'.format(val)] = np.genfromtxt(i, delimiter=" ")
     os.chdir('../energies')
@@ -168,7 +195,7 @@ def boltzmannAnalysis(T):
 
 
 def generateGraph(spec_name, T, title, filename, x_range=[100,300], x_units='nm'):
-    print(os.getcwd())
+    #print(os.getcwd())
     fig, ax1 = plt.subplots()
 
     data = np.genfromtxt("results/final/data/" + spec_name, delimiter=" ")
@@ -178,7 +205,7 @@ def generateGraph(spec_name, T, title, filename, x_range=[100,300], x_units='nm'
     y = []
     highest_y = 0
     for i in data:
-        print(i)
+        #print(i)
         x.append(i[0])
         y.append(i[1])
         if i[1] > highest_y:
@@ -235,8 +262,8 @@ def main():
 
     T = 1000  # Kelvin (K)
 
-    title = r"30 Randomized Clusters of 8 NH$_3$ Moleuces"
-    filename = "30_8_rand_nh3.png"
+    title = r"30 Randomized Clusters of 8 CO$_2$ Moleuces"
+    filename = "30_8_rand_co2.png"
 
     # geometry optimization options
     method_opt = "wB97XD"
@@ -245,7 +272,8 @@ def main():
     mem_pbs_opt = "15"  # gb
 
     # TD-DFT options
-    method_mexc = "B3lYP"
+    #method_mexc = "B3lYP"
+    method_mexc = "wB97XD"
     basis_set_mexc = "6-311G(d,p)"
     mem_com_mexc = "1600"  # mb
     mem_pbs_mexc = "15"  # gb"
@@ -264,11 +292,11 @@ def main():
     #        return
     """
 
+    boltzmannAnalysisSetup(complete, method_mexc)
     gather_energies.main()
-    boltzmannAnalysisSetup(complete)
 
     boltzmannAnalysis(T)
-    generateGraph("spec", T, title, filename, x_range=[5.5,8.5], x_units='ev')
+    generateGraph("spec", T, title, filename, x_range=[5,10], x_units='ev')
 
     # ps ax | grep test.py
     # nohup python3 test.py > output.log &
