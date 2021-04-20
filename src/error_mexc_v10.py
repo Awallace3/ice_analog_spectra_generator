@@ -384,6 +384,7 @@ def make_mexc(method_mexc, basis_set_mexc, mem_com_mexc, mem_pbs_mexc):
     charges = "0 1"
     if method_mexc == 'PBE0':
         new_dir = "pbe0"
+        method_mexc = 'PBE1PBE'
     elif method_mexc == 'wB97XD':
         new_dir = "wb97xd"
     elif method_mexc == 'B3LYP':
