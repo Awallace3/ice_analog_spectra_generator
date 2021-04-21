@@ -62,11 +62,22 @@ def clean_energies(hf_1, hf_2, zero_point):
         return float(hf_1[0]) + zero_point
 
 def main():
-    os.chdir("../calc_zone")
+    location = os.getcwd().split('/')[-1]
+    if location == 'src':
+        os.chdir("../calc_zone")
+    elif location == 'calc_zone':
+        pass
+    else:
+        os.chdir("calc_zone")
 
     directories = glob.glob("geom*")
+    print(os.getcwd())
+    cmd = 'rm ../results/energies/energy_all.csv'
+    subprocess.call(cmd, shell=True)
     for i in directories:
+        n = i[4:]
         print(i)
+        print(i[5:])
         os.chdir(i)
         out_files = glob.glob("*.out*")
         out_completion = glob.glob("mex_o.*")
@@ -83,7 +94,7 @@ def main():
                     elif i[-1] > filename[-1]:
                         filename = i
 
-            print("filename:", filename)
+            #print("filename:", filename)
             
             f = open(filename, 'r')
             lines = f.readlines()
@@ -91,9 +102,22 @@ def main():
 
             freq, hf_1, hf_2, zero_point = freq_hf_zero(
                 lines, filename=filename)
-            print(freq, hf_1, hf_2, zero_point)
+            #print(freq, hf_1, hf_2, zero_point)
             sum_energy = clean_energies(hf_1, hf_2, zero_point)
             print("Sum Energy:",sum_energy)
+            #os.chdir("../results/energies")
+            path = '../../results/energies/'
+            #print(os.getcwd())
+            f = open(path + 'energy%s.txt' % n, 'w')
+            f.write(str(sum_energy))
+            f.close()
+            line = '%s,%s\n' % (n,sum_energy)
+            f = open(path + 'energy_all.csv', 'a')
+            f.write(line)
+            f.close()
+
             os.chdir("..")
+        
+    os.chdir("..")
 
 main()
