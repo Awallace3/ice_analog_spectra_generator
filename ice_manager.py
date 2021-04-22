@@ -210,7 +210,7 @@ def boltzmannAnalysis(T, energy_levels='electronic'):
     return
 
 
-def generateGraph(spec_name, T, title, filename, x_range=[100,300], x_units='nm'):
+def generateGraph(spec_name, T, title, filename, x_range=[100,300], x_units='nm', peaks=False):
     #print(os.getcwd())
     fig, ax1 = plt.subplots()
 
@@ -239,9 +239,6 @@ def generateGraph(spec_name, T, title, filename, x_range=[100,300], x_units='nm'
     elif x_units == 'cm-1':
         x.reverse()
         y.reverse()
-        arr_y = np.array(y)
-        print("local maxima")
-        peaks, _ = scipy.signal.find_peaks(arr_y, height=0)
         #maxima = scipy.signal.argrelextrema(y, np.greater)
         
     # print(x)
@@ -253,16 +250,32 @@ def generateGraph(spec_name, T, title, filename, x_range=[100,300], x_units='nm'
 
     plt.title(title)
     if x_units == 'ev' or x_units=='eV':
+        print(x)
         plt.xlabel("Electronvolts (eV)")
         ax1.legend(shadow=True, fancybox=True)
+        if peaks:
+            arr_y = np.array(y)
+            print("local maxima")
+            peaks, _ = scipy.signal.find_peaks(arr_y, height=0)
+            for i in peaks:
+                print(round(x[i],2), arr_y[i])
+                height = arr_y[i]
+                frequency = round(x[i], 2)
+                if height > 0.02:
+                    plt.text(frequency - 0.08, arr_y[i]+0.05, '%.2f' % frequency )
+
     elif x_units == 'cm-1':
         plt.xlabel(r"Wavenumbers cm$^{-1}$")
-        for i in peaks:
-            print(round(x[i]), arr_y[i])
-            height = arr_y[i]
-            frequency = round(x[i])
-            if height > 0.02:
-                plt.text(round(x[i])+100, arr_y[i]+0.1, '%d' % round(x[i]) )
+        if peaks:
+            arr_y = np.array(y)
+            print("local maxima")
+            peaks, _ = scipy.signal.find_peaks(arr_y, height=0)
+            for i in peaks:
+                print(round(x[i]), arr_y[i])
+                height = arr_y[i]
+                frequency = round(x[i])
+                if height > 0.02:
+                    plt.text(frequency+100, arr_y[i]+0.1, '%d' % frequency )
     else:
         plt.xlabel("Wavelength (nm)")
         ax1.legend(shadow=True, fancybox=True)
@@ -330,7 +343,7 @@ def main():
     gather_energies.main()
 
     boltzmannAnalysis(T)
-    generateGraph("spec", T, title, filename, x_range=[5,11], x_units='ev')
+    generateGraph("spec", T, title, filename, x_range=[5,11], x_units='ev', peaks=True)
 
 
     T = 1000  # Kelvin (K)
@@ -339,7 +352,7 @@ def main():
 
     vibrational_frequencies.main()
     boltzmannAnalysis(T, energy_levels='vibrational')
-    generateGraph("spec", T, title, filename, x_range=[3600, 50], x_units='cm-1')
+    generateGraph("spec", T, title, filename, x_range=[3600, 50], x_units='cm-1', peaks=True)
 
     # ps aux | grep test.py
     # kill <pid> -9
