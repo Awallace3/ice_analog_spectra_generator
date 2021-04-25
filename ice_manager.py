@@ -42,12 +42,26 @@ def jobResubmit(min_delay, number_delays,
             if method_mexc == 'PBE0':
                 mexc_check = glob.glob("pbe0")
                 path_mexc = 'pbe0'
+            
             elif method_mexc == 'wB97XD':
                 mexc_check = glob.glob("wb97xd")
                 path_mexc = 'wb97xd'
+            
             elif method_mexc == 'B3LYP':
                 mexc_check = glob.glob("mexc")
                 path_mexc = 'mexc'
+            
+            elif method_mexc == 'B3LYPD3':
+                mexc_check = glob.glob("b3lypd3")
+                path_mexc = 'b3lypd3'
+            
+            elif method_mexc == 'CAM-B3LYP':
+                mexc_check = glob.glob("cam-b3lyp")
+                path_mexc = 'cam-b3lyp'
+            
+            elif method_mexc == 'B97D3':
+                mexc_check = glob.glob('b97d3')
+                path_mexc = 'b97d3'
             else:
                 print("This method is not supported for TD-DFT yet.")
 
@@ -83,7 +97,7 @@ def jobResubmit(min_delay, number_delays,
 
         if calculations_complete == True:
             print(complete)
-            print('\nCalculatinos are complete.')
+            print('\nCalculations are complete.')
             print('Took %.2f hours' % (i*min_delay / 60))
             return complete
         print('Completion List\n', complete, '\n')
@@ -105,10 +119,22 @@ def boltzmannAnalysisSetup(complete, method_mexc='B3LYP'):
         os.chdir("..")
     if method_mexc == 'PBE0':
         path_mexc = 'pbe0'
+    
     elif method_mexc == 'wB97XD':
         path_mexc = 'wb97xd'
+    
     elif method_mexc == 'B3LYP':
         path_mexc = 'mexc'
+    
+    elif method_mexc == 'B3LYPD3':
+        path_mexc = 'b3lypd3'
+    
+    elif method_mexc == 'CAM-B3LYP':
+        path_mexc = 'cam-b3lyp'
+    
+    elif method_mexc == 'B97D3':
+        path_mexc = 'b97d3'
+    
     else:
         print("This method is not supported for TD-DFT yet.")
     for i in range(len(complete)):
@@ -320,7 +346,10 @@ def main():
     # TD-DFT options
     #method_mexc = "B3lYP"
     #method_mexc = "PBE0"
-    method_mexc = "wB97XD"
+    #method_mexc = "wB97XD"
+    method_mexc = "CAM-B3LYP"
+    #method_mexc = "B3LYPD3"
+    #method_mexc = "B97D3"
     basis_set_mexc = "6-311G(d,p)"
     mem_com_mexc = "1600"  # mb
     mem_pbs_mexc = "15"  # gb"
@@ -350,9 +379,10 @@ def main():
     title = r"30 Randomized Clusters of 8 CO$_2$ Moleuces: Vibrational"
     filename = "30_8_rand_co2_vib_wb97xd.png"
 
-    vibrational_frequencies.main()
-    boltzmannAnalysis(T, energy_levels='vibrational')
-    generateGraph("spec", T, title, filename, x_range=[3600, 50], x_units='cm-1', peaks=True)
+    #vibrational frequency
+    #vibrational_frequencies.main()
+    #boltzmannAnalysis(T, energy_levels='vibrational')
+    #generateGraph("spec", T, title, filename, x_range=[3600, 50], x_units='cm-1', peaks=True)
 
     # ps aux | grep test.py
     # kill <pid> -9
