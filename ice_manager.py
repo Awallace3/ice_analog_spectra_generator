@@ -3,12 +3,14 @@ from src import ice_build_geoms
 #from src import error_mexc_v9
 from src import error_mexc_v10
 from src import gather_energies
+from src import vibrational_frequencies
 import time
 import glob
 import os
 import sys
 import subprocess
 import numpy as np
+import scipy.signal
 import math
 import matplotlib
 matplotlib.use('Agg')
@@ -40,12 +42,26 @@ def jobResubmit(min_delay, number_delays,
             if method_mexc == 'PBE0':
                 mexc_check = glob.glob("pbe0")
                 path_mexc = 'pbe0'
+            
             elif method_mexc == 'wB97XD':
                 mexc_check = glob.glob("wb97xd")
                 path_mexc = 'wb97xd'
+            
             elif method_mexc == 'B3LYP':
                 mexc_check = glob.glob("mexc")
                 path_mexc = 'mexc'
+            
+            elif method_mexc == 'B3LYPD3':
+                mexc_check = glob.glob("b3lypd3")
+                path_mexc = 'b3lypd3'
+            
+            elif method_mexc == 'CAM-B3LYP':
+                mexc_check = glob.glob("cam-b3lyp")
+                path_mexc = 'cam-b3lyp'
+            
+            elif method_mexc == 'B97D3':
+                mexc_check = glob.glob('b97d3')
+                path_mexc = 'b97d3'
             else:
                 print("This method is not supported for TD-DFT yet.")
 
@@ -81,7 +97,7 @@ def jobResubmit(min_delay, number_delays,
 
         if calculations_complete == True:
             print(complete)
-            print('\nCalculatinos are complete.')
+            print('\nCalculations are complete.')
             print('Took %.2f hours' % (i*min_delay / 60))
             return complete
         print('Completion List\n', complete, '\n')
@@ -103,10 +119,22 @@ def boltzmannAnalysisSetup(complete, method_mexc='B3LYP'):
         os.chdir("..")
     if method_mexc == 'PBE0':
         path_mexc = 'pbe0'
+    
     elif method_mexc == 'wB97XD':
         path_mexc = 'wb97xd'
+    
     elif method_mexc == 'B3LYP':
         path_mexc = 'mexc'
+    
+    elif method_mexc == 'B3LYPD3':
+        path_mexc = 'b3lypd3'
+    
+    elif method_mexc == 'CAM-B3LYP':
+        path_mexc = 'cam-b3lyp'
+    
+    elif method_mexc == 'B97D3':
+        path_mexc = 'b97d3'
+    
     else:
         print("This method is not supported for TD-DFT yet.")
     for i in range(len(complete)):
@@ -128,9 +156,16 @@ def boltzmannAnalysisSetup(complete, method_mexc='B3LYP'):
     return
 
 
-def boltzmannAnalysis(T):
-
-    os.chdir('results/mexc_values')
+def boltzmannAnalysis(T, energy_levels='electronic'):
+    if energy_levels == 'electronic':
+        os.chdir('results/mexc_values')
+        csv_name = 'mexc_out'
+        cmd = "perl ../../../src/specsim.pl"
+    elif energy_levels == 'vibrational':
+        os.chdir('results/vibrational_values')
+        csv_name = 'vib'
+        cmd = "perl ../../../src/specsim_xrange.pl 50 3600"
+    print(os.getcwd())
     mexc_out_names = glob.glob("*.csv")
     #print(mexc_out_names)
     mexc_dict = {}
@@ -138,7 +173,8 @@ def boltzmannAnalysis(T):
     for i in mexc_out_names:
         val = i[:-4]
         #print("val")
-        #print(val)
+        print(val)
+        #print(np.genfromtxt(i, delimiter=" "))
         mexc_dict['{0}'.format(val)] = np.genfromtxt(i, delimiter=" ")
     os.chdir('../energies')
     energy_all = np.genfromtxt('energy_all.csv', delimiter=",")
@@ -146,9 +182,11 @@ def boltzmannAnalysis(T):
     lowest_energy = np.amin(energy_all[:, 1])
     lowest_energy_ind = (np.where(energy_all[:, 1] == lowest_energy))[0][0]
     lowest_energy = lowest_energy * 4.3597E-18  # convert hartrees to joules
-    #print(lowest_energy, lowest_energy_ind+1)
     kb = 1.380649E-23
-    combining_mexc = mexc_dict['mexc_out{0}'.format(lowest_energy_ind+1)]
+    
+    #combining_mexc = mexc_dict['mexc_out{0}'.format(lowest_energy_ind+1)]
+    combining_mexc = mexc_dict['{0}'.format(csv_name + str(lowest_energy_ind+1))]
+
     # print(combining_mexc)
     #print("energy_all:\n", energy_all)
     for key, value in mexc_dict.items():
@@ -156,7 +194,11 @@ def boltzmannAnalysis(T):
             continue
         print(key) # crashes if not all mexc_out*.csv accounted for
         # remember energy_all array index starts at zero
-        current_energy_ind = int(key[8:]) - 1
+        if energy_levels == 'electronic':
+            current_energy_ind = int(key[8:]) - 1
+        elif energy_levels == 'vibrational':
+            current_energy_ind = int(key[3:]) - 1
+        #print(current_energy_ind)
         # find current energy and convert hartrees to joules
         current_energy = ((energy_all[current_energy_ind, :])[1]) * 4.3597E-18
 
@@ -186,7 +228,7 @@ def boltzmannAnalysis(T):
 
     np.savetxt("data", combining_mexc, fmt="%s")
     print("\ndata file made for specsim.pl\n")
-    cmd = "perl ../../../src/specsim.pl"
+    #cmd = "perl ../../../src/specsim.pl"
     subprocess.call(cmd, shell=True)
     # if multiple, mv "spec" to new name
 
@@ -194,7 +236,7 @@ def boltzmannAnalysis(T):
     return
 
 
-def generateGraph(spec_name, T, title, filename, x_range=[100,300], x_units='nm'):
+def generateGraph(spec_name, T, title, filename, x_range=[100,300], x_units='nm', peaks=False):
     #print(os.getcwd())
     fig, ax1 = plt.subplots()
 
@@ -220,6 +262,11 @@ def generateGraph(spec_name, T, title, filename, x_range=[100,300], x_units='nm'
         x = [ h*c/(i*ev_to_joules) for i in x ]
         x.reverse()
         y.reverse()
+    elif x_units == 'cm-1':
+        x.reverse()
+        y.reverse()
+        #maxima = scipy.signal.argrelextrema(y, np.greater)
+        
     # print(x)
     #print('\n', y)
     ax1.plot(x, y, "k-", label="T = {0} K".format(T))
@@ -229,20 +276,46 @@ def generateGraph(spec_name, T, title, filename, x_range=[100,300], x_units='nm'
 
     plt.title(title)
     if x_units == 'ev' or x_units=='eV':
+        print(x)
         plt.xlabel("Electronvolts (eV)")
+        ax1.legend(shadow=True, fancybox=True)
+        if peaks:
+            arr_y = np.array(y)
+            print("local maxima")
+            peaks, _ = scipy.signal.find_peaks(arr_y, height=0)
+            for i in peaks:
+                print(round(x[i],2), arr_y[i])
+                height = arr_y[i]
+                frequency = round(x[i], 2)
+                if height > 0.02:
+                    plt.text(frequency - 0.08, arr_y[i]+0.05, '%.2f' % frequency )
+
+    elif x_units == 'cm-1':
+        plt.xlabel(r"Wavenumbers cm$^{-1}$")
+        if peaks:
+            arr_y = np.array(y)
+            print("local maxima")
+            peaks, _ = scipy.signal.find_peaks(arr_y, height=0)
+            for i in peaks:
+                print(round(x[i]), arr_y[i])
+                height = arr_y[i]
+                frequency = round(x[i])
+                if height > 0.02:
+                    plt.text(frequency+100, arr_y[i]+0.1, '%d' % frequency )
     else:
         plt.xlabel("Wavelength (nm)")
-    
+        ax1.legend(shadow=True, fancybox=True)
+
     plt.ylabel("Oscillator Strength")
     plt.grid(b=None, which='major', axis='y', linewidth=1)
     plt.grid(b=None, which='major', axis='x', linewidth=1)
-    ax1.legend(shadow=True, fancybox=True)
     # os.chdir("results/final/graphs")
     os.chdir("results/final")
     if "graphs" not in glob.glob("graphs"):
         os.mkdir("graphs")
     os.chdir("graphs")
     plt.savefig(filename)
+    os.chdir("../../..")
 
     return
 
@@ -261,7 +334,6 @@ def main():
     resubmit_max_attempts = 1
 
     T = 1000  # Kelvin (K)
-
     title = r"30 Randomized Clusters of 8 CO$_2$ Moleuces"
     filename = "30_8_rand_co2.png"
 
@@ -273,7 +345,11 @@ def main():
 
     # TD-DFT options
     #method_mexc = "B3lYP"
-    method_mexc = "PBE0"
+    #method_mexc = "PBE0"
+    #method_mexc = "wB97XD"
+    method_mexc = "CAM-B3LYP"
+    #method_mexc = "B3LYPD3"
+    #method_mexc = "B97D3"
     basis_set_mexc = "6-311G(d,p)"
     mem_com_mexc = "1600"  # mb
     mem_pbs_mexc = "15"  # gb"
@@ -296,19 +372,20 @@ def main():
     gather_energies.main()
 
     boltzmannAnalysis(T)
-    generateGraph("spec", T, title, filename, x_range=[5,10], x_units='ev')
+    generateGraph("spec", T, title, filename, x_range=[5,11], x_units='ev', peaks=True)
 
-    # ps ax | grep test.py
-    # nohup python3 test.py > output.log &
-    # command & disown -h
-    # brent way
+
+    T = 1000  # Kelvin (K)
+    title = r"30 Randomized Clusters of 8 CO$_2$ Moleuces: Vibrational"
+    filename = "30_8_rand_co2_vib_wb97xd.png"
+
+    #vibrational frequency
+    #vibrational_frequencies.main()
+    #boltzmannAnalysis(T, energy_levels='vibrational')
+    #generateGraph("spec", T, title, filename, x_range=[3600, 50], x_units='cm-1', peaks=True)
+
     # ps aux | grep test.py
     # kill <pid> -9
 
-    # ps axo user,comm,pid,time
-
-
-    # ts or tsp // look into for off supercomputer
-    # command below for background and updating .log file as it goes
     # python3 -u ./ice_manager.py > output.log & disown -h
 main()

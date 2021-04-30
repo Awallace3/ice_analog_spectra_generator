@@ -389,6 +389,15 @@ def make_mexc(method_mexc, basis_set_mexc, mem_com_mexc, mem_pbs_mexc):
         new_dir = "wb97xd"
     elif method_mexc == 'B3LYP':
         new_dir = "mexc"
+    elif method_mexc == 'B3LYPD3':
+        new_dir = 'b3lypd3'
+        method_mexc = 'B3lYP empiricaldispersion=gd3 '
+    elif method_mexc == 'CAM-B3LYP':
+        new_dir = 'cam-b3lyp'
+        method_mexc = 'CAM-B3LYP'
+    elif method_mexc == 'B97D3':
+        new_dir = 'b97d3'
+        method_mexc = 'B97D3'
     else:
         print("This method is not supported for TD-DFT yet.")
     os.mkdir(new_dir)
@@ -562,6 +571,12 @@ def main(index,
                 os.chdir("wb97xd")
             elif method_mexc == 'B3LYP':
                 os.chdir("mexc")
+            elif method_mexc == 'B3LYPD3':
+                os.chdir('b3lypd3')
+            elif method_mexc == 'CAM-B3LYP':
+                os.chdir('cam-b3lyp')
+            elif method_mexc == 'B97D3':
+                os.chdir('b97d3')
             else:
                 print("This method is not supported for TD-DFT yet.")
             #os.system("qsub mexc.pbs")
