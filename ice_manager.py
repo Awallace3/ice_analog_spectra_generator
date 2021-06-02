@@ -463,7 +463,10 @@ def main():
     T = 1000  # Kelvin (K)
     
     title = r"30 Randomized Clusters of 8 CO$_2$ Molecules"
-    filename = "30_8_rand_co2_%s.png" % method_mexc
+
+    moleculeName = 'nh3'
+    moleculeNameLatex = r'NH$_3$'
+    filename = "30_8_rand_%s_%s.png" % ( moleculeName, method_mexc)
     #ice_build_geoms.main(molecules_in_cluster, number_clusters, box_length, minium_distance_between_molecules,
      #                   mol_xyz1, mol_xyz2, method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt)
 
@@ -482,19 +485,19 @@ def main():
 
     methods_lst = ["B3LYP", "PBE0", "wB97XD", "CAM-B3LYP", "B3LYPD3", "B97D3"]
     T = 1000  # Kelvin (K)
-    title = r"30 Randomized Clusters of 8 CO$_2$ Molecules"
-    filename="30_8_rand_co2_electronic.pdf"
+    title = r"30 Randomized Clusters of 8 %s Molecules" % moleculeNameLatex
+    filename="30_8_rand_%s_electronic.pdf" % moleculeName
 
     electronicMultiPlot(methods_lst, 
             T, title, filename, 
-            x_range=[8,11], x_units='eV', 
+            x_range=[5,10], x_units='eV', 
             peaks=False, spec_name='spec', 
             complete=complete
             )
 
     T = 1000  # Kelvin (K)
     title = r"30 Randomized Clusters of 8 CO$_2$ Molecules: Vibrational"
-    filename = "30_8_rand_co2_vib_wB97XD.png"
+    filename = "30_8_rand_%s_vib_wB97XD.png" % moleculeName
 
 
     #vibrational frequency
