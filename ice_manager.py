@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 from src import ice_build_geoms
 #from src import error_mexc_v9
-from src import error_mexc_v10
+from src import error_mexc_v11
 from src import gather_energies
 from src import vibrational_frequencies
 import time
@@ -39,6 +39,21 @@ def jobResubmit(min_delay, number_delays,
             os.chdir(j)
             print(j)
             delay = i
+            if basis_set_mexc == '6-311G(d,p)':
+                basis_dir_name = ''
+            else:
+                basis_dir_name = '_' + basis_set_mexc
+
+            if method_mexc == 'B3LYP':
+                mexc_check = glob.glob("mexc" + basis_dir_name)
+                path_mexc = 'mexc' + basis_dir_name
+                print(method_mexc.lower() + basis_dir_name)
+            else:
+                mexc_check = glob.glob(method_mexc.lower() + basis_dir_name)
+                path_mexc = method_mexc.lower() + basis_dir_name
+                print(method_mexc.lower() + basis_dir_name)
+                
+            """
             if method_mexc == 'PBE0':
                 mexc_check = glob.glob("pbe0")
                 path_mexc = 'pbe0'
@@ -64,6 +79,7 @@ def jobResubmit(min_delay, number_delays,
                 path_mexc = 'b97d3'
             else:
                 print("This method is not supported for TD-DFT yet.")
+            """
 
             print(mexc_check)
             if len(mexc_check) > 0:
@@ -80,7 +96,7 @@ def jobResubmit(min_delay, number_delays,
                     print('{0} entered mexc checkpoint 2'.format(num+1))
                     complete[num] = 2
             if complete[num] < 1:
-                action, resubmissions = error_mexc_v10.main(
+                action, resubmissions = error_mexc_v11.main(
                     num, method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt,
                     method_mexc, basis_set_mexc, mem_com_mexc, mem_pbs_mexc,
                     resubmissions, delay
@@ -448,15 +464,20 @@ def main():
     mem_com_opt = "1600"  # mb
     mem_pbs_opt = "15"  # gb
 
-    methods_lst = ["B3LYP", "PBE0", "wB97XD", "CAM-B3LYP", "B3LYPD3", "B97D3"]
-    # TD-DFT options
+    
+    # TD-DFT methods
     #method_mexc = "B3LYP"
     #method_mexc = "PBE0"
     #method_mexc = "wB97XD"
     #method_mexc = "CAM-B3LYP"
     #method_mexc = "B3LYPD3"
     method_mexc = "B97D3"
-    basis_set_mexc = "6-311G(d,p)"
+
+    # TD-DFT basis sets
+    #basis_set_mexc = "6-311G(d,p)"
+    basis_set_mexc = "6-311++G(2d,2p)"
+
+    # TD-DFT memory
     mem_com_mexc = "1600"  # mb
     mem_pbs_mexc = "15"  # gb"
 
@@ -467,14 +488,18 @@ def main():
     moleculeName = 'nh3'
     moleculeNameLatex = r'NH$_3$'
     filename = "30_8_rand_%s_%s.png" % ( moleculeName, method_mexc)
-    #ice_build_geoms.main(molecules_in_cluster, number_clusters, box_length, minium_distance_between_molecules,
-     #                   mol_xyz1, mol_xyz2, method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt)
 
+    # for generating the structures
+    """
+    ice_build_geoms.main(molecules_in_cluster, number_clusters, box_length, minium_distance_between_molecules,
+                        mol_xyz1, mol_xyz2, method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt)
+    """
     
     complete = jobResubmit(resubmit_delay_min, resubmit_max_attempts,
                            method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt,
                            method_mexc, basis_set_mexc, mem_com_mexc, mem_pbs_mexc)  # delay_min, num_delays
 
+    # for standard usage
     """
     boltzmannAnalysisSetup(complete, method_mexc)
     gather_energies.main()
@@ -483,6 +508,8 @@ def main():
     generateGraph("spec", T, title, filename, x_range=[5,11], x_units='ev', peaks=True)
     """
 
+    # to combine total electronic calculations
+    """
     methods_lst = ["B3LYP", "PBE0", "wB97XD", "CAM-B3LYP", "B3LYPD3", "B97D3"]
     T = 1000  # Kelvin (K)
     title = r"30 Randomized Clusters of 8 %s Molecules" % moleculeNameLatex
@@ -498,15 +525,18 @@ def main():
     T = 1000  # Kelvin (K)
     title = r"30 Randomized Clusters of 8 CO$_2$ Molecules: Vibrational"
     filename = "30_8_rand_%s_vib_wB97XD.png" % moleculeName
+    """
 
-
-    #vibrational frequency
+    # for vibrational frequency standard usage
+    """
     #vibrational_frequencies.main()
     #boltzmannAnalysis(T, energy_levels='vibrational')
     #generateGraph("spec", T, title, filename, x_range=[3600, 50], x_units='cm-1', peaks=True)
+    """
 
-    # ps aux | grep test.py
-    # kill <pid> -9
+    # useful bash commands below
+        # ps aux | grep test.py
+        # kill <pid> -9
+        # python3 -u ./ice_manager.py > output.log & disown -h
 
-    # python3 -u ./ice_manager.py > output.log & disown -h
 main()
