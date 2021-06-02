@@ -134,9 +134,10 @@ def boltzmannAnalysisSetup(complete, method_mexc='B3LYP'):
     
     elif method_mexc == 'B97D3':
         path_mexc = 'b97d3'
-    
     else:
         print("This method is not supported for TD-DFT yet.")
+    print("\nPATH::: ", path_mexc, method_mexc)
+
     for i in range(len(complete)):
         if complete[i] == 2:
             analysis_ready.append(i)
@@ -148,8 +149,10 @@ def boltzmannAnalysisSetup(complete, method_mexc='B3LYP'):
         
         #cmd = '''awk '/Excited State/ {print $7, $9}' geom%d/mexc/mexc.out | sed 's/f=//g' > ../results/mexc_values/mexc_out%d.csv''' % (
         #    i+1, i+1)
+        #cmd = '''awk '/Excited State/ {print $7, $9}' geom%d/%s/mexc.out | sed 's/f=//g' > ../results/mexc_values/mexc_out%d.csv''' % (
+        #    i+1, method_mexc, i+1)
         cmd = '''awk '/Excited State/ {print $7, $9}' geom%d/%s/mexc.out | sed 's/f=//g' > ../results/mexc_values/mexc_out%d.csv''' % (
-            i+1, method_mexc, i+1)
+            i+1, path_mexc, i+1)
         failure = subprocess.call(cmd, shell=True)
     os.chdir("..")
     print('\nBoltzmann Analysis Setup Complete.\n')
@@ -319,6 +322,111 @@ def generateGraph(spec_name, T, title, filename, x_range=[100,300], x_units='nm'
 
     return
 
+def collectSpecSimData(x_units='eV', spec_name='spec'):
+    data = np.genfromtxt("results/final/data/" + spec_name, delimiter=" ")
+    data = data.tolist()
+    # print(data)
+    x = []
+    y = []
+    highest_y = 0
+    for i in data:
+        #print(i)
+        x.append(i[0])
+        y.append(i[1])
+        if i[1] > highest_y:
+            highest_y = i[1]
+
+    for i in range(len(y)):
+        y[i] /= highest_y
+    if x_units == 'eV' or x_units=='ev':
+        h = 6.626E-34
+        c = 3E17
+        ev_to_joules = 1.60218E-19
+        x = [ h*c/(i*ev_to_joules) for i in x ]
+        x.reverse()
+        y.reverse()
+    elif x_units == 'cm-1':
+        x.reverse()
+        y.reverse()
+        #maxima = scipy.signal.argrelextrema(y, np.greater) 
+    return x, y
+
+def electronicMultiPlot(methods_lst, 
+            T, title, filename, 
+            x_range=[2,16], x_units='eV', 
+            peaks=False, spec_name='spec',
+            complete=[]
+            ):
+
+
+    location = os.getcwd().split('/')[-1]
+    if location == 'src' or location == 'calc_zone':
+        os.chdir("..")
+
+    # only pass blank complete if all TD-DFT calculations are complete since it is assumed
+    if complete == []:
+        num_geom = glob.glob("calc_zone/geom*")
+        for i in range(len(num_geom)):
+            complete.append(2)
+    
+    fig, ax1 = plt.subplots()
+
+    for i in methods_lst:
+        gather_energies.main()
+        boltzmannAnalysisSetup(complete, i)
+        boltzmannAnalysis(T, energy_levels='electronic')    
+        x, y = collectSpecSimData()        
+        ax1.plot(x, y, "-", label="%s" % i)
+
+    #ax1.set_xlim([x[0], x[-1]])
+    ax1.set_xlim(x_range)
+    ax1.set_ylim(0, 1.2)
+
+    plt.title(title)
+    if x_units == 'ev' or x_units=='eV':
+        #print(x)
+        plt.xlabel("Electronvolts (eV)")
+        ax1.legend(shadow=True, fancybox=True)
+        if peaks:
+            arr_y = np.array(y)
+            #print("local maxima")
+            peaks, _ = scipy.signal.find_peaks(arr_y, height=0)
+            for i in peaks:
+                #print(round(x[i],2), arr_y[i])
+                height = arr_y[i]
+                frequency = round(x[i], 2)
+                if height > 0.02:
+                    plt.text(frequency - 0.08, arr_y[i]+0.05, '%.2f' % frequency )
+
+    elif x_units == 'cm-1':
+        plt.xlabel(r"Wavenumbers cm$^{-1}$")
+        if peaks:
+            arr_y = np.array(y)
+            #print("local maxima")
+            peaks, _ = scipy.signal.find_peaks(arr_y, height=0)
+            for i in peaks:
+                ##print(round(x[i]), arr_y[i])
+                height = arr_y[i]
+                frequency = round(x[i])
+                if height > 0.02:
+                    plt.text(frequency+100, arr_y[i]+0.1, '%d' % frequency )
+    else:
+        plt.xlabel("Wavelength (nm)")
+        ax1.legend(shadow=True, fancybox=True)
+
+    plt.ylabel("Oscillator Strength")
+    plt.grid(b=None, which='major', axis='y', linewidth=1)
+    plt.grid(b=None, which='major', axis='x', linewidth=1)
+    # os.chdir("results/final/graphs")
+    os.chdir("results/final")
+    if "graphs" not in glob.glob("graphs"):
+        os.mkdir("graphs")
+    os.chdir("graphs")
+    plt.savefig(filename)
+    os.chdir("../../..")
+
+
+
 
 def main():
     mol_xyz1 = "mon_nh3.xyz"
@@ -340,6 +448,7 @@ def main():
     mem_com_opt = "1600"  # mb
     mem_pbs_opt = "15"  # gb
 
+    methods_lst = ["B3LYP", "PBE0", "wB97XD", "CAM-B3LYP", "B3LYPD3", "B97D3"]
     # TD-DFT options
     #method_mexc = "B3LYP"
     #method_mexc = "PBE0"
@@ -352,32 +461,44 @@ def main():
     mem_pbs_mexc = "15"  # gb"
 
     T = 1000  # Kelvin (K)
+    
     title = r"30 Randomized Clusters of 8 CO$_2$ Molecules"
-    filename = "30_8_rand_co2_%s.png" % method_mexc
+
+    moleculeName = 'nh3'
+    moleculeNameLatex = r'NH$_3$'
+    filename = "30_8_rand_%s_%s.png" % ( moleculeName, method_mexc)
     #ice_build_geoms.main(molecules_in_cluster, number_clusters, box_length, minium_distance_between_molecules,
      #                   mol_xyz1, mol_xyz2, method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt)
 
+    
     complete = jobResubmit(resubmit_delay_min, resubmit_max_attempts,
                            method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt,
                            method_mexc, basis_set_mexc, mem_com_mexc, mem_pbs_mexc)  # delay_min, num_delays
-    """
-    #for i in complete:
-    #    if i != 2:
-    #        print(
-    #            "\nNot all calculations are complete with given time limits. Exiting program now...\n")
-    #        return
-    """
 
+    """
     boltzmannAnalysisSetup(complete, method_mexc)
     gather_energies.main()
 
     boltzmannAnalysis(T)
     generateGraph("spec", T, title, filename, x_range=[5,11], x_units='ev', peaks=True)
+    """
 
+    methods_lst = ["B3LYP", "PBE0", "wB97XD", "CAM-B3LYP", "B3LYPD3", "B97D3"]
+    T = 1000  # Kelvin (K)
+    title = r"30 Randomized Clusters of 8 %s Molecules" % moleculeNameLatex
+    filename="30_8_rand_%s_electronic.pdf" % moleculeName
+
+    electronicMultiPlot(methods_lst, 
+            T, title, filename, 
+            x_range=[5,10], x_units='eV', 
+            peaks=False, spec_name='spec', 
+            complete=complete
+            )
 
     T = 1000  # Kelvin (K)
     title = r"30 Randomized Clusters of 8 CO$_2$ Molecules: Vibrational"
-    filename = "30_8_rand_co2_vib_wB97XD.png"
+    filename = "30_8_rand_%s_vib_wB97XD.png" % moleculeName
+
 
     #vibrational frequency
     #vibrational_frequencies.main()
