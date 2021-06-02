@@ -487,7 +487,13 @@ def main():
 
     moleculeName = 'nh3'
     moleculeNameLatex = r'NH$_3$'
-    filename = "30_8_rand_%s_%s.png" % ( moleculeName, method_mexc)
+
+    if basis_set_mexc == '6-311G(d,p)':
+        basis_dir_name = ''
+    else:
+        basis_dir_name = '_' + basis_set_mexc
+
+    filename = "30_8_rand_%s_%s%s.png" % ( moleculeName, method_mexc, basis_set_mexc)
 
     # for generating the structures
     """
