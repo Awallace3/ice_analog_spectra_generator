@@ -333,9 +333,6 @@ def main():
     resubmit_delay_min = 0.01
     resubmit_max_attempts = 1
 
-    T = 1000  # Kelvin (K)
-    title = r"30 Randomized Clusters of 8 CO$_2$ Moleuces"
-    filename = "30_8_rand_co2.png"
 
     # geometry optimization options
     method_opt = "wB97XD"
@@ -344,16 +341,19 @@ def main():
     mem_pbs_opt = "15"  # gb
 
     # TD-DFT options
-    #method_mexc = "B3lYP"
+    #method_mexc = "B3LYP"
     #method_mexc = "PBE0"
     #method_mexc = "wB97XD"
-    method_mexc = "CAM-B3LYP"
+    #method_mexc = "CAM-B3LYP"
     #method_mexc = "B3LYPD3"
-    #method_mexc = "B97D3"
+    method_mexc = "B97D3"
     basis_set_mexc = "6-311G(d,p)"
     mem_com_mexc = "1600"  # mb
     mem_pbs_mexc = "15"  # gb"
 
+    T = 1000  # Kelvin (K)
+    title = r"30 Randomized Clusters of 8 CO$_2$ Molecules"
+    filename = "30_8_rand_co2_%s.png" % method_mexc
     #ice_build_geoms.main(molecules_in_cluster, number_clusters, box_length, minium_distance_between_molecules,
      #                   mol_xyz1, mol_xyz2, method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt)
 
@@ -376,8 +376,8 @@ def main():
 
 
     T = 1000  # Kelvin (K)
-    title = r"30 Randomized Clusters of 8 CO$_2$ Moleuces: Vibrational"
-    filename = "30_8_rand_co2_vib_wb97xd.png"
+    title = r"30 Randomized Clusters of 8 CO$_2$ Molecules: Vibrational"
+    filename = "30_8_rand_co2_vib_wB97XD.png"
 
     #vibrational frequency
     #vibrational_frequencies.main()
