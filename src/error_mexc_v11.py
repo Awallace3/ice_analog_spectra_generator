@@ -325,7 +325,9 @@ def find_geom(lines, error, filename, imaginary):
         clean_many_txt()
 
 
-def make_input_files_no_constraints(output_num, method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt):
+def make_input_files_no_constraints(output_num, method_opt, 
+            basis_set_opt, mem_com_opt, 
+            mem_pbs_opt):
     """ Combines the geometry output and the constrained output. Then makes the .com and .pbs files in a subdirectory """
 
     data = ""
@@ -372,7 +374,9 @@ def make_input_files_no_constraints(output_num, method_opt, basis_set_opt, mem_c
                  str(output_num) + "\n\nrm -r $scrdir\n")
 
 
-def make_mexc(method_mexc, basis_set_mexc, mem_com_mexc, mem_pbs_mexc):
+def make_mexc(method_mexc, basis_set_mexc, 
+            mem_com_mexc, mem_pbs_mexc, 
+            nStates='25'):
     """ Combines the geometry output and the constrained output. Then makes the .com and .pbs files in a subdirectory """
 
     data = ""
@@ -384,6 +388,12 @@ def make_mexc(method_mexc, basis_set_mexc, mem_com_mexc, mem_pbs_mexc):
         basis_dir_name = ''
     else:
         basis_dir_name = '_' + basis_set_mexc
+    
+    if nStates == '25':
+        pass
+    else:
+        basis_dir_name += '_n%s' % nStates
+
     # Reading data from file2
     charges = "0 1"
     if method_mexc == 'PBE0':
@@ -413,7 +423,7 @@ def make_mexc(method_mexc, basis_set_mexc, mem_com_mexc, mem_pbs_mexc):
     with open(new_dir + '/mexc.com', 'w') as fp:
         fp.write("%mem={0}mb\n".format(mem_com_mexc))
         fp.write("%nprocs=4\n")
-        fp.write("#N TD(NStates=25) {0}".format(
+        fp.write("#N TD(NStates={0}) {0}".format(nStates,
             method_mexc) + "/{0}\n".format(basis_set_mexc))
         fp.write("\n")
         fp.write("Name ModRedundant - Minimalist working constrained optimisation\n")
@@ -477,7 +487,7 @@ orientation = []
 def main(index,
          method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt,
          method_mexc, basis_set_mexc, mem_com_mexc, mem_pbs_mexc,
-         resubmissions, delay
+         resubmissions, delay, nStates
          ):
     print(os.getcwd())
     out_files = glob.glob("*.out*")
@@ -572,7 +582,9 @@ def main(index,
             sum_energy = clean_energies(hf_1, hf_2, zero_point)
             print('Total energy {0}: '.format(index+1), sum_energy)
             make_mexc(method_mexc, basis_set_mexc,
-                        mem_com_mexc, mem_pbs_mexc)
+                        mem_com_mexc, mem_pbs_mexc,
+                        nStates
+                        )
 
             if basis_set_mexc == '6-311G(d,p)':
                 basis_dir_name = ''
