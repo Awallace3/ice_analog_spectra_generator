@@ -529,12 +529,10 @@ def main():
     mem_com_mexc = "1600"  # mb
     mem_pbs_mexc = "15"  # gb"
 
-    T = 1000  # Kelvin (K)
-    
-    title = r"30 Randomized Clusters of 8 CO$_2$ Molecules"
+    T = 1000  # Kelvin (K)    
 
-    moleculeName = 'nh3'
-    moleculeNameLatex = r'NH$_3$'
+    moleculeName = 'h2o'
+    moleculeNameLatex = r'H$_2$O'
 
     if basis_set_mexc == '6-311G(d,p)':
         basis_dir_name = ''
@@ -579,7 +577,7 @@ def main():
 
     electronicMultiPlot(methods_lst, 
             T, title, filename, 
-            x_range=[5,10], x_units='eV', 
+            x_range=[5,12], x_units='eV', 
             peaks=False, spec_name='spec', 
             complete=complete, basis_set_mexc=basis_set_mexc
             )

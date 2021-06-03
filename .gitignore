@@ -146,6 +146,8 @@ output.log*
 bonds*
 dataframe_test.csv
 many.txt
-og_calc_zone
+results/final/data/data
+results/final/data/spec
 calc_zone_og
+og_calc_zone
 results/final/data/*
