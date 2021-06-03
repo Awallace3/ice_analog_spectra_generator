@@ -460,12 +460,11 @@ def main():
     mem_com_mexc = "1600"  # mb
     mem_pbs_mexc = "15"  # gb"
 
-    T = 1000  # Kelvin (K)
-    
-    title = r"30 Randomized Clusters of 8 CO$_2$ Molecules"
+    T = 1000  # Kelvin (K)    
 
-    moleculeName = 'nh3'
-    moleculeNameLatex = r'NH$_3$'
+    moleculeName = 'h2o'
+    moleculeNameLatex = r'H$_2$O'
+    title = r"30 Randomized Clusters of 8 %s Molecules" % moleculeNameLatex
     filename = "30_8_rand_%s_%s.png" % ( moleculeName, method_mexc)
     #ice_build_geoms.main(molecules_in_cluster, number_clusters, box_length, minium_distance_between_molecules,
      #                   mol_xyz1, mol_xyz2, method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt)
@@ -490,7 +489,7 @@ def main():
 
     electronicMultiPlot(methods_lst, 
             T, title, filename, 
-            x_range=[5,10], x_units='eV', 
+            x_range=[5,12], x_units='eV', 
             peaks=False, spec_name='spec', 
             complete=complete
             )
