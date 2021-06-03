@@ -10,7 +10,7 @@ import pandas as pd
 import glob
 import subprocess
 
-def rm_mexc(method_mexc, basis_set_mexc):
+def rm_mexc(method_mexc, basis_set_mexc, nStates):
     """
     if method_mexc == 'PBE0':
         path_mexc = 'pbe0'
@@ -26,6 +26,11 @@ def rm_mexc(method_mexc, basis_set_mexc):
         basis_dir_name = ''
     else:
         basis_dir_name = '_' + basis_set_mexc
+    
+    if nStates == '25':
+        pass
+    else:
+        basis_dir_name += '_n%s' % nStates
 
     if method_mexc == 'B3LYP':
         path_mexc = 'mexc' + basis_dir_name
@@ -56,9 +61,20 @@ def rm_mexc(method_mexc, basis_set_mexc):
 # DELETES PERMANENTLY:::USE FOR SPECIAL CASES
 
 def main():
+    #method_mexc = "b3lyp"
+    #method_mexc = "pbe0"
+    #method_mexc = "wb97xd"
+    #method_mexc = "cam-b3lyp"
+    #method_mexc = "b3lypd3"
     method_mexc = 'b97d3'
-    basis_set_mexc = '6-311++G(2d,2p)'
-    rm_mexc(method_mexc, basis_set_mexc)
+    
+    #basis_set_mexc = '6-311++G(2d,2p)'
+    basis_set_mexc = '6-311G(d,p)'
+    
+    #nStates = '25'
+    nStates = '50'
+    
+    rm_mexc(method_mexc, basis_set_mexc, nStates)
 main()
 #if __name__ == "__main__":
 #    main()

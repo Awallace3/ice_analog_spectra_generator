@@ -21,7 +21,9 @@ matplotlib.use('Agg')
 
 def jobResubmit(min_delay, number_delays,
                 method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt,
-                method_mexc, basis_set_mexc, mem_com_mexc, mem_pbs_mexc):
+                method_mexc, basis_set_mexc, mem_com_mexc, mem_pbs_mexc,
+                nStates
+                ):
 
     min_delay = min_delay * 60
     cluster_list = glob.glob("calc_zone/geom*")
@@ -43,6 +45,11 @@ def jobResubmit(min_delay, number_delays,
                 basis_dir_name = ''
             else:
                 basis_dir_name = '_' + basis_set_mexc
+            
+            if nStates == '25':
+                pass
+            else:
+                basis_dir_name += '_n%s' % nStates
 
             if method_mexc == 'B3LYP':
                 mexc_check = glob.glob("mexc" + basis_dir_name)
@@ -99,7 +106,7 @@ def jobResubmit(min_delay, number_delays,
                 action, resubmissions = error_mexc_v11.main(
                     num, method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt,
                     method_mexc, basis_set_mexc, mem_com_mexc, mem_pbs_mexc,
-                    resubmissions, delay
+                    resubmissions, delay, nStates
                 )
                 print(resubmissions)
            
@@ -122,7 +129,8 @@ def jobResubmit(min_delay, number_delays,
     return complete
 
 
-def boltzmannAnalysisSetup(complete, method_mexc='B3LYP'):
+def boltzmannAnalysisSetup(complete, method_mexc='B3LYP', 
+                basis_set_mexc='6-311G(d,p)', nStates='25'):
 
     analysis_ready = []
     if "results" not in glob.glob("results"):
@@ -133,6 +141,42 @@ def boltzmannAnalysisSetup(complete, method_mexc='B3LYP'):
         os.chdir("..")
     else:
         os.chdir("..")
+    
+    if basis_set_mexc == '6-311G(d,p)':
+        basis_dir_name = ''
+    else:
+        basis_dir_name = '_' + basis_set_mexc
+    
+    if nStates == '25':
+        pass
+    else:
+        basis_dir_name += '_n%s' % nStates
+
+    if method_mexc == 'PBE0':
+        path_mexc = method_mexc.lower() + basis_dir_name
+        method_mexc = 'PBE1PBE'
+    elif method_mexc == 'wB97XD':
+        new_dir = "wb97xd"
+        path_mexc = method_mexc.lower()+ basis_dir_name
+    elif method_mexc == 'B3LYP':
+        path_mexc = "mexc" + basis_dir_name
+    elif method_mexc == 'B3LYPD3':
+        new_dir = 'b3lypd3'
+        path_mexc = method_mexc.lower()+ basis_dir_name
+        method_mexc = 'B3lYP empiricaldispersion=gd3 '
+    elif method_mexc == 'CAM-B3LYP':
+        new_dir = 'cam-b3lyp'
+        path_mexc = method_mexc.lower()+ basis_dir_name
+        method_mexc = 'CAM-B3LYP'
+    elif method_mexc == 'B97D3':
+        new_dir = 'b97d3'
+        path_mexc = method_mexc.lower()+ basis_dir_name
+        method_mexc = 'B97D3'
+    else:
+        print("This method is not supported for TD-DFT yet.")
+    
+    path_mexc = path_mexc.replace("(", "\(").replace(")", "\)")
+    """
     if method_mexc == 'PBE0':
         path_mexc = 'pbe0'
     
@@ -152,6 +196,7 @@ def boltzmannAnalysisSetup(complete, method_mexc='B3LYP'):
         path_mexc = 'b97d3'
     else:
         print("This method is not supported for TD-DFT yet.")
+    """
     print("\nPATH::: ", path_mexc, method_mexc)
 
     for i in range(len(complete)):
@@ -371,7 +416,7 @@ def electronicMultiPlot(methods_lst,
             T, title, filename, 
             x_range=[2,16], x_units='eV', 
             peaks=False, spec_name='spec',
-            complete=[]
+            complete=[], basis_set_mexc='6-31G(d,p)'
             ):
 
     location = os.getcwd().split('/')[-1]
@@ -388,8 +433,8 @@ def electronicMultiPlot(methods_lst,
 
     for i in methods_lst:
         gather_energies.main()
-        boltzmannAnalysisSetup(complete, i)
-        boltzmannAnalysis(T, energy_levels='electronic')
+        boltzmannAnalysisSetup(complete, i, basis_set_mexc)
+        boltzmannAnalysis(T, energy_levels='electronic')    
         x, y = collectSpecSimData()        
         ax1.plot(x, y, "-", label="%s" % i)
 
@@ -476,6 +521,8 @@ def main():
     basis_set_mexc = "6-311G(d,p)"
     #basis_set_mexc = "6-311++G(2d,2p)"
 
+    # TD-DFT NSTATES
+    nStates = '50'
 
     # TD-DFT memory
     mem_com_mexc = "1600"  # mb
@@ -500,10 +547,14 @@ def main():
                         mol_xyz1, mol_xyz2, method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt)
     """
     
+    
     complete = jobResubmit(resubmit_delay_min, resubmit_max_attempts,
                            method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt,
-                           method_mexc, basis_set_mexc, mem_com_mexc, mem_pbs_mexc)  # delay_min, num_delays
-
+                           method_mexc, basis_set_mexc, mem_com_mexc, mem_pbs_mexc,
+                           nStates
+                           )  # delay_min, num_delays
+    """
+    """
     # for standard usage
     boltzmannAnalysisSetup(complete, method_mexc)
     gather_energies.main()
@@ -513,9 +564,13 @@ def main():
     """
     """
 
-    # to combine total electronic calculations
     """
+    ### NH3 6-311++G(d,p) need to test nstates==50
+
+    # to combine total electronic calculations
+    #methods_lst = ["B3LYP", "PBE0", "wB97XD", "CAM-B3LYP", "B3LYPD3", "B97D3"]
     methods_lst = ["B3LYP", "PBE0", "wB97XD", "CAM-B3LYP", "B3LYPD3", "B97D3"]
+    #methods_lst = ["B3LYP_6-311++G(2d,2p)", "PBE0_6-311++G(2d,2p)", "wB97XD_6-311++G(2d,2p)", "CAM-B3LYP_6-311++G(2d,2p)", "B3LYPD3_6-311++G(2d,2p)", "B97D3_6-311++G(2d,2p)"]
     T = 1000  # Kelvin (K)
     title = r"30 Randomized Clusters of 8 %s Molecules" % moleculeNameLatex
     filename="30_8_rand_%s_electronic.pdf" % moleculeName
@@ -524,9 +579,10 @@ def main():
             T, title, filename, 
             x_range=[5,12], x_units='eV', 
             peaks=False, spec_name='spec', 
-            complete=complete
+            complete=complete, basis_set_mexc=basis_set_mexc
             )
-
+    """
+    """
     T = 1000  # Kelvin (K)
     title = r"30 Randomized Clusters of 8 CO$_2$ Molecules: Vibrational"
     filename = "30_8_rand_%s_vib_wB97XD.png" % moleculeName
