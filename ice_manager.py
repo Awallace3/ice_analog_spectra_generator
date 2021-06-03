@@ -374,7 +374,6 @@ def electronicMultiPlot(methods_lst,
             complete=[]
             ):
 
-
     location = os.getcwd().split('/')[-1]
     if location == 'src' or location == 'calc_zone':
         os.chdir("..")
@@ -390,7 +389,7 @@ def electronicMultiPlot(methods_lst,
     for i in methods_lst:
         gather_energies.main()
         boltzmannAnalysisSetup(complete, i)
-        boltzmannAnalysis(T, energy_levels='electronic')    
+        boltzmannAnalysis(T, energy_levels='electronic')
         x, y = collectSpecSimData()        
         ax1.plot(x, y, "-", label="%s" % i)
 
@@ -466,16 +465,17 @@ def main():
 
     
     # TD-DFT methods
-    #method_mexc = "B3LYP"
+    method_mexc = "B3LYP"
     #method_mexc = "PBE0"
     #method_mexc = "wB97XD"
     #method_mexc = "CAM-B3LYP"
     #method_mexc = "B3LYPD3"
-    method_mexc = "B97D3"
+    #method_mexc = "B97D3"
 
     # TD-DFT basis sets
-    #basis_set_mexc = "6-311G(d,p)"
-    basis_set_mexc = "6-311++G(2d,2p)"
+    basis_set_mexc = "6-311G(d,p)"
+    #basis_set_mexc = "6-311++G(2d,2p)"
+
 
     # TD-DFT memory
     mem_com_mexc = "1600"  # mb
@@ -491,7 +491,8 @@ def main():
     else:
         basis_dir_name = '_' + basis_set_mexc
 
-    filename = "30_8_rand_%s_%s%s.png" % ( moleculeName, method_mexc, basis_set_mexc)
+    filename = "30_8_rand_%s_%s%s.png" % ( moleculeName, method_mexc, basis_dir_name)
+    title = r"30 Randomized Clusters of 8 %s Molecules" % moleculeNameLatex
 
     # for generating the structures
     """
@@ -504,12 +505,12 @@ def main():
                            method_mexc, basis_set_mexc, mem_com_mexc, mem_pbs_mexc)  # delay_min, num_delays
 
     # for standard usage
-    """
     boltzmannAnalysisSetup(complete, method_mexc)
     gather_energies.main()
 
     boltzmannAnalysis(T)
     generateGraph("spec", T, title, filename, x_range=[5,11], x_units='ev', peaks=True)
+    """
     """
 
     # to combine total electronic calculations
