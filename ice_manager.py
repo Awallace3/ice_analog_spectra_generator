@@ -416,7 +416,8 @@ def electronicMultiPlot(methods_lst,
             T, title, filename, 
             x_range=[2,16], x_units='eV', 
             peaks=False, spec_name='spec',
-            complete=[], basis_set_mexc='6-31G(d,p)'
+            complete=[], basis_set_mexc='6-31G(d,p)',
+            nStates='25'
             ):
 
     location = os.getcwd().split('/')[-1]
@@ -486,6 +487,24 @@ def electronicMultiPlot(methods_lst,
     os.chdir("../../..")
 
 
+def method_update_selection(methods_lst, basis_set_mexc, nStates):
+    if basis_set_mexc == '6-311G(d,p)':
+        basis_dir_name = ''
+    else:
+        basis_dir_name = '_' + basis_set_mexc
+    if nStates == '25':
+        pass
+    else:
+        basis_dir_name += '_n%s' % nStates
+    for n, i in enumerate(methods_lst):
+        if i == 'B3LYP':
+            i = 'mexc' + basis_dir_name
+            print(i.lower() + basis_dir_name)
+        else:
+            i = i.lower() + basis_dir_name
+            print(i.lower() + basis_dir_name) 
+        methods_lst[n] = i
+    return methods_lst
 
 
 def main():
@@ -499,7 +518,7 @@ def main():
     minium_distance_between_molecules = 3.0
 
     resubmit_delay_min = 0.01
-    resubmit_max_attempts = 1
+    resubmit_max_attempts = 3
 
 
     # geometry optimization options
@@ -522,7 +541,8 @@ def main():
     #basis_set_mexc = "6-311++G(2d,2p)"
 
     # TD-DFT NSTATES
-    nStates = '50'
+    nStates = '25'
+    #nStates = '50'
 
     # TD-DFT memory
     mem_com_mexc = "1600"  # mb
@@ -530,16 +550,21 @@ def main():
 
     T = 1000  # Kelvin (K)    
 
-    moleculeName = 'h2o'
-    moleculeNameLatex = r'H$_2$O'
+    moleculeName = 'nh3'
+    moleculeNameLatex = r'NH$_3$'
 
     if basis_set_mexc == '6-311G(d,p)':
         basis_dir_name = ''
     else:
         basis_dir_name = '_' + basis_set_mexc
 
+    if nStates == '25':
+        pass
+    else:
+        basis_dir_name += nStates
+
     filename = "30_8_rand_%s_%s%s.png" % ( moleculeName, method_mexc, basis_dir_name)
-    title = r"30 Randomized Clusters of 8 %s Molecules" % moleculeNameLatex
+    title = r"30 Randomized Clusters of 8 %s Molecules %s" % (moleculeNameLatex, basis_dir_name)
 
     # for generating the structures
     """
@@ -554,7 +579,6 @@ def main():
                            nStates
                            )  # delay_min, num_delays
     """
-    """
     # for standard usage
     boltzmannAnalysisSetup(complete, method_mexc)
     gather_energies.main()
@@ -562,26 +586,27 @@ def main():
     boltzmannAnalysis(T)
     generateGraph("spec", T, title, filename, x_range=[5,11], x_units='ev', peaks=True)
     """
-    """
 
-    """
     ### NH3 6-311++G(d,p) need to test nstates==50
 
     # to combine total electronic calculations
     #methods_lst = ["B3LYP", "PBE0", "wB97XD", "CAM-B3LYP", "B3LYPD3", "B97D3"]
     methods_lst = ["B3LYP", "PBE0", "wB97XD", "CAM-B3LYP", "B3LYPD3", "B97D3"]
     #methods_lst = ["B3LYP_6-311++G(2d,2p)", "PBE0_6-311++G(2d,2p)", "wB97XD_6-311++G(2d,2p)", "CAM-B3LYP_6-311++G(2d,2p)", "B3LYPD3_6-311++G(2d,2p)", "B97D3_6-311++G(2d,2p)"]
+    #methods_lst = ["B3LYP_6-311++G(2d,2p)", "PBE0_6-311++G(2d,2p)", "wB97XD_6-311++G(2d,2p)", "CAM-B3LYP_6-311++G(2d,2p)", "B3LYPD3_6-311++G(2d,2p)", "B97D3_6-311++G(2d,2p)"]
     T = 1000  # Kelvin (K)
-    title = r"30 Randomized Clusters of 8 %s Molecules" % moleculeNameLatex
-    filename="30_8_rand_%s_electronic.pdf" % moleculeName
+    title = r"30 Randomized Clusters of 8 %s Molecules %s" % (moleculeNameLatex, basis_dir_name)
+    filename = "30_8_rand_%s_electronic_%s%s.pdf" % ( moleculeName, method_mexc, basis_dir_name)
+
+    #methods_lst = method_update_selection(methods_lst, basis_set_mexc, nStates)
+    print(methods_lst)
 
     electronicMultiPlot(methods_lst, 
             T, title, filename, 
-            x_range=[5,12], x_units='eV', 
+            x_range=[5,10], x_units='eV', 
             peaks=False, spec_name='spec', 
-            complete=complete, basis_set_mexc=basis_set_mexc
+            complete=complete, basis_set_mexc=basis_set_mexc, nStates=nStates
             )
-    """
     """
     T = 1000  # Kelvin (K)
     title = r"30 Randomized Clusters of 8 CO$_2$ Molecules: Vibrational"

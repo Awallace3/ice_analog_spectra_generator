@@ -402,8 +402,10 @@ def make_mexc(method_mexc, basis_set_mexc,
     elif method_mexc == 'wB97XD':
         new_dir = "wb97xd"
         new_dir = method_mexc.lower()+ basis_dir_name
+        method_mexc = 'wB97XD'
     elif method_mexc == 'B3LYP':
         new_dir = "mexc" + basis_dir_name
+        method_mexc = 'B3LYP'
     elif method_mexc == 'B3LYPD3':
         new_dir = 'b3lypd3'
         new_dir = method_mexc.lower()+ basis_dir_name
@@ -423,8 +425,7 @@ def make_mexc(method_mexc, basis_set_mexc,
     with open(new_dir + '/mexc.com', 'w') as fp:
         fp.write("%mem={0}mb\n".format(mem_com_mexc))
         fp.write("%nprocs=4\n")
-        fp.write("#N TD(NStates={0}) {0}".format(nStates,
-            method_mexc) + "/{0}\n".format(basis_set_mexc))
+        fp.write("#N TD(NStates=%s) %s" % (nStates, method_mexc) + "/{0}\n".format(basis_set_mexc))
         fp.write("\n")
         fp.write("Name ModRedundant - Minimalist working constrained optimisation\n")
         fp.write("\n")
