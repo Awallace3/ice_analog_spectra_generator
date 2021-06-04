@@ -591,7 +591,11 @@ def main(index,
                 basis_dir_name = ''
             else:
                 basis_dir_name = '_' + basis_set_mexc
-            
+            if nStates == '25':
+                pass
+            else:
+                basis_dir_name += '_n%s' % nStates
+                
             if method_mexc == 'B3LYP':
                 os.chdir("mexc" + basis_dir_name)
             else: 
