@@ -529,20 +529,20 @@ def main():
 
     
     # TD-DFT methods
-    method_mexc = "B3LYP"
+    #method_mexc = "B3LYP"
     #method_mexc = "PBE0"
     #method_mexc = "wB97XD"
-    #method_mexc = "CAM-B3LYP"
+    method_mexc = "CAM-B3LYP"
     #method_mexc = "B3LYPD3"
     #method_mexc = "B97D3"
 
     # TD-DFT basis sets
-    basis_set_mexc = "6-311G(d,p)"
-    #basis_set_mexc = "6-311++G(2d,2p)"
+    #basis_set_mexc = "6-311G(d,p)"
+    basis_set_mexc = "6-311++G(2d,2p)"
 
     # TD-DFT NSTATES
-    nStates = '25'
-    #nStates = '50'
+    #nStates = '25'
+    nStates = '50'
 
     # TD-DFT memory
     mem_com_mexc = "1600"  # mb
@@ -587,6 +587,7 @@ def main():
     generateGraph("spec", T, title, filename, x_range=[5,11], x_units='ev', peaks=True)
     """
 
+    """
     ### NH3 6-311++G(d,p) need to test nstates==50
 
     # to combine total electronic calculations
@@ -607,6 +608,7 @@ def main():
             peaks=False, spec_name='spec', 
             complete=complete, basis_set_mexc=basis_set_mexc, nStates=nStates
             )
+    """
     """
     T = 1000  # Kelvin (K)
     title = r"30 Randomized Clusters of 8 CO$_2$ Molecules: Vibrational"

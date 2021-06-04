@@ -421,7 +421,7 @@ def make_mexc(method_mexc, basis_set_mexc,
     else:
         print("This method is not supported for TD-DFT yet.")
     os.mkdir(new_dir)
-
+    #print("#N TD(NStates=%s) %s" % (nStates, method_mexc) )
     with open(new_dir + '/mexc.com', 'w') as fp:
         fp.write("%mem={0}mb\n".format(mem_com_mexc))
         fp.write("%nprocs=4\n")

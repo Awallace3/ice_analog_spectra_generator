@@ -64,12 +64,12 @@ def main():
     #method_mexc = "b3lyp"
     #method_mexc = "pbe0"
     #method_mexc = "wb97xd"
-    #method_mexc = "cam-b3lyp"
+    method_mexc = "cam-b3lyp"
     #method_mexc = "b3lypd3"
-    method_mexc = 'b97d3'
+    #method_mexc = 'b97d3'
     
-    #basis_set_mexc = '6-311++G(2d,2p)'
-    basis_set_mexc = '6-311G(d,p)'
+    basis_set_mexc = '6-311++G(2d,2p)'
+    #basis_set_mexc = '6-311G(d,p)'
     
     #nStates = '25'
     nStates = '50'
