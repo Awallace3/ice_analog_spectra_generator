@@ -434,7 +434,7 @@ def electronicMultiPlot(methods_lst,
 
     for i in methods_lst:
         gather_energies.main()
-        boltzmannAnalysisSetup(complete, i, basis_set_mexc)
+        boltzmannAnalysisSetup(complete, i, basis_set_mexc, nStates)
         boltzmannAnalysis(T, energy_levels='electronic')    
         x, y = collectSpecSimData()        
         ax1.plot(x, y, "-", label="%s" % i)
@@ -541,8 +541,8 @@ def main():
     basis_set_mexc = "6-311++G(2d,2p)"
 
     # TD-DFT NSTATES
-    #nStates = '25'
-    nStates = '50'
+    nStates = '25'
+    #nStates = '50'
 
     # TD-DFT memory
     mem_com_mexc = "1600"  # mb
@@ -578,21 +578,20 @@ def main():
                            method_mexc, basis_set_mexc, mem_com_mexc, mem_pbs_mexc,
                            nStates
                            )  # delay_min, num_delays
-    """
     # for standard usage
-    boltzmannAnalysisSetup(complete, method_mexc)
+    """
+    boltzmannAnalysisSetup(complete, method_mexc, nStates=nStates)
     gather_energies.main()
 
     boltzmannAnalysis(T)
-    generateGraph("spec", T, title, filename, x_range=[5,11], x_units='ev', peaks=True)
-    """
-
+    generateGraph("spec", T, title, filename, x_range=[5,10], x_units='ev', peaks=True)
     """
     ### NH3 6-311++G(d,p) need to test nstates==50
 
     # to combine total electronic calculations
     #methods_lst = ["B3LYP", "PBE0", "wB97XD", "CAM-B3LYP", "B3LYPD3", "B97D3"]
     methods_lst = ["B3LYP", "PBE0", "wB97XD", "CAM-B3LYP", "B3LYPD3", "B97D3"]
+    #methods_lst = ["CAM-B3LYP"]
     #methods_lst = ["B3LYP_6-311++G(2d,2p)", "PBE0_6-311++G(2d,2p)", "wB97XD_6-311++G(2d,2p)", "CAM-B3LYP_6-311++G(2d,2p)", "B3LYPD3_6-311++G(2d,2p)", "B97D3_6-311++G(2d,2p)"]
     #methods_lst = ["B3LYP_6-311++G(2d,2p)", "PBE0_6-311++G(2d,2p)", "wB97XD_6-311++G(2d,2p)", "CAM-B3LYP_6-311++G(2d,2p)", "B3LYPD3_6-311++G(2d,2p)", "B97D3_6-311++G(2d,2p)"]
     T = 1000  # Kelvin (K)
@@ -608,6 +607,7 @@ def main():
             peaks=False, spec_name='spec', 
             complete=complete, basis_set_mexc=basis_set_mexc, nStates=nStates
             )
+    """
     """
     """
     T = 1000  # Kelvin (K)
@@ -628,3 +628,4 @@ def main():
         # python3 -u ./ice_manager.py > output.log & disown -h
 
 main()
+

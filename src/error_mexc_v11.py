@@ -352,7 +352,7 @@ def make_input_files_no_constraints(output_num, method_opt,
 
     with open('mex.pbs', 'w') as fp:
         fp.write("#!/bin/sh\n")
-        fp.write("#PBS -N mex_o\n#PBS -S /bin/bash\n#PBS -j oe\n#PBS -m abe\n#PBS -l")
+        fp.write("#PBS -N mex_o\n#PBS -W umask=022\n#PBS -S /bin/bash\n#PBS -j oe\n#PBS -m abe\n#PBS -l")
         fp.write("mem={0}gb\n".format(mem_pbs_opt))
         fp.write(
             "#PBS -l nodes=1:ppn=4\n#PBS -q gpu\n\nscrdir=/tmp/$USER.$PBS_JOBID\n\n")
@@ -439,7 +439,7 @@ def make_mexc(method_mexc, basis_set_mexc,
             "#PBS -N mexc_o\n#PBS -S /bin/bash\n#PBS -j oe\n#PBS -m abe\n#PBS -l")
         fp.write("mem={0}gb\n".format(mem_pbs_mexc))
         fp.write(
-            "#PBS -l nodes=1:ppn=4\n#PBS -q gpu\n\nscrdir=/tmp/$USER.$PBS_JOBID\n\n")
+            "#PBS -l nodes=1:ppn=4\n#PBS -W umask=022\n#PBS -q gpu\n\nscrdir=/tmp/$USER.$PBS_JOBID\n\n")
         fp.write(
             "mkdir -p $scrdir\nexport GAUSS_SCRDIR=$scrdir\nexport OMP_NUM_THREADS=1\n\n")
         fp.write(
@@ -641,3 +641,5 @@ def main(index,
         return True, resubmissions
 
 # main()
+
+#PBS -W umask=022
