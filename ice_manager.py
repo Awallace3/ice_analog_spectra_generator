@@ -36,7 +36,7 @@ def jobResubmit(min_delay, number_delays,
     calculations_complete = False
 
     for i in range(number_delays):
-        # time.sleep(min_delay)
+        
         for num, j in enumerate(cluster_list):
             os.chdir(j)
             print(j)
@@ -59,36 +59,8 @@ def jobResubmit(min_delay, number_delays,
                 mexc_check = glob.glob(method_mexc.lower() + basis_dir_name)
                 path_mexc = method_mexc.lower() + basis_dir_name
                 print(method_mexc.lower() + basis_dir_name)
-                
-            """
-            if method_mexc == 'PBE0':
-                mexc_check = glob.glob("pbe0")
-                path_mexc = 'pbe0'
-            
-            elif method_mexc == 'wB97XD':
-                mexc_check = glob.glob("wb97xd")
-                path_mexc = 'wb97xd'
-            
-            elif method_mexc == 'B3LYP':
-                mexc_check = glob.glob("mexc")
-                path_mexc = 'mexc'
-            
-            elif method_mexc == 'B3LYPD3':
-                mexc_check = glob.glob("b3lypd3")
-                path_mexc = 'b3lypd3'
-            
-            elif method_mexc == 'CAM-B3LYP':
-                mexc_check = glob.glob("cam-b3lyp")
-                path_mexc = 'cam-b3lyp'
-            
-            elif method_mexc == 'B97D3':
-                mexc_check = glob.glob('b97d3')
-                path_mexc = 'b97d3'
-            else:
-                print("This method is not supported for TD-DFT yet.")
-            """
 
-            print(mexc_check)
+            #print(mexc_check)
             if len(mexc_check) > 0:
                 print('{0} entered mexc checkpoint 1'.format(num+1))
                 complete[num] = 1
@@ -108,7 +80,7 @@ def jobResubmit(min_delay, number_delays,
                     method_mexc, basis_set_mexc, mem_com_mexc, mem_pbs_mexc,
                     resubmissions, delay, nStates
                 )
-                print(resubmissions)
+                #print(resubmissions)
            
             mexc_check = []
             os.chdir('../..')
@@ -176,27 +148,7 @@ def boltzmannAnalysisSetup(complete, method_mexc='B3LYP',
         print("This method is not supported for TD-DFT yet.")
     
     path_mexc = path_mexc.replace("(", "\(").replace(")", "\)")
-    """
-    if method_mexc == 'PBE0':
-        path_mexc = 'pbe0'
-    
-    elif method_mexc == 'wB97XD':
-        path_mexc = 'wb97xd'
-    
-    elif method_mexc == 'B3LYP':
-        path_mexc = 'mexc'
-    
-    elif method_mexc == 'B3LYPD3':
-        path_mexc = 'b3lypd3'
-    
-    elif method_mexc == 'CAM-B3LYP':
-        path_mexc = 'cam-b3lyp'
-    
-    elif method_mexc == 'B97D3':
-        path_mexc = 'b97d3'
-    else:
-        print("This method is not supported for TD-DFT yet.")
-    """
+
     print("\nPATH::: ", path_mexc, method_mexc)
 
     for i in range(len(complete)):
@@ -229,15 +181,15 @@ def boltzmannAnalysis(T, energy_levels='electronic'):
         os.chdir('results/vibrational_values')
         csv_name = 'vib'
         cmd = "perl ../../../src/specsim_xrange.pl 50 3600"
-    print(os.getcwd())
+    #print(os.getcwd())
     mexc_out_names = glob.glob("*.csv")
     #print(mexc_out_names)
     mexc_dict = {}
-    print(mexc_out_names)
+    #print(mexc_out_names)
     for i in mexc_out_names:
         val = i[:-4]
         #print("val")
-        print(val)
+        #print(val)
         #print(np.genfromtxt(i, delimiter=" "))
         mexc_dict['{0}'.format(val)] = np.genfromtxt(i, delimiter=" ")
     os.chdir('../energies')
@@ -256,7 +208,7 @@ def boltzmannAnalysis(T, energy_levels='electronic'):
     for key, value in mexc_dict.items():
         if key == 'mexc_out{0}'.format(lowest_energy_ind+1):
             continue
-        print(key) # crashes if not all mexc_out*.csv accounted for
+        #print(key) # crashes if not all mexc_out*.csv accounted for
         # remember energy_all array index starts at zero
         if energy_levels == 'electronic':
             current_energy_ind = int(key[8:]) - 1
@@ -266,12 +218,14 @@ def boltzmannAnalysis(T, energy_levels='electronic'):
         # find current energy and convert hartrees to joules
         current_energy = ((energy_all[current_energy_ind, :])[1]) * 4.3597E-18
 
-        print(lowest_energy)
-        print(current_energy)
+        #print(lowest_energy)
+        #print(current_energy)
 
         ni_nj = math.exp((lowest_energy - current_energy) / (T * kb))
+        '''
         print("n%d / n%d = %.10f" %
               (lowest_energy_ind+1, current_energy_ind + 1, ni_nj))
+        '''
         for i in range(len(value)):
 
             value[i][1] = value[i][1] * ni_nj
@@ -383,7 +337,7 @@ def generateGraph(spec_name, T, title, filename, x_range=[100,300], x_units='nm'
 
     return
 
-def collectSpecSimData(x_units='eV', spec_name='spec'):
+def collectSpecSimData(x_units='eV', spec_name='spec', normalize=True):
     data = np.genfromtxt("results/final/data/" + spec_name, delimiter=" ")
     data = data.tolist()
     # print(data)
@@ -541,17 +495,24 @@ def main():
     basis_set_mexc = "6-311++G(2d,2p)"
 
     # TD-DFT NSTATES
-    nStates = '25'
+    #nStates = '25'
     #nStates = '50'
+    nStates = '100'
+    #nStates = '150'
 
     # TD-DFT memory
     mem_com_mexc = "1600"  # mb
     mem_pbs_mexc = "15"  # gb"
 
-    T = 1000  # Kelvin (K)    
-
     moleculeName = 'nh3'
     moleculeNameLatex = r'NH$_3$'
+
+    # Temperatures (K)
+    #T = 100  
+    # T comes from the binding energy of the dimers for each strucutres converted from Hartrees to Kelvin
+    T = 1348.768    # nh3
+    #T = 457.088     # co2
+    #T = 2071.104    # h2o
 
     if basis_set_mexc == '6-311G(d,p)':
         basis_dir_name = ''
@@ -590,13 +551,15 @@ def main():
 
     # to combine total electronic calculations
     #methods_lst = ["B3LYP", "PBE0", "wB97XD", "CAM-B3LYP", "B3LYPD3", "B97D3"]
-    methods_lst = ["B3LYP", "PBE0", "wB97XD", "CAM-B3LYP", "B3LYPD3", "B97D3"]
-    #methods_lst = ["CAM-B3LYP"]
-    #methods_lst = ["B3LYP_6-311++G(2d,2p)", "PBE0_6-311++G(2d,2p)", "wB97XD_6-311++G(2d,2p)", "CAM-B3LYP_6-311++G(2d,2p)", "B3LYPD3_6-311++G(2d,2p)", "B97D3_6-311++G(2d,2p)"]
-    #methods_lst = ["B3LYP_6-311++G(2d,2p)", "PBE0_6-311++G(2d,2p)", "wB97XD_6-311++G(2d,2p)", "CAM-B3LYP_6-311++G(2d,2p)", "B3LYPD3_6-311++G(2d,2p)", "B97D3_6-311++G(2d,2p)"]
-    T = 1000  # Kelvin (K)
-    title = r"30 Randomized Clusters of 8 %s Molecules %s" % (moleculeNameLatex, basis_dir_name)
-    filename = "30_8_rand_%s_electronic_%s%s.pdf" % ( moleculeName, method_mexc, basis_dir_name)
+    methods_lst = ["CAM-B3LYP"]
+
+    
+
+    title = r"30 Randomized Clusters of 8 %s Molecules with %s" % (moleculeNameLatex, basis_dir_name[1:].replace(nStates, '')) +  "\nat N=%s and T=%s K" % (nStates, T)
+    filename = "30_8_%s_elec_n%s_%s_%sK.pdf" % ( moleculeName, nStates, basis_dir_name[1:].replace(nStates, ''), T, )
+    if len(methods_lst) == 1:
+        filename = "30_8_%s_elec_%s_n%s_%s_%sK.pdf" % ( moleculeName, method_mexc, nStates, basis_dir_name[1:].replace(nStates, ''), T, )
+    #filename = "30_8_%s_test_%sk.pdf" % ( moleculeName, T)
 
     #methods_lst = method_update_selection(methods_lst, basis_set_mexc, nStates)
     print(methods_lst)
@@ -606,7 +569,9 @@ def main():
             x_range=[5,10], x_units='eV', 
             peaks=False, spec_name='spec', 
             complete=complete, basis_set_mexc=basis_set_mexc, nStates=nStates
+
             )
+    
     """
     """
     """
