@@ -4,10 +4,12 @@ from src import ice_build_geoms
 from src import error_mexc_v11
 from src import gather_energies
 from src import vibrational_frequencies
+from src import df_latexTable as df_latex
 import time
 import glob
 import os
 import sys
+import pandas as pd
 import subprocess
 import numpy as np
 import scipy.signal
@@ -132,6 +134,7 @@ def boltzmannAnalysisSetup(complete, method_mexc='B3LYP',
         path_mexc = method_mexc.lower()+ basis_dir_name
     elif method_mexc == 'B3LYP':
         path_mexc = "mexc" + basis_dir_name
+        #print("B3LYP here")
     elif method_mexc == 'B3LYPD3':
         new_dir = 'b3lypd3'
         path_mexc = method_mexc.lower()+ basis_dir_name
@@ -366,6 +369,24 @@ def collectSpecSimData(x_units='eV', spec_name='spec', normalize=True):
         #maxima = scipy.signal.argrelextrema(y, np.greater) 
     return x, y
 
+def latexTable_addLine (path, line):
+    if os.path.exists(path):
+        with open(path, 'r') as fp:
+            lines = fp.readlines()
+            lines.insert(-4, '\t'+line)
+            
+        with open(path, 'w') as fp:
+            for i in lines:
+                fp.write(i)
+    else:
+        with open(path, 'w') as fp:
+            fp.write('\\begin{center}\n\\begin{tabular}{ |c|c|c|c| }\n\t\\hline\n')
+            fp.write('\tMethod & Basis Set & Excitation (eV) &')
+            fp.write('\\vtop{\\hbox{\\strut Oscillator Strength}\\hbox{\\strut (Normalized)}}\\\\\n\t\\hline\n')
+            fp.write('\t' + line)
+            fp.write('\t\\hline\n\\end{tabular}\n\\end{center}')
+
+
 def electronicMultiPlot(methods_lst, 
             T, title, filename, 
             x_range=[2,16], x_units='eV', 
@@ -385,13 +406,52 @@ def electronicMultiPlot(methods_lst,
             complete.append(2)
     
     fig, ax1 = plt.subplots()
+    
+    if peaks:
+        
+        df = {'Method': [], 'Basis Set': [], 
+            'Excitation (eV)': [],
+            '\\vtop{\\hbox{\\strut Oscillator Strength}\\hbox{\\strut (Normalized)}}': []
+            } # 4 col
+        df = pd.DataFrame(df)
+        headers = ['Method', 'Basis Set', 'Excitation (eV)',
+            '\\vtop{\\hbox{\\strut Oscillator Strength}\\hbox{\\strut (Normalized)}}']
+        df = df_latex.latexTable_df('latex_df_6-311++G(2d,2p).tex', headers)
 
     for i in methods_lst:
         gather_energies.main()
         boltzmannAnalysisSetup(complete, i, basis_set_mexc, nStates)
         boltzmannAnalysis(T, energy_levels='electronic')    
         x, y = collectSpecSimData()        
+        """
+        if i == 'B3LYP':
+            print(x, y)
+        """
         ax1.plot(x, y, "-", label="%s" % i)
+        
+        if peaks:
+            arr_y = np.array(y)
+            print("local maxima")
+            peaks_dat, _ = scipy.signal.find_peaks(arr_y, height=0)
+            for j in peaks_dat:
+                #print(round(x[i],2), arr_y[i])
+                height = arr_y[j]
+                frequency = round(x[j], 2)
+                print("x, y = %.2f, %.2f" % (frequency, height))
+                line = "%s & %s & %.2f & %.2f \\\\\n" % (i, basis_set_mexc, frequency, height) 
+                latexTable_addLine('latexTable.tex', line)
+                df.loc[len(df.index)] = [i, basis_set_mexc, frequency, height]
+                """
+                with open('latexTabel.tex', 'a') as fp:
+                    fp.write("%s/%s,%.2f,%.2f\n" % (i, basis_set_mexc, frequency, height))
+                print(os.getcwd())
+                """
+
+                """
+                if height > 0.02:
+                    plt.text(frequency - 0.08, arr_y[i]+0.05, '%.2f' % frequency )
+                """
+            df_latex.df_latexTable('latex_df_%s.tex' % basis_set_mexc, df)
 
     #ax1.set_xlim([x[0], x[-1]])
     ax1.set_xlim(x_range)
@@ -402,29 +462,10 @@ def electronicMultiPlot(methods_lst,
         #print(x)
         plt.xlabel("Electronvolts (eV)")
         ax1.legend(shadow=True, fancybox=True)
-        if peaks:
-            arr_y = np.array(y)
-            #print("local maxima")
-            peaks, _ = scipy.signal.find_peaks(arr_y, height=0)
-            for i in peaks:
-                #print(round(x[i],2), arr_y[i])
-                height = arr_y[i]
-                frequency = round(x[i], 2)
-                if height > 0.02:
-                    plt.text(frequency - 0.08, arr_y[i]+0.05, '%.2f' % frequency )
 
     elif x_units == 'cm-1':
         plt.xlabel(r"Wavenumbers cm$^{-1}$")
-        if peaks:
-            arr_y = np.array(y)
-            #print("local maxima")
-            peaks, _ = scipy.signal.find_peaks(arr_y, height=0)
-            for i in peaks:
-                ##print(round(x[i]), arr_y[i])
-                height = arr_y[i]
-                frequency = round(x[i])
-                if height > 0.02:
-                    plt.text(frequency+100, arr_y[i]+0.1, '%d' % frequency )
+        
     else:
         plt.xlabel("Wavelength (nm)")
         ax1.legend(shadow=True, fancybox=True)
@@ -483,21 +524,21 @@ def main():
 
     
     # TD-DFT methods
-    #method_mexc = "B3LYP"
+    method_mexc = "B3LYP"
     #method_mexc = "PBE0"
     #method_mexc = "wB97XD"
-    method_mexc = "CAM-B3LYP"
+    #method_mexc = "CAM-B3LYP"
     #method_mexc = "B3LYPD3"
     #method_mexc = "B97D3"
 
     # TD-DFT basis sets
-    #basis_set_mexc = "6-311G(d,p)"
-    basis_set_mexc = "6-311++G(2d,2p)"
+    basis_set_mexc = "6-311G(d,p)"
+    #basis_set_mexc = "6-311++G(2d,2p)"
 
     # TD-DFT NSTATES
-    #nStates = '25'
+    nStates = '25'
     #nStates = '50'
-    nStates = '100'
+    #nStates = '100'
     #nStates = '150'
 
     # TD-DFT memory
@@ -550,9 +591,11 @@ def main():
     ### NH3 6-311++G(d,p) need to test nstates==50
 
     # to combine total electronic calculations
-    #methods_lst = ["B3LYP", "PBE0", "wB97XD", "CAM-B3LYP", "B3LYPD3", "B97D3"]
-    methods_lst = ["CAM-B3LYP"]
+    methods_lst = ["B3LYP", "PBE0", "wB97XD", "CAM-B3LYP", "B3LYPD3", "B97D3"]
+    methods_lst = ["B3LYP", "PBE0", "wB97XD", "CAM-B3LYP", "B97D3"]
+    #methods_lst = ["CAM-B3LYP"]
 
+    #methods_lst = ["B3LYPD3"]
     
 
     title = r"30 Randomized Clusters of 8 %s Molecules with %s" % (moleculeNameLatex, basis_dir_name[1:].replace(nStates, '')) +  "\nat N=%s and T=%s K" % (nStates, T)
@@ -561,16 +604,19 @@ def main():
         filename = "30_8_%s_elec_%s_n%s_%s_%sK.pdf" % ( moleculeName, method_mexc, nStates, basis_dir_name[1:].replace(nStates, ''), T, )
     #filename = "30_8_%s_test_%sk.pdf" % ( moleculeName, T)
 
+    filename = "30_8_%s_elec_n%s_%s_%sK.pdf" % ( moleculeName, nStates, basis_set_mexc , T, )
+    title = r"30 Randomized Clusters of 8 %s Molecules with %s" % (moleculeNameLatex, basis_set_mexc) + "\nat %s K" % T 
     #methods_lst = method_update_selection(methods_lst, basis_set_mexc, nStates)
     print(methods_lst)
 
     electronicMultiPlot(methods_lst, 
             T, title, filename, 
             x_range=[5,10], x_units='eV', 
-            peaks=False, spec_name='spec', 
+            peaks=True, spec_name='spec', 
             complete=complete, basis_set_mexc=basis_set_mexc, nStates=nStates
 
             )
+    print("OUTPUT =\n", filename)
     
     """
     """
