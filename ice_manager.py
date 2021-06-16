@@ -547,6 +547,10 @@ def main():
 
     moleculeName = 'nh3'
     moleculeNameLatex = r'NH$_3$'
+    moleculeName = 'co2'
+    moleculeNameLatex = r'CO$_2$'
+    moleculeName = 'h2o'
+    moleculeNameLatex = r'H$_2$O'
 
     # Temperatures (K)
     #T = 100  
@@ -606,8 +610,11 @@ def main():
 
     filename = "30_8_%s_elec_n%s_%s_%sK.pdf" % ( moleculeName, nStates, basis_set_mexc , T, )
     title = r"30 Randomized Clusters of 8 %s Molecules with %s" % (moleculeNameLatex, basis_set_mexc) + "\nat %s K" % T 
+    #filename = "101_32_%s_elec_n%s_%s_%sK.pdf" % ( moleculeName, nStates, basis_set_mexc , T, )
+    #title = r"101 Randomized Clusters of 32 %s Molecules with %s" % (moleculeNameLatex, basis_set_mexc) + "\nat %s K" % T 
+    
     #methods_lst = method_update_selection(methods_lst, basis_set_mexc, nStates)
-    print(methods_lst)
+    #print(methods_lst)
 
     electronicMultiPlot(methods_lst, 
             T, title, filename, 
