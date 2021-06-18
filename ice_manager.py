@@ -499,7 +499,7 @@ def electronicMultiPlot_Experiment(methods_lst,
             x_range=[2,16], x_units='eV', 
             peaks=False, spec_name='spec',
             complete=[], basis_set_mexc='6-31G(d,p)',
-            nStates='25', exp_data=[], colors=[]
+            nStates='25', exp_data=[], colors=[], sec_y_axis=False, rounding=1
             ):
 
     location = os.getcwd().split('/')[-1]
@@ -551,10 +551,18 @@ def electronicMultiPlot_Experiment(methods_lst,
             for j in peaks_dat:
                 #print(round(x[i],2), arr_y[i])
                 height = arr_y[j]
-                frequency = round(x[j], 2)
-                print("x, y = %.2f, %.2f" % (frequency, height))
-                line = "%s & %s & %.2f & %.2f \\\\\n" % (i, basis_set_mexc, frequency, height) 
-                latexTable_addLine('latexTable.tex', line)
+                frequency = round(x[j], 4)
+                if rounding == 1:    
+                    print("x, y = %.1f, %.1f" % (frequency, height))
+                    line = "%s & %s & %.1f & %.1f \\\\\n" % (i, basis_set_mexc, frequency, height) 
+                elif rounding == 2:
+                    print("x, y = %.2f, %.2f" % (frequency, height))
+                    line = "%s & %s & %.2f & %.2f \\\\\n" % (i, basis_set_mexc, frequency, height) 
+                else:
+                    print("x, y = %.4f, %.4f" % (frequency, height))
+                    line = "%s & %s & %.4f & %.4f \\\\\n" % (i, basis_set_mexc, frequency, height) 
+
+                #latexTable_addLine('latexTable.tex', line)
                 df.loc[len(df.index)] = [i, basis_set_mexc, frequency, height]
                 """
                 with open('latexTabel.tex', 'a') as fp:
@@ -566,7 +574,7 @@ def electronicMultiPlot_Experiment(methods_lst,
                 if height > 0.02:
                     plt.text(frequency - 0.08, arr_y[i]+0.05, '%.2f' % frequency )
                 """
-            df_latex.df_latexTable('latex_df_%s.tex' % basis_set_mexc, df)
+            df_latex.df_latexTable('latex_df_%s.tex' % basis_set_mexc, df, rounding )
 
     exp_names = [ "Exp. Solid", "Exp. Gas"]
     exp_colors = [ "k","tab:grey"]
@@ -590,15 +598,16 @@ def electronicMultiPlot_Experiment(methods_lst,
                 frequency = round(i[j,0], 2)
                 print("x, y = %.2f, %.2f" % (frequency, height))
                 line = "%s & %s & %.2f & %.2f \\\\\n" % (exp_names[n], basis_set_mexc, frequency, height) 
-                latexTable_addLine('latexTable.tex', line)
+                #latexTable_addLine('latexTable.tex', line)
                 df.loc[len(df.index)] = [exp_names[n], basis_set_mexc, frequency, height]
-            df_latex.df_latexTable('latex_df_%s.tex' % basis_set_mexc, df)
+            df_latex.df_latexTable('latex_df_%s.tex' % basis_set_mexc, df, rounding)
     #ax1.set_xlim([x[0], x[-1]])
-    ax2.set_ylabel(r"Cross Section / cm$^2$ (Normalized)")
-    ax2.set_ylim(0,1.4)
+    if sec_y_axis:
+        #ax2.set_ylabel(r"Cross Section / cm$^2$ (Normalized)")
+        ax2.set_ylim(0,1.5)
 
     ax1.set_xlim(x_range)
-    ax1.set_ylim(0, 1.4)
+    ax1.set_ylim(0, 1.5)
 
     plt.title(title)
     ax1.legend(shadow=True, fancybox=True, loc='upper left')
@@ -606,6 +615,7 @@ def electronicMultiPlot_Experiment(methods_lst,
     if x_units == 'ev' or x_units=='eV':
         #print(x)
         plt.xlabel("Electronvolts (eV)")
+        ax1.set_xlabel("Electronvolts (eV)")
         #ax1.legend(shadow=True, fancybox=True)
 
     elif x_units == 'cm-1':
@@ -681,8 +691,8 @@ def main():
     basis_set_mexc = "6-311++G(2d,2p)"
 
     # TD-DFT NSTATES
-    nStates = '25'
-    #nStates = '50'
+    #nStates = '25'
+    nStates = '50'
     #nStates = '100'
     #nStates = '150'
     #nStates = '125'
@@ -693,16 +703,16 @@ def main():
 
     moleculeName = 'nh3'
     moleculeNameLatex = r'NH$_3$'
-   #moleculeName = 'co2'
-   #moleculeNameLatex = r'CO$_2$'
+    moleculeName = 'co2'
+    moleculeNameLatex = r'CO$_2$'
    #moleculeName = 'h2o'
    #moleculeNameLatex = r'H$_2$O'
 
     # Temperatures (K)
     #T = 100  
     # T comes from the binding energy of the dimers for each strucutres converted from Hartrees to Kelvin
-    T = 1348.768    # nh3
-    #T = 457.088     # co2
+    #T = 1348.768    # nh3
+    T = 457.088     # co2
     #T = 2071.104    # h2o
 
     if basis_set_mexc == '6-311G(d,p)':
@@ -744,7 +754,7 @@ def main():
     
     methods_lst = ["B3LYP", "PBE0", "wB97XD", "CAM-B3LYP", "B97D3"]
     colors = ["blue", 'orange', 'green', 'red', 'cyan']
-    methods_lst = ["CAM-B3LYP"]
+    #methods_lst = ["CAM-B3LYP"]
     #methods_lst = ["CAM-B3LYP", "wB97XD"]
 
     #methods_lst = ["B3LYPD3"]
@@ -775,16 +785,17 @@ def main():
     """
     filename = "30_8_%s_elec_n%s_%s_%sK_exp.pdf" % ( moleculeName, nStates, basis_set_mexc , T, )
     title = r"30 Randomized Clusters of 8 %s Molecules with %s" % (moleculeNameLatex, basis_set_mexc) + "\nat %s K compared with experiment" % T 
+    title = '' 
     #exp_gas = np.genfromtxt('../../exp_data/%s_gas.csv' % moleculeName, delimiter=', ')
     exp_solid = np.genfromtxt('../../exp_data/%s_solid.csv'% moleculeName, delimiter=', ')
     #exp_data = [exp_gas, exp_solid]
     exp_data = [exp_solid]
     electronicMultiPlot_Experiment(methods_lst, 
         T, title, filename, 
-        x_range=[5,10], x_units='eV', 
+        x_range=[7,12], x_units='eV', 
         peaks=True, spec_name='spec', 
         complete=complete, basis_set_mexc=basis_set_mexc, nStates=nStates,
-        exp_data=exp_data, colors=colors
+        exp_data=exp_data, colors=colors, sec_y_axis=True, rounding=2
         )
     print("OUTPUT =\n", filename)
     

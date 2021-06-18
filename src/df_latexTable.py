@@ -1,7 +1,7 @@
 import pandas as pd
 import re 
 
-def df_latexTable (path, df, rounding=[]):
+def df_latexTable (path, df, rounding=2):
     # Latex package \usepackage{booktabs}
     with open(path, 'w') as fp:
         #fp.write(df.to_latex(index=False)) # works but not what i entirely want
@@ -26,8 +26,12 @@ def df_latexTable (path, df, rounding=[]):
                 if isinstance(cell, float):
                     #significant_digits = rounding[num][0]
                     #cell = round(cell, significant_digits - int(math.floor(math.log10(abs(cell)))) - 1)
-                    
-                    line += '%.2f & ' % cell
+                    if rounding == 2:
+                        line += '%.2f & ' % cell
+                    elif rounding == 1:
+                        line += '%.1f & ' % cell
+                    else:
+                        line += '%.4f & ' % cell
                 else:
                     line +=  '%s & ' % cell
             line = line[:-2]
