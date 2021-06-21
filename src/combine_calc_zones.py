@@ -12,6 +12,8 @@ import subprocess
 
 def combine_calcs(num_calcs):
     calc_names = []
+    if not os.path.exists('../calc_zone'):
+        os.mkdir('../calc_zone')
     for i in range(num_calcs):
         calc_names.append('calc_zone%d' % (i+1))
     print(os.getcwd())
@@ -41,6 +43,6 @@ def delete_nested_geoms(path):
             #os.chdir("..")
         os.chdir("..")
 def main():
-    combine_calcs(3)
+    combine_calcs(1)
     #delete_nested_geoms('../calc_zone1')
 main()

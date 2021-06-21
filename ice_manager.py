@@ -414,9 +414,10 @@ def electronicMultiPlot(methods_lst,
             '\\vtop{\\hbox{\\strut Oscillator Strength}\\hbox{\\strut (Normalized)}}': []
             } # 4 col
         df = pd.DataFrame(df)
-        headers = ['Method', 'Basis Set', 'Excitation (eV)',
-            '\\vtop{\\hbox{\\strut Oscillator Strength}\\hbox{\\strut (Normalized)}}']
-        df = df_latex.latexTable_df('latex_df_6-311++G(2d,2p).tex', headers)
+        if os.path.exists('latex_df_6-311++G(2d,2p).tex'):
+            headers = ['Method', 'Basis Set', 'Excitation (eV)',
+                '\\vtop{\\hbox{\\strut Oscillator Strength}\\hbox{\\strut (Normalized)}}']
+            df = df_latex.latexTable_df('latex_df_6-311++G(2d,2p).tex', headers)
 
     for i in methods_lst:
         gather_energies.main()
@@ -527,7 +528,7 @@ def main():
     method_mexc = "B3LYP"
     #method_mexc = "PBE0"
     #method_mexc = "wB97XD"
-    #method_mexc = "CAM-B3LYP"
+    method_mexc = "CAM-B3LYP"
     #method_mexc = "B3LYPD3"
     #method_mexc = "B97D3"
 
@@ -537,7 +538,7 @@ def main():
 
     # TD-DFT NSTATES
     nStates = '25'
-    #nStates = '50'
+    nStates = '50'
     #nStates = '100'
     #nStates = '150'
 
@@ -599,7 +600,7 @@ def main():
     methods_lst = ["B3LYP", "PBE0", "wB97XD", "CAM-B3LYP", "B97D3"]
     #methods_lst = ["CAM-B3LYP"]
 
-    #methods_lst = ["B3LYPD3"]
+    methods_lst = ["B3LYP"]
     
 
     title = r"30 Randomized Clusters of 8 %s Molecules with %s" % (moleculeNameLatex, basis_dir_name[1:].replace(nStates, '')) +  "\nat N=%s and T=%s K" % (nStates, T)
@@ -610,22 +611,22 @@ def main():
 
     filename = "30_8_%s_elec_n%s_%s_%sK.pdf" % ( moleculeName, nStates, basis_set_mexc , T, )
     title = r"30 Randomized Clusters of 8 %s Molecules with %s" % (moleculeNameLatex, basis_set_mexc) + "\nat %s K" % T 
-    #filename = "101_32_%s_elec_n%s_%s_%sK.pdf" % ( moleculeName, nStates, basis_set_mexc , T, )
-    #title = r"101 Randomized Clusters of 32 %s Molecules with %s" % (moleculeNameLatex, basis_set_mexc) + "\nat %s K" % T 
+    filename = "101_32_%s_elec_n%s_%s_%sK.pdf" % ( moleculeName, nStates, basis_set_mexc , T, )
+    title = r"101 Randomized Clusters of 32 %s Molecules with %s" % (moleculeNameLatex, basis_set_mexc) + "\nat %s K" % T 
     
     #methods_lst = method_update_selection(methods_lst, basis_set_mexc, nStates)
     #print(methods_lst)
 
+    """
     electronicMultiPlot(methods_lst, 
             T, title, filename, 
-            x_range=[5,10], x_units='eV', 
+            x_range=[5,12], x_units='eV', 
             peaks=True, spec_name='spec', 
             complete=complete, basis_set_mexc=basis_set_mexc, nStates=nStates
 
             )
     print("OUTPUT =\n", filename)
     
-    """
     """
     """
     T = 1000  # Kelvin (K)
