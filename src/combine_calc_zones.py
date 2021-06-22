@@ -9,9 +9,13 @@ import pandas as pd
 # import re
 import glob
 import subprocess
+import check_status
+
 
 def combine_calcs(num_calcs):
     calc_names = []
+    if not os.path.exists('../calc_zone'):
+        os.mkdir('../calc_zone')
     for i in range(num_calcs):
         calc_names.append('calc_zone%d' % (i+1))
     print(os.getcwd())
@@ -21,6 +25,22 @@ def combine_calcs(num_calcs):
         os.chdir(i)
         directories = glob.glob("geom*")
         for i in directories:
+            cmd = "cp -r %s ../calc_zone/geom%d" % (i, cnt)
+            subprocess.call(cmd, shell=True)
+            cnt += 1
+        os.chdir("..")
+
+def combine_calcs_no_errors(calc_names):
+    if not os.path.exists('../calc_zone'):
+        os.mkdir('../calc_zone')
+    os.chdir("..")
+    cnt = 1
+    print(calc_names)
+    for i in calc_names:
+        os.chdir(i)
+        del_lst, keep_lst = check_status.find_error_mexc('.')
+        print(keep_lst)
+        for i in keep_lst:
             cmd = "cp -r %s ../calc_zone/geom%d" % (i, cnt)
             subprocess.call(cmd, shell=True)
             cnt += 1
@@ -41,6 +61,9 @@ def delete_nested_geoms(path):
             #os.chdir("..")
         os.chdir("..")
 def main():
-    combine_calcs(3)
+    #combine_calcs(1)
     #delete_nested_geoms('../calc_zone1')
+    calc_names = ['calc_zone1']
+    combine_calcs_no_errors(calc_names)
+
 main()

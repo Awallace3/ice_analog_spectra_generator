@@ -36,7 +36,8 @@ def freq_hf_zero(lines, filename):
 
             if zero_point in line:
                 zeros.append(line)
-    print(zeros[0])
+               
+    #print(zeros[0])
     if len(HFs) == 1:
         return freqs[0], HFs[0], 0, zeros[0]
     else:
@@ -62,6 +63,7 @@ def clean_energies(hf_1, hf_2, zero_point):
         return float(hf_1[0]) + zero_point
 
 def main():
+    print("Gathering Energies")
     location = os.getcwd().split('/')[-1]
     if location == 'src':
         os.chdir("../calc_zone")
@@ -71,13 +73,13 @@ def main():
         os.chdir("calc_zone")
 
     directories = glob.glob("geom*")
-    print(os.getcwd())
+    #print(os.getcwd())
     cmd = 'rm ../results/energies/energy_all.csv'
     subprocess.call(cmd, shell=True)
     for i in directories:
         n = i[4:]
-        print(i)
-        print(i[5:])
+        #print(i)
+        #print(i[5:])
         os.chdir(i)
         out_files = glob.glob("*.out*")
         out_completion = glob.glob("mex_o.*")
@@ -104,7 +106,7 @@ def main():
                 lines, filename=filename)
             #print(freq, hf_1, hf_2, zero_point)
             sum_energy = clean_energies(hf_1, hf_2, zero_point)
-            print("Sum Energy:",sum_energy)
+            #print("Sum Energy:",sum_energy)
             #os.chdir("../results/energies")
             path = '../../results/energies/'
             #print(os.getcwd())

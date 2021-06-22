@@ -4,10 +4,12 @@ from src import ice_build_geoms
 from src import error_mexc_v11
 from src import gather_energies
 from src import vibrational_frequencies
+from src import df_latexTable as df_latex
 import time
 import glob
 import os
 import sys
+import pandas as pd
 import subprocess
 import numpy as np
 import scipy.signal
@@ -36,7 +38,7 @@ def jobResubmit(min_delay, number_delays,
     calculations_complete = False
 
     for i in range(number_delays):
-        # time.sleep(min_delay)
+        
         for num, j in enumerate(cluster_list):
             os.chdir(j)
             print(j)
@@ -59,36 +61,8 @@ def jobResubmit(min_delay, number_delays,
                 mexc_check = glob.glob(method_mexc.lower() + basis_dir_name)
                 path_mexc = method_mexc.lower() + basis_dir_name
                 print(method_mexc.lower() + basis_dir_name)
-                
-            """
-            if method_mexc == 'PBE0':
-                mexc_check = glob.glob("pbe0")
-                path_mexc = 'pbe0'
-            
-            elif method_mexc == 'wB97XD':
-                mexc_check = glob.glob("wb97xd")
-                path_mexc = 'wb97xd'
-            
-            elif method_mexc == 'B3LYP':
-                mexc_check = glob.glob("mexc")
-                path_mexc = 'mexc'
-            
-            elif method_mexc == 'B3LYPD3':
-                mexc_check = glob.glob("b3lypd3")
-                path_mexc = 'b3lypd3'
-            
-            elif method_mexc == 'CAM-B3LYP':
-                mexc_check = glob.glob("cam-b3lyp")
-                path_mexc = 'cam-b3lyp'
-            
-            elif method_mexc == 'B97D3':
-                mexc_check = glob.glob('b97d3')
-                path_mexc = 'b97d3'
-            else:
-                print("This method is not supported for TD-DFT yet.")
-            """
 
-            print(mexc_check)
+            #print(mexc_check)
             if len(mexc_check) > 0:
                 print('{0} entered mexc checkpoint 1'.format(num+1))
                 complete[num] = 1
@@ -108,7 +82,7 @@ def jobResubmit(min_delay, number_delays,
                     method_mexc, basis_set_mexc, mem_com_mexc, mem_pbs_mexc,
                     resubmissions, delay, nStates
                 )
-                print(resubmissions)
+                #print(resubmissions)
            
             mexc_check = []
             os.chdir('../..')
@@ -160,6 +134,7 @@ def boltzmannAnalysisSetup(complete, method_mexc='B3LYP',
         path_mexc = method_mexc.lower()+ basis_dir_name
     elif method_mexc == 'B3LYP':
         path_mexc = "mexc" + basis_dir_name
+        #print("B3LYP here")
     elif method_mexc == 'B3LYPD3':
         new_dir = 'b3lypd3'
         path_mexc = method_mexc.lower()+ basis_dir_name
@@ -176,27 +151,7 @@ def boltzmannAnalysisSetup(complete, method_mexc='B3LYP',
         print("This method is not supported for TD-DFT yet.")
     
     path_mexc = path_mexc.replace("(", "\(").replace(")", "\)")
-    """
-    if method_mexc == 'PBE0':
-        path_mexc = 'pbe0'
-    
-    elif method_mexc == 'wB97XD':
-        path_mexc = 'wb97xd'
-    
-    elif method_mexc == 'B3LYP':
-        path_mexc = 'mexc'
-    
-    elif method_mexc == 'B3LYPD3':
-        path_mexc = 'b3lypd3'
-    
-    elif method_mexc == 'CAM-B3LYP':
-        path_mexc = 'cam-b3lyp'
-    
-    elif method_mexc == 'B97D3':
-        path_mexc = 'b97d3'
-    else:
-        print("This method is not supported for TD-DFT yet.")
-    """
+
     print("\nPATH::: ", path_mexc, method_mexc)
 
     for i in range(len(complete)):
@@ -229,15 +184,15 @@ def boltzmannAnalysis(T, energy_levels='electronic'):
         os.chdir('results/vibrational_values')
         csv_name = 'vib'
         cmd = "perl ../../../src/specsim_xrange.pl 50 3600"
-    print(os.getcwd())
+    #print(os.getcwd())
     mexc_out_names = glob.glob("*.csv")
     #print(mexc_out_names)
     mexc_dict = {}
-    print(mexc_out_names)
+    #print(mexc_out_names)
     for i in mexc_out_names:
         val = i[:-4]
         #print("val")
-        print(val)
+        #print(val)
         #print(np.genfromtxt(i, delimiter=" "))
         mexc_dict['{0}'.format(val)] = np.genfromtxt(i, delimiter=" ")
     os.chdir('../energies')
@@ -256,7 +211,7 @@ def boltzmannAnalysis(T, energy_levels='electronic'):
     for key, value in mexc_dict.items():
         if key == 'mexc_out{0}'.format(lowest_energy_ind+1):
             continue
-        print(key) # crashes if not all mexc_out*.csv accounted for
+        #print(key) # crashes if not all mexc_out*.csv accounted for
         # remember energy_all array index starts at zero
         if energy_levels == 'electronic':
             current_energy_ind = int(key[8:]) - 1
@@ -266,12 +221,14 @@ def boltzmannAnalysis(T, energy_levels='electronic'):
         # find current energy and convert hartrees to joules
         current_energy = ((energy_all[current_energy_ind, :])[1]) * 4.3597E-18
 
-        print(lowest_energy)
-        print(current_energy)
+        #print(lowest_energy)
+        #print(current_energy)
 
         ni_nj = math.exp((lowest_energy - current_energy) / (T * kb))
+        '''
         print("n%d / n%d = %.10f" %
               (lowest_energy_ind+1, current_energy_ind + 1, ni_nj))
+        '''
         for i in range(len(value)):
 
             value[i][1] = value[i][1] * ni_nj
@@ -383,7 +340,7 @@ def generateGraph(spec_name, T, title, filename, x_range=[100,300], x_units='nm'
 
     return
 
-def collectSpecSimData(x_units='eV', spec_name='spec'):
+def collectSpecSimData(x_units='eV', spec_name='spec', normalize=True):
     data = np.genfromtxt("results/final/data/" + spec_name, delimiter=" ")
     data = data.tolist()
     # print(data)
@@ -397,8 +354,12 @@ def collectSpecSimData(x_units='eV', spec_name='spec'):
         if i[1] > highest_y:
             highest_y = i[1]
 
+    cam_b3lyp_n125_y = 4.98005616
+
+    #print("CAM-B3LYP:", highest_y)
     for i in range(len(y)):
         y[i] /= highest_y
+        #y[i] /= cam_b3lyp_n125_y 
     if x_units == 'eV' or x_units=='ev':
         h = 6.626E-34
         c = 3E17
@@ -412,12 +373,30 @@ def collectSpecSimData(x_units='eV', spec_name='spec'):
         #maxima = scipy.signal.argrelextrema(y, np.greater) 
     return x, y
 
+def latexTable_addLine (path, line):
+    if os.path.exists(path):
+        with open(path, 'r') as fp:
+            lines = fp.readlines()
+            lines.insert(-4, '\t'+line)
+            
+        with open(path, 'w') as fp:
+            for i in lines:
+                fp.write(i)
+    else:
+        with open(path, 'w') as fp:
+            fp.write('\\begin{center}\n\\begin{tabular}{ |c|c|c|c| }\n\t\\hline\n')
+            fp.write('\tMethod & Basis Set & Excitation (eV) &')
+            fp.write('\\vtop{\\hbox{\\strut Oscillator Strength}\\hbox{\\strut (Normalized)}}\\\\\n\t\\hline\n')
+            fp.write('\t' + line)
+            fp.write('\t\\hline\n\\end{tabular}\n\\end{center}')
+
+
 def electronicMultiPlot(methods_lst, 
             T, title, filename, 
             x_range=[2,16], x_units='eV', 
             peaks=False, spec_name='spec',
             complete=[], basis_set_mexc='6-31G(d,p)',
-            nStates='25'
+            nStates='25', 
             ):
 
     location = os.getcwd().split('/')[-1]
@@ -431,13 +410,61 @@ def electronicMultiPlot(methods_lst,
             complete.append(2)
     
     fig, ax1 = plt.subplots()
+    
+    if peaks:
+        print(os.path.exists('latex_df_6-311++G(2d,2p)'))
+        if os.path.exists('latex_df_6-311++G(2d,2p).tex'):
+
+            headers = ['Method', 'Basis Set', 'Excitation (eV)',
+                '\\vtop{\\hbox{\\strut Oscillator Strength}\\hbox{\\strut (Normalized)}}']
+            df = df_latex.latexTable_df('latex_df_6-311++G(2d,2p).tex', headers)
+        elif os.path.exists('latex_df_6-311G(d,p).tex'):
+            headers = ['Method', 'Basis Set', 'Excitation (eV)',
+                '\\vtop{\\hbox{\\strut Oscillator Strength}\\hbox{\\strut (Normalized)}}']
+            df = df_latex.latexTable_df('latex_df_6-311G(d,p).tex', headers)
+
+        else:
+            df = {'Method': [], 'Basis Set': [], 
+                'Excitation (eV)': [],
+                '\\vtop{\\hbox{\\strut Oscillator Strength}\\hbox{\\strut (Normalized)}}': []
+                } # 4 col
+            df = pd.DataFrame(df)
+
 
     for i in methods_lst:
         gather_energies.main()
         boltzmannAnalysisSetup(complete, i, basis_set_mexc, nStates)
         boltzmannAnalysis(T, energy_levels='electronic')    
-        x, y = collectSpecSimData()        
+        x, y = collectSpecSimData(x_units=x_units)        
+        """
+        if i == 'B3LYP':
+            print(x, y)
+        """
         ax1.plot(x, y, "-", label="%s" % i)
+        
+        if peaks:
+            arr_y = np.array(y)
+            print("local maxima")
+            peaks_dat, _ = scipy.signal.find_peaks(arr_y, height=0)
+            for j in peaks_dat:
+                #print(round(x[i],2), arr_y[i])
+                height = arr_y[j]
+                frequency = round(x[j], 2)
+                print("x, y = %.2f, %.2f" % (frequency, height))
+                line = "%s & %s & %.2f & %.2f \\\\\n" % (i, basis_set_mexc, frequency, height) 
+                latexTable_addLine('latexTable.tex', line)
+                df.loc[len(df.index)] = [i, basis_set_mexc, frequency, height]
+                """
+                with open('latexTabel.tex', 'a') as fp:
+                    fp.write("%s/%s,%.2f,%.2f\n" % (i, basis_set_mexc, frequency, height))
+                print(os.getcwd())
+                """
+
+                """
+                if height > 0.02:
+                    plt.text(frequency - 0.08, arr_y[i]+0.05, '%.2f' % frequency )
+                """
+            df_latex.df_latexTable('latex_df_%s.tex' % basis_set_mexc, df)
 
     #ax1.set_xlim([x[0], x[-1]])
     ax1.set_xlim(x_range)
@@ -448,29 +475,10 @@ def electronicMultiPlot(methods_lst,
         #print(x)
         plt.xlabel("Electronvolts (eV)")
         ax1.legend(shadow=True, fancybox=True)
-        if peaks:
-            arr_y = np.array(y)
-            #print("local maxima")
-            peaks, _ = scipy.signal.find_peaks(arr_y, height=0)
-            for i in peaks:
-                #print(round(x[i],2), arr_y[i])
-                height = arr_y[i]
-                frequency = round(x[i], 2)
-                if height > 0.02:
-                    plt.text(frequency - 0.08, arr_y[i]+0.05, '%.2f' % frequency )
 
     elif x_units == 'cm-1':
         plt.xlabel(r"Wavenumbers cm$^{-1}$")
-        if peaks:
-            arr_y = np.array(y)
-            #print("local maxima")
-            peaks, _ = scipy.signal.find_peaks(arr_y, height=0)
-            for i in peaks:
-                ##print(round(x[i]), arr_y[i])
-                height = arr_y[i]
-                frequency = round(x[i])
-                if height > 0.02:
-                    plt.text(frequency+100, arr_y[i]+0.1, '%d' % frequency )
+        
     else:
         plt.xlabel("Wavelength (nm)")
         ax1.legend(shadow=True, fancybox=True)
@@ -478,6 +486,148 @@ def electronicMultiPlot(methods_lst,
     plt.ylabel("Oscillator Strength")
     plt.grid(b=None, which='major', axis='y', linewidth=1)
     plt.grid(b=None, which='major', axis='x', linewidth=1)
+    # os.chdir("results/final/graphs")
+    os.chdir("results/final")
+    if "graphs" not in glob.glob("graphs"):
+        os.mkdir("graphs")
+    os.chdir("graphs")
+    plt.savefig(filename)
+    os.chdir("../../..")
+
+def electronicMultiPlot_Experiment(methods_lst, 
+            T, title, filename, 
+            x_range=[2,16], x_units='eV', 
+            peaks=False, spec_name='spec',
+            complete=[], basis_set_mexc='6-31G(d,p)',
+            nStates='25', exp_data=[], colors=[], sec_y_axis=False, rounding=1
+            ):
+
+    location = os.getcwd().split('/')[-1]
+    if location == 'src' or location == 'calc_zone':
+        os.chdir("..")
+
+    # only pass blank complete if all TD-DFT calculations are complete since it is assumed
+    if complete == []:
+        num_geom = glob.glob("calc_zone/geom*")
+        for i in range(len(num_geom)):
+            complete.append(2)
+    
+    fig, ax1 = plt.subplots()
+    
+    if peaks:
+        if os.path.exists('latex_df_6-311++G(2d,2p).tex'):
+
+            headers = ['Method', 'Basis Set', 'Excitation (eV)',
+                '\\vtop{\\hbox{\\strut Oscillator Strength}\\hbox{\\strut (Normalized)}}']
+            df = df_latex.latexTable_df('latex_df_6-311++G(2d,2p).tex', headers)
+        elif os.path.exists('latex_df_6-311G(d,p).tex'):
+            headers = ['Method', 'Basis Set', 'Excitation (eV)',
+                '\\vtop{\\hbox{\\strut Oscillator Strength}\\hbox{\\strut (Normalized)}}']
+            df = df_latex.latexTable_df('latex_df_6-311G(d,p).tex', headers)
+
+        else:
+            df = {'Method': [], 'Basis Set': [], 
+                'Excitation (eV)': [],
+                '\\vtop{\\hbox{\\strut Oscillator Strength}\\hbox{\\strut (Normalized)}}': []
+                } # 4 col
+            df = pd.DataFrame(df)
+
+    for n, i in enumerate(methods_lst):
+        gather_energies.main()
+        boltzmannAnalysisSetup(complete, i, basis_set_mexc, nStates)
+        boltzmannAnalysis(T, energy_levels='electronic')    
+        x, y = collectSpecSimData()        
+        """
+        if i == 'B3LYP':
+            print(x, y)
+        """
+        #ax1.plot(x, y, "-", label="%s" % i, zorder=2)
+        ax1.plot(x, y, "-", c="%s" % (colors[n]), label="%s" % i, zorder=2)
+        
+        if peaks:
+            arr_y = np.array(y)
+            print("local maxima")
+            peaks_dat, _ = scipy.signal.find_peaks(arr_y, height=0)
+            for j in peaks_dat:
+                #print(round(x[i],2), arr_y[i])
+                height = arr_y[j]
+                frequency = round(x[j], 4)
+                if rounding == 1:    
+                    print("x, y = %.1f, %.1f" % (frequency, height))
+                    line = "%s & %s & %.1f & %.1f \\\\\n" % (i, basis_set_mexc, frequency, height) 
+                elif rounding == 2:
+                    print("x, y = %.2f, %.2f" % (frequency, height))
+                    line = "%s & %s & %.2f & %.2f \\\\\n" % (i, basis_set_mexc, frequency, height) 
+                else:
+                    print("x, y = %.4f, %.4f" % (frequency, height))
+                    line = "%s & %s & %.4f & %.4f \\\\\n" % (i, basis_set_mexc, frequency, height) 
+
+                #latexTable_addLine('latexTable.tex', line)
+                df.loc[len(df.index)] = [i, basis_set_mexc, frequency, height]
+                """
+                with open('latexTabel.tex', 'a') as fp:
+                    fp.write("%s/%s,%.2f,%.2f\n" % (i, basis_set_mexc, frequency, height))
+                print(os.getcwd())
+                """
+
+                """
+                if height > 0.02:
+                    plt.text(frequency - 0.08, arr_y[i]+0.05, '%.2f' % frequency )
+                """
+            df_latex.df_latexTable('latex_df_%s.tex' % basis_set_mexc, df, rounding )
+
+    exp_names = [ "Exp. Solid", "Exp. Gas"]
+    exp_colors = [ "k","tab:grey"]
+    ax2 = ax1.twinx()
+    #for n, i in enumerate(exp_data):
+    #    ax2.plot(i[:,0], i[:,1], "--", label="%s" % exp_names[n])
+    #ax2.set_ylabel(r"Cross Section / cm$^2$")
+    #ax2.set_ylim(0,5.0E-17*1.4)
+
+    for n, i in enumerate(exp_data):
+        ymax = np.amax(i[:,1], axis=0)
+        i[:,1] /= ymax
+        ax2.plot(i[:,0], i[:,1], "--", c='%s' % exp_colors[n], label="%s" % exp_names[n], zorder=2)
+        if peaks:
+            arr_y = i[:,1]
+            print("local maxima")
+            peaks_dat, _ = scipy.signal.find_peaks(arr_y, height=0)
+            for j in peaks_dat:
+                #print(round(x[i],2), arr_y[i])
+                height = arr_y[j]
+                frequency = round(i[j,0], 2)
+                print("x, y = %.2f, %.2f" % (frequency, height))
+                line = "%s & %s & %.2f & %.2f \\\\\n" % (exp_names[n], basis_set_mexc, frequency, height) 
+                #latexTable_addLine('latexTable.tex', line)
+                df.loc[len(df.index)] = [exp_names[n], basis_set_mexc, frequency, height]
+            df_latex.df_latexTable('latex_df_%s.tex' % basis_set_mexc, df, rounding)
+    #ax1.set_xlim([x[0], x[-1]])
+    if sec_y_axis:
+        #ax2.set_ylabel(r"Cross Section / cm$^2$ (Normalized)")
+        ax2.set_ylim(0,1.5)
+
+    ax1.set_xlim(x_range)
+    ax1.set_ylim(0, 1.5)
+
+    plt.title(title)
+    ax1.legend(shadow=True, fancybox=True, loc='upper left')
+    ax2.legend(shadow=True, fancybox=True, loc='upper right')
+    if x_units == 'ev' or x_units=='eV':
+        #print(x)
+        plt.xlabel("Electronvolts (eV)")
+        ax1.set_xlabel("Electronvolts (eV)")
+        #ax1.legend(shadow=True, fancybox=True)
+
+    elif x_units == 'cm-1':
+        plt.xlabel(r"Wavenumbers cm$^{-1}$")
+        
+    else:
+        plt.xlabel("Wavelength (nm)")
+        #ax1.legend(shadow=True, fancybox=True)
+
+    ax1.set_ylabel("Oscillator Strength")
+    #plt.grid(zorder=0, b=None, which='major', axis='y', linewidth=1)
+    #plt.grid(zorder=0, b=None, which='major', axis='x', linewidth=1)
     # os.chdir("results/final/graphs")
     os.chdir("results/final")
     if "graphs" not in glob.glob("graphs"):
@@ -529,29 +679,44 @@ def main():
 
     
     # TD-DFT methods
-    #method_mexc = "B3LYP"
+    method_mexc = "B3LYP"
     #method_mexc = "PBE0"
     #method_mexc = "wB97XD"
-    method_mexc = "CAM-B3LYP"
+    #method_mexc = "CAM-B3LYP"
     #method_mexc = "B3LYPD3"
     #method_mexc = "B97D3"
 
     # TD-DFT basis sets
-    #basis_set_mexc = "6-311G(d,p)"
-    basis_set_mexc = "6-311++G(2d,2p)"
+    basis_set_mexc = "6-311G(d,p)"
+    #basis_set_mexc = "6-311++G(2d,2p)"
 
     # TD-DFT NSTATES
     nStates = '25'
     #nStates = '50'
+    #nStates = '100'
+    #nStates = '150'
+    #nStates = '125'
 
     # TD-DFT memory
-    mem_com_mexc = "1600"  # mb
-    mem_pbs_mexc = "15"  # gb"
-
-    T = 1000  # Kelvin (K)    
+    mem_com_mexc = "2500"  # mb
+    mem_pbs_mexc = "25"  # gb"
 
     moleculeName = 'nh3'
     moleculeNameLatex = r'NH$_3$'
+    moleculeName = 'co2'
+    moleculeNameLatex = r'CO$_2$'
+   #moleculeName = 'h2o'
+   #moleculeNameLatex = r'H$_2$O'
+    moleculeName = 'co3h2'
+    moleculeNameLatex = r'CO$_3$H$_2$'
+
+    # Temperatures (K)
+    #T = 100  
+    # T comes from the binding energy of the dimers for each strucutres converted from Hartrees to Kelvin
+    #T = 1348.768    # nh3
+    #T = 457.088     # co2
+    #T = 2071.104    # h2o
+    T = 9259.3       # co3h2
 
     if basis_set_mexc == '6-311G(d,p)':
         basis_dir_name = ''
@@ -572,7 +737,6 @@ def main():
                         mol_xyz1, mol_xyz2, method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt)
     """
     
-    
     complete = jobResubmit(resubmit_delay_min, resubmit_max_attempts,
                            method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt,
                            method_mexc, basis_set_mexc, mem_com_mexc, mem_pbs_mexc,
@@ -589,25 +753,55 @@ def main():
     ### NH3 6-311++G(d,p) need to test nstates==50
 
     # to combine total electronic calculations
-    #methods_lst = ["B3LYP", "PBE0", "wB97XD", "CAM-B3LYP", "B3LYPD3", "B97D3"]
     methods_lst = ["B3LYP", "PBE0", "wB97XD", "CAM-B3LYP", "B3LYPD3", "B97D3"]
+    
+    methods_lst = ["B3LYP", "PBE0", "wB97XD", "CAM-B3LYP", "B97D3"]
+    colors = ["blue", 'orange', 'green', 'red', 'cyan']
     #methods_lst = ["CAM-B3LYP"]
-    #methods_lst = ["B3LYP_6-311++G(2d,2p)", "PBE0_6-311++G(2d,2p)", "wB97XD_6-311++G(2d,2p)", "CAM-B3LYP_6-311++G(2d,2p)", "B3LYPD3_6-311++G(2d,2p)", "B97D3_6-311++G(2d,2p)"]
-    #methods_lst = ["B3LYP_6-311++G(2d,2p)", "PBE0_6-311++G(2d,2p)", "wB97XD_6-311++G(2d,2p)", "CAM-B3LYP_6-311++G(2d,2p)", "B3LYPD3_6-311++G(2d,2p)", "B97D3_6-311++G(2d,2p)"]
-    T = 1000  # Kelvin (K)
-    title = r"30 Randomized Clusters of 8 %s Molecules %s" % (moleculeNameLatex, basis_dir_name)
-    filename = "30_8_rand_%s_electronic_%s%s.pdf" % ( moleculeName, method_mexc, basis_dir_name)
+    #methods_lst = ["CAM-B3LYP", "wB97XD"]
 
+    methods_lst = ["B3LYP"]
+    
+
+    title = r"30 Randomized Clusters of 8 %s Molecules with %s" % (moleculeNameLatex, basis_dir_name[1:].replace(nStates, '')) +  "\nat N=%s and T=%s K" % (nStates, T)
+    filename = "30_8_%s_elec_n%s_%s_%sK.pdf" % ( moleculeName, nStates, basis_dir_name[1:].replace(nStates, ''), T, )
+    if len(methods_lst) == 1:
+        filename = "30_8_%s_elec_%s_n%s_%s_%sK.pdf" % ( moleculeName, method_mexc, nStates, basis_dir_name[1:].replace(nStates, ''), T, )
+    #filename = "30_8_%s_test_%sk.pdf" % ( moleculeName, T)
+
+    filename = "30_8_%s_elec_n%s_%s_%sK.pdf" % ( moleculeName, nStates, basis_set_mexc , T, )
+    title = r"30 Randomized Clusters of 8 %s Molecules with %s" % (moleculeNameLatex, basis_set_mexc) + "\nat %s K" % T 
+    #filename = "101_32_%s_elec_n%s_%s_%sK.pdf" % ( moleculeName, nStates, basis_set_mexc , T, )
+    #title = r"101 Randomized Clusters of 32 %s Molecules with %s" % (moleculeNameLatex, basis_set_mexc) + "\nat %s K" % T 
+    
     #methods_lst = method_update_selection(methods_lst, basis_set_mexc, nStates)
-    print(methods_lst)
+    #print(methods_lst)
 
     electronicMultiPlot(methods_lst, 
             T, title, filename, 
-            x_range=[5,10], x_units='eV', 
-            peaks=False, spec_name='spec', 
+            x_range=[100,320], x_units='nm', 
+            peaks=True, spec_name='spec', 
             complete=complete, basis_set_mexc=basis_set_mexc, nStates=nStates
+
             )
+    print("OUTPUT =\n", filename)
     """
+    filename = "30_8_%s_elec_n%s_%s_%sK_exp.pdf" % ( moleculeName, nStates, basis_set_mexc , T, )
+    title = r"30 Randomized Clusters of 8 %s Molecules with %s" % (moleculeNameLatex, basis_set_mexc) + "\nat %s K compared with experiment" % T 
+    title = '' 
+    #exp_gas = np.genfromtxt('../../exp_data/%s_gas.csv' % moleculeName, delimiter=', ')
+    exp_solid = np.genfromtxt('../../exp_data/%s_solid.csv'% moleculeName, delimiter=', ')
+    #exp_data = [exp_gas, exp_solid]
+    exp_data = [exp_solid]
+    electronicMultiPlot_Experiment(methods_lst, 
+        T, title, filename, 
+        x_range=[7,12], x_units='eV', 
+        peaks=True, spec_name='spec', 
+        complete=complete, basis_set_mexc=basis_set_mexc, nStates=nStates,
+        exp_data=exp_data, colors=colors, sec_y_axis=True, rounding=2
+        )
+    print("OUTPUT =\n", filename)
+    
     """
     """
     T = 1000  # Kelvin (K)

@@ -72,7 +72,8 @@ def main():
     #basis_set_mexc = '6-311G(d,p)'
     
     #nStates = '25'
-    nStates = '50'
+    #nStates = '50'
+    nStates = '150'
     
     rm_mexc(method_mexc, basis_set_mexc, nStates)
 main()
