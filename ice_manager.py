@@ -354,12 +354,14 @@ def collectSpecSimData(x_units='eV', spec_name='spec', normalize=True):
         if i[1] > highest_y:
             highest_y = i[1]
 
+    print(highest_y, "HIGHEST")
     cam_b3lyp_n125_y = 4.98005616
+    cam_b3lyp_n125_y = 1.9835017
 
     #print("CAM-B3LYP:", highest_y)
     for i in range(len(y)):
-        y[i] /= highest_y
-        #y[i] /= cam_b3lyp_n125_y 
+        #y[i] /= highest_y
+        y[i] /= cam_b3lyp_n125_y 
     if x_units == 'eV' or x_units=='ev':
         h = 6.626E-34
         c = 3E17
@@ -681,8 +683,8 @@ def main():
     # TD-DFT methods
     #method_mexc = "B3LYP"
     #method_mexc = "PBE0"
-    #method_mexc = "wB97XD"
-    method_mexc = "CAM-B3LYP"
+    method_mexc = "wB97XD"
+    #method_mexc = "CAM-B3LYP"
     #method_mexc = "B3LYPD3"
     #method_mexc = "B97D3"
 
@@ -692,10 +694,10 @@ def main():
 
     # TD-DFT NSTATES
     nStates = '25'
-    nStates = '50'
+    #nStates = '50'
     #nStates = '100'
     #nStates = '150'
-    #nStates = '125'
+    nStates = '125'
 
     # TD-DFT memory
     mem_com_mexc = "2500"  # mb
@@ -703,8 +705,8 @@ def main():
 
     moleculeName = 'nh3'
     moleculeNameLatex = r'NH$_3$'
-    moleculeName = 'co2'
-    moleculeNameLatex = r'CO$_2$'
+    #moleculeName = 'co2'
+    #moleculeNameLatex = r'CO$_2$'
    #moleculeName = 'h2o'
    #moleculeNameLatex = r'H$_2$O'
 
@@ -755,9 +757,10 @@ def main():
     methods_lst = ["B3LYP", "PBE0", "wB97XD", "CAM-B3LYP", "B97D3"]
     colors = ["blue", 'orange', 'green', 'red', 'cyan']
     #methods_lst = ["CAM-B3LYP"]
-    #methods_lst = ["CAM-B3LYP", "wB97XD"]
+    methods_lst = ["CAM-B3LYP", "wB97XD"]
+    colors = ["red", 'green']
 
-    methods_lst = ["B3LYP"]
+    #methods_lst = ["B3LYP"]
     
 
     title = r"30 Randomized Clusters of 8 %s Molecules with %s" % (moleculeNameLatex, basis_dir_name[1:].replace(nStates, '')) +  "\nat N=%s and T=%s K" % (nStates, T)
@@ -783,6 +786,7 @@ def main():
 
             )
     print("OUTPUT =\n", filename)
+    """
     filename = "30_8_%s_elec_n%s_%s_%sK_exp.pdf" % ( moleculeName, nStates, basis_set_mexc , T, )
     title = r"30 Randomized Clusters of 8 %s Molecules with %s" % (moleculeNameLatex, basis_set_mexc) + "\nat %s K compared with experiment" % T 
     title = '' 
@@ -792,14 +796,13 @@ def main():
     exp_data = [exp_solid]
     electronicMultiPlot_Experiment(methods_lst, 
         T, title, filename, 
-        x_range=[7,12], x_units='eV', 
+        x_range=[6,11], x_units='eV', 
         peaks=True, spec_name='spec', 
         complete=complete, basis_set_mexc=basis_set_mexc, nStates=nStates,
         exp_data=exp_data, colors=colors, sec_y_axis=True, rounding=2
         )
     print("OUTPUT =\n", filename)
     
-    """
     """
     T = 1000  # Kelvin (K)
     title = r"30 Randomized Clusters of 8 CO$_2$ Molecules: Vibrational"

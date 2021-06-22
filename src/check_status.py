@@ -105,11 +105,67 @@ def resubmit_mem(jobs_lst, base_dir_name, inc=500):
         cmd = 'qsub mexc.pbs'
         subprocess.call(cmd, shell=True)
         os.chdir("../..")
+def day_hour_minutes_seconds_to_seconds(time_lst):
+    seconds = 0
+    
+    for n, i in enumerate(time_lst):
+        i=float(i)
+        if n==0:
+            seconds += 24*60*60*i
+        elif n==1:
+            seconds += 60*60*i
+        elif n==2:
+            seconds += 60*i
+        else:
+            seconds += i
+    return seconds
+
+def check_times(base_dir_name):
+    location = os.getcwd().split('/')[-1]
+    if location == 'src':
+        os.chdir("../calc_zone")
+    elif location == 'calc_zone':
+        pass
+    else:
+        os.chdir("calc_zone")
+    geoms = glob.glob("geom*")
+    times = []
+    for i in geoms:
+        os.chdir("%s/%s"%(i,base_dir_name))
+        with open("mexc.out", 'r') as fp:
+            data = fp.readlines()
+            time_line = ''
+        for n, j in enumerate(data):
+            if 'Job cpu time:' in j:
+                time_line = j
+                break
+        if len(time_line) > 5:
+            time_line = time_line.replace("days", ":").replace("hours", ':').replace("minutes",":").replace("seconds",":")
+            time_line = time_line.split(":")[1:-1]
+            times.append(day_hour_minutes_seconds_to_seconds(time_line))
+        os.chdir("../..")
+    avg = sum(times) / len(times)
+    print("\n%s took an average time of..." % (base_dir_name))
+    print("seconds: %.2f\nhours: %.2f\n" % (avg, avg/60/60))
+    return avg
+            
+def check_times_multi (base_dir_names):
+    times = []
+    for i in base_dir_names:
+        times.append(check_times(i))
+    return times
+            
 
 if __name__ == "__main__":
+    
     path = '../calc_zone'
     #path = '../calc_zone1'
     #check_status(path)
     base_dir_name = 'cam-b3lyp_n50'
-    resubmit_lst = find_error_mexc(path, base_dir_name)
-    resubmit_mem(resubmit_lst, base_dir_name)
+    base_dir_name = 'cam-b3lyp_6-311++G(2d,2p)_n125'
+    base_dir_name = 'wb97xd_6-311++G(2d,2p)_n125'
+    base_dir_names = ['cam-b3lyp_6-311++G(2d,2p)_n125', 'wb97xd_6-311++G(2d,2p)_n125', 'cam-b3lyp_6-311++G(2d,2p)', 'wb97xd_6-311++G(2d,2p)', 'cam-b3lyp', 'wb97xd'  ]
+    #resubmit_lst = find_error_mexc(path, base_dir_name)
+    #resubmit_mem(resubmit_lst, base_dir_name)
+    #check_times(base_dir_name)
+    check_times_multi(base_dir_names)
