@@ -11,7 +11,7 @@ my $PWD = cwd();
 my $INPUT = "data";
 my $SPECTRUM = "spec";
 my $NPOINTS = 4000;
-my $DELTAG = 1.0;
+my $DELTAG = 2;
 my @EX;
 my @PROP;
 my $NSTATES;

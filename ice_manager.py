@@ -354,12 +354,14 @@ def collectSpecSimData(x_units='eV', spec_name='spec', normalize=True):
         if i[1] > highest_y:
             highest_y = i[1]
 
+    print(highest_y, "HIGHEST")
     cam_b3lyp_n125_y = 4.98005616
+    cam_b3lyp_n125_y = 1.9835017
 
     #print("CAM-B3LYP:", highest_y)
     for i in range(len(y)):
-        y[i] /= highest_y
-        #y[i] /= cam_b3lyp_n125_y 
+        #y[i] /= highest_y
+        y[i] /= cam_b3lyp_n125_y 
     if x_units == 'eV' or x_units=='ev':
         h = 6.626E-34
         c = 3E17
@@ -695,7 +697,7 @@ def main():
     nStates = '50'
     #nStates = '100'
     #nStates = '150'
-    #nStates = '125'
+    nStates = '125'
 
     # TD-DFT memory
     mem_com_mexc = "2500"  # mb
@@ -811,12 +813,10 @@ def main():
     """
 
     # for vibrational frequency standard usage
-    """
     #vibrational_frequencies.main()
     #boltzmannAnalysis(T, energy_levels='vibrational')
     #generateGraph("spec", T, title, filename, x_range=[3600, 50], x_units='cm-1', peaks=True)
-    """
-
+    
     # useful bash commands below
         # ps aux | grep test.py
         # kill <pid> -9
