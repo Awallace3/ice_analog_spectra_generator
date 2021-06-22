@@ -437,7 +437,7 @@ def electronicMultiPlot(methods_lst,
         gather_energies.main()
         boltzmannAnalysisSetup(complete, i, basis_set_mexc, nStates)
         boltzmannAnalysis(T, energy_levels='electronic')    
-        x, y = collectSpecSimData()        
+        x, y = collectSpecSimData(x_units=x_units)        
         """
         if i == 'B3LYP':
             print(x, y)
@@ -681,7 +681,7 @@ def main():
 
     
     # TD-DFT methods
-    #method_mexc = "B3LYP"
+    method_mexc = "B3LYP"
     #method_mexc = "PBE0"
     method_mexc = "wB97XD"
     #method_mexc = "CAM-B3LYP"
@@ -689,8 +689,8 @@ def main():
     #method_mexc = "B97D3"
 
     # TD-DFT basis sets
-    #basis_set_mexc = "6-311G(d,p)"
-    basis_set_mexc = "6-311++G(2d,2p)"
+    basis_set_mexc = "6-311G(d,p)"
+    #basis_set_mexc = "6-311++G(2d,2p)"
 
     # TD-DFT NSTATES
     nStates = '25'
@@ -709,13 +709,16 @@ def main():
     #moleculeNameLatex = r'CO$_2$'
    #moleculeName = 'h2o'
    #moleculeNameLatex = r'H$_2$O'
+    moleculeName = 'co3h2'
+    moleculeNameLatex = r'CO$_3$H$_2$'
 
     # Temperatures (K)
     #T = 100  
     # T comes from the binding energy of the dimers for each strucutres converted from Hartrees to Kelvin
     #T = 1348.768    # nh3
-    T = 457.088     # co2
+    #T = 457.088     # co2
     #T = 2071.104    # h2o
+    T = 9259.3       # co3h2
 
     if basis_set_mexc == '6-311G(d,p)':
         basis_dir_name = ''
@@ -769,18 +772,17 @@ def main():
         filename = "30_8_%s_elec_%s_n%s_%s_%sK.pdf" % ( moleculeName, method_mexc, nStates, basis_dir_name[1:].replace(nStates, ''), T, )
     #filename = "30_8_%s_test_%sk.pdf" % ( moleculeName, T)
 
-    """
     filename = "30_8_%s_elec_n%s_%s_%sK.pdf" % ( moleculeName, nStates, basis_set_mexc , T, )
     title = r"30 Randomized Clusters of 8 %s Molecules with %s" % (moleculeNameLatex, basis_set_mexc) + "\nat %s K" % T 
-    filename = "101_32_%s_elec_n%s_%s_%sK.pdf" % ( moleculeName, nStates, basis_set_mexc , T, )
-    title = r"101 Randomized Clusters of 32 %s Molecules with %s" % (moleculeNameLatex, basis_set_mexc) + "\nat %s K" % T 
+    #filename = "101_32_%s_elec_n%s_%s_%sK.pdf" % ( moleculeName, nStates, basis_set_mexc , T, )
+    #title = r"101 Randomized Clusters of 32 %s Molecules with %s" % (moleculeNameLatex, basis_set_mexc) + "\nat %s K" % T 
     
     #methods_lst = method_update_selection(methods_lst, basis_set_mexc, nStates)
     #print(methods_lst)
 
     electronicMultiPlot(methods_lst, 
             T, title, filename, 
-            x_range=[5,12], x_units='eV', 
+            x_range=[100,320], x_units='nm', 
             peaks=True, spec_name='spec', 
             complete=complete, basis_set_mexc=basis_set_mexc, nStates=nStates
 
@@ -814,8 +816,7 @@ def main():
     #vibrational_frequencies.main()
     #boltzmannAnalysis(T, energy_levels='vibrational')
     #generateGraph("spec", T, title, filename, x_range=[3600, 50], x_units='cm-1', peaks=True)
-    """
-
+    
     # useful bash commands below
         # ps aux | grep test.py
         # kill <pid> -9

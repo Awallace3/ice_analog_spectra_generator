@@ -73,7 +73,7 @@ def find_error_mexc(path_calc_zone, base_dir_name='mexc'):
     print("Keep:\n", keep_lst, '\nlen:', len(keep_lst))
     print("\nDelete:", del_lst, '\nlen:', len(del_lst))
     
-    return del_lst
+    return del_lst, keep_lst
 
 def resubmit_mem(jobs_lst, base_dir_name, inc=500):
    for i in jobs_lst:
@@ -169,3 +169,5 @@ if __name__ == "__main__":
     #resubmit_mem(resubmit_lst, base_dir_name)
     #check_times(base_dir_name)
     check_times_multi(base_dir_names)
+    #resubmit_lst, keep_lst = find_error_mexc(path, base_dir_name)
+    #resubmit_mem(resubmit_lst, base_dir_name)

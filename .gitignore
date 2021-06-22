@@ -151,6 +151,7 @@ results/final/data/spec
 calc_zone_og
 og_calc_zone
 results/final/data/*
+calc_zone1_og
 *.tex
 calc_zone1
 calc_zone2
