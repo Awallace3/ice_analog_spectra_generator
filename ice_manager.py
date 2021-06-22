@@ -682,7 +682,7 @@ def main():
     method_mexc = "B3LYP"
     #method_mexc = "PBE0"
     #method_mexc = "wB97XD"
-    #method_mexc = "CAM-B3LYP"
+    method_mexc = "CAM-B3LYP"
     #method_mexc = "B3LYPD3"
     #method_mexc = "B97D3"
 
@@ -692,7 +692,7 @@ def main():
 
     # TD-DFT NSTATES
     nStates = '25'
-    #nStates = '50'
+    nStates = '50'
     #nStates = '100'
     #nStates = '150'
     #nStates = '125'
@@ -701,22 +701,22 @@ def main():
     mem_com_mexc = "2500"  # mb
     mem_pbs_mexc = "25"  # gb"
 
-    moleculeName = 'nh3'
-    moleculeNameLatex = r'NH$_3$'
-    moleculeName = 'co2'
-    moleculeNameLatex = r'CO$_2$'
-   #moleculeName = 'h2o'
-   #moleculeNameLatex = r'H$_2$O'
-    moleculeName = 'co3h2'
-    moleculeNameLatex = r'CO$_3$H$_2$'
+    #moleculeName = 'nh3'
+    #moleculeNameLatex = r'NH$_3$'
+    #moleculeName = 'co2'
+    #moleculeNameLatex = r'CO$_2$'
+    moleculeName = 'h2o'
+    moleculeNameLatex = r'H$_2$O'
+    #moleculeName = 'co3h2'
+    #moleculeNameLatex = r'CO$_3$H$_2$'
 
     # Temperatures (K)
     #T = 100  
     # T comes from the binding energy of the dimers for each strucutres converted from Hartrees to Kelvin
     #T = 1348.768    # nh3
     #T = 457.088     # co2
-    #T = 2071.104    # h2o
-    T = 9259.3       # co3h2
+    T = 2071.104    # h2o
+    #T = 9259.3       # co3h2
 
     if basis_set_mexc == '6-311G(d,p)':
         basis_dir_name = ''
@@ -757,10 +757,12 @@ def main():
     
     methods_lst = ["B3LYP", "PBE0", "wB97XD", "CAM-B3LYP", "B97D3"]
     colors = ["blue", 'orange', 'green', 'red', 'cyan']
-    #methods_lst = ["CAM-B3LYP"]
+    methods_lst = ["CAM-B3LYP"]
+    colors = [ 'red', 'green']
     #methods_lst = ["CAM-B3LYP", "wB97XD"]
 
-    methods_lst = ["B3LYP"]
+    #methods_lst = ["B3LYP"]
+    #colors = ['blue']
     
 
     title = r"30 Randomized Clusters of 8 %s Molecules with %s" % (moleculeNameLatex, basis_dir_name[1:].replace(nStates, '')) +  "\nat N=%s and T=%s K" % (nStates, T)
@@ -771,15 +773,14 @@ def main():
 
     filename = "30_8_%s_elec_n%s_%s_%sK.pdf" % ( moleculeName, nStates, basis_set_mexc , T, )
     title = r"30 Randomized Clusters of 8 %s Molecules with %s" % (moleculeNameLatex, basis_set_mexc) + "\nat %s K" % T 
-    #filename = "101_32_%s_elec_n%s_%s_%sK.pdf" % ( moleculeName, nStates, basis_set_mexc , T, )
-    #title = r"101 Randomized Clusters of 32 %s Molecules with %s" % (moleculeNameLatex, basis_set_mexc) + "\nat %s K" % T 
     
     #methods_lst = method_update_selection(methods_lst, basis_set_mexc, nStates)
     #print(methods_lst)
 
+    """
     electronicMultiPlot(methods_lst, 
             T, title, filename, 
-            x_range=[100,320], x_units='nm', 
+            x_range=[6,11], x_units='eV', 
             peaks=True, spec_name='spec', 
             complete=complete, basis_set_mexc=basis_set_mexc, nStates=nStates
 
@@ -789,20 +790,20 @@ def main():
     filename = "30_8_%s_elec_n%s_%s_%sK_exp.pdf" % ( moleculeName, nStates, basis_set_mexc , T, )
     title = r"30 Randomized Clusters of 8 %s Molecules with %s" % (moleculeNameLatex, basis_set_mexc) + "\nat %s K compared with experiment" % T 
     title = '' 
+    filename = "105_32_%s_elec_n%s_%s_%sK.pdf" % ( moleculeName, nStates, basis_set_mexc , T, )
     #exp_gas = np.genfromtxt('../../exp_data/%s_gas.csv' % moleculeName, delimiter=', ')
     exp_solid = np.genfromtxt('../../exp_data/%s_solid.csv'% moleculeName, delimiter=', ')
     #exp_data = [exp_gas, exp_solid]
     exp_data = [exp_solid]
     electronicMultiPlot_Experiment(methods_lst, 
         T, title, filename, 
-        x_range=[7,12], x_units='eV', 
+        x_range=[6,11], x_units='eV', 
         peaks=True, spec_name='spec', 
         complete=complete, basis_set_mexc=basis_set_mexc, nStates=nStates,
         exp_data=exp_data, colors=colors, sec_y_axis=True, rounding=2
         )
     print("OUTPUT =\n", filename)
     
-    """
     """
     T = 1000  # Kelvin (K)
     title = r"30 Randomized Clusters of 8 CO$_2$ Molecules: Vibrational"
