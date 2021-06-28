@@ -360,8 +360,8 @@ def collectSpecSimData(x_units='eV', spec_name='spec', normalize=True):
 
     #print("CAM-B3LYP:", highest_y)
     for i in range(len(y)):
-        #y[i] /= highest_y
-        y[i] /= cam_b3lyp_n125_y 
+        y[i] /= highest_y
+        #y[i] /= cam_b3lyp_n125_y 
     if x_units == 'eV' or x_units=='ev':
         h = 6.626E-34
         c = 3E17
@@ -538,7 +538,7 @@ def electronicMultiPlot_Experiment(methods_lst,
         gather_energies.main()
         boltzmannAnalysisSetup(complete, i, basis_set_mexc, nStates)
         boltzmannAnalysis(T, energy_levels='electronic')    
-        x, y = collectSpecSimData()        
+        x, y = collectSpecSimData(x_units=x_units)        
         """
         if i == 'B3LYP':
             print(x, y)
@@ -585,24 +585,24 @@ def electronicMultiPlot_Experiment(methods_lst,
     #    ax2.plot(i[:,0], i[:,1], "--", label="%s" % exp_names[n])
     #ax2.set_ylabel(r"Cross Section / cm$^2$")
     #ax2.set_ylim(0,5.0E-17*1.4)
-
-    for n, i in enumerate(exp_data):
-        ymax = np.amax(i[:,1], axis=0)
-        i[:,1] /= ymax
-        ax2.plot(i[:,0], i[:,1], "--", c='%s' % exp_colors[n], label="%s" % exp_names[n], zorder=2)
-        if peaks:
-            arr_y = i[:,1]
-            print("local maxima")
-            peaks_dat, _ = scipy.signal.find_peaks(arr_y, height=0)
-            for j in peaks_dat:
-                #print(round(x[i],2), arr_y[i])
-                height = arr_y[j]
-                frequency = round(i[j,0], 2)
-                print("x, y = %.2f, %.2f" % (frequency, height))
-                line = "%s & %s & %.2f & %.2f \\\\\n" % (exp_names[n], basis_set_mexc, frequency, height) 
-                #latexTable_addLine('latexTable.tex', line)
-                df.loc[len(df.index)] = [exp_names[n], basis_set_mexc, frequency, height]
-            df_latex.df_latexTable('latex_df_%s.tex' % basis_set_mexc, df, rounding)
+    if len(exp_data) > 0:
+        for n, i in enumerate(exp_data):
+            ymax = np.amax(i[:,1], axis=0)
+            i[:,1] /= ymax
+            ax2.plot(i[:,0], i[:,1], "--", c='%s' % exp_colors[n], label="%s" % exp_names[n], zorder=2)
+            if peaks:
+                arr_y = i[:,1]
+                print("local maxima")
+                peaks_dat, _ = scipy.signal.find_peaks(arr_y, height=0)
+                for j in peaks_dat:
+                    #print(round(x[i],2), arr_y[i])
+                    height = arr_y[j]
+                    frequency = round(i[j,0], 2)
+                    print("x, y = %.2f, %.2f" % (frequency, height))
+                    line = "%s & %s & %.2f & %.2f \\\\\n" % (exp_names[n], basis_set_mexc, frequency, height) 
+                    #latexTable_addLine('latexTable.tex', line)
+                    df.loc[len(df.index)] = [exp_names[n], basis_set_mexc, frequency, height]
+                df_latex.df_latexTable('latex_df_%s.tex' % basis_set_mexc, df, rounding)
     #ax1.set_xlim([x[0], x[-1]])
     if sec_y_axis:
         #ax2.set_ylabel(r"Cross Section / cm$^2$ (Normalized)")
@@ -689,15 +689,15 @@ def main():
     #method_mexc = "B97D3"
 
     # TD-DFT basis sets
-    basis_set_mexc = "6-311G(d,p)"
-    #basis_set_mexc = "6-311++G(2d,2p)"
+    #basis_set_mexc = "6-311G(d,p)"
+    basis_set_mexc = "6-311++G(2d,2p)"
 
     # TD-DFT NSTATES
     nStates = '25'
-    nStates = '50'
+    #nStates = '50'
     #nStates = '100'
     #nStates = '150'
-    nStates = '125'
+    #nStates = '125'
 
     # TD-DFT memory
     mem_com_mexc = "2500"  # mb
@@ -709,16 +709,16 @@ def main():
     #moleculeNameLatex = r'CO$_2$'
     moleculeName = 'h2o'
     moleculeNameLatex = r'H$_2$O'
-    #moleculeName = 'co3h2'
-    #moleculeNameLatex = r'CO$_3$H$_2$'
+    moleculeName = 'co3h2'
+    moleculeNameLatex = r'CO$_3$H$_2$'
 
     # Temperatures (K)
     #T = 100  
     # T comes from the binding energy of the dimers for each strucutres converted from Hartrees to Kelvin
     #T = 1348.768    # nh3
     #T = 457.088     # co2
-    T = 2071.104    # h2o
-    #T = 9259.3       # co3h2
+    #T = 2071.104    # h2o
+    T = 9259.3       # co3h2
 
     if basis_set_mexc == '6-311G(d,p)':
         basis_dir_name = ''
@@ -759,8 +759,9 @@ def main():
     
     methods_lst = ["B3LYP", "PBE0", "wB97XD", "CAM-B3LYP", "B97D3"]
     colors = ["blue", 'orange', 'green', 'red', 'cyan']
-    methods_lst = ["CAM-B3LYP"]
+    methods_lst = ["CAM-B3LYP", 'wB97XD']
     colors = [ 'red', 'green']
+    
     #methods_lst = ["CAM-B3LYP", "wB97XD"]
 
     #methods_lst = ["B3LYP"]
@@ -792,14 +793,17 @@ def main():
     filename = "30_8_%s_elec_n%s_%s_%sK_exp.pdf" % ( moleculeName, nStates, basis_set_mexc , T, )
     title = r"30 Randomized Clusters of 8 %s Molecules with %s" % (moleculeNameLatex, basis_set_mexc) + "\nat %s K compared with experiment" % T 
     title = '' 
-    filename = "105_32_%s_elec_n%s_%s_%sK.pdf" % ( moleculeName, nStates, basis_set_mexc , T, )
+    #filename = "105_32_%s_elec_n%s_%s_%sK.pdf" % ( moleculeName, nStates, basis_set_mexc , T, )
+    
     #exp_gas = np.genfromtxt('../../exp_data/%s_gas.csv' % moleculeName, delimiter=', ')
-    exp_solid = np.genfromtxt('../../exp_data/%s_solid.csv'% moleculeName, delimiter=', ')
-    #exp_data = [exp_gas, exp_solid]
-    exp_data = [exp_solid]
+    #exp_solid = np.genfromtxt('../../exp_data/%s_solid.csv'% moleculeName, delimiter=', ')
+    
+    #exp_data = [exp_solid]
+    exp_data = []
+    
     electronicMultiPlot_Experiment(methods_lst, 
         T, title, filename, 
-        x_range=[6,11], x_units='eV', 
+        x_range=[100,320], x_units='nm', 
         peaks=True, spec_name='spec', 
         complete=complete, basis_set_mexc=basis_set_mexc, nStates=nStates,
         exp_data=exp_data, colors=colors, sec_y_axis=True, rounding=2
