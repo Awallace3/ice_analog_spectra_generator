@@ -35,7 +35,7 @@ def combine_calcs_no_errors(calc_names):
         os.mkdir('../calc_zone')
     os.chdir("..")
     cnt = 1
-    print(calc_names)
+    #print(calc_names)
     for i in calc_names:
         os.chdir(i)
         del_lst, keep_lst = check_status.find_error_mexc('.')
@@ -43,6 +43,7 @@ def combine_calcs_no_errors(calc_names):
         for i in keep_lst:
             cmd = "cp -r %s ../calc_zone/geom%d" % (i, cnt)
             subprocess.call(cmd, shell=True)
+            print(cmd)
             cnt += 1
         os.chdir("..")
 
@@ -63,7 +64,7 @@ def delete_nested_geoms(path):
 def main():
     #combine_calcs(1)
     #delete_nested_geoms('../calc_zone1')
-    calc_names = ['calc_zone1']
+    calc_names = ['calc_zone1_rm']
     combine_calcs_no_errors(calc_names)
 
 main()
