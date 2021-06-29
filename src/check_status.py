@@ -163,12 +163,12 @@ if __name__ == "__main__":
     #check_status(path)
     base_dir_name = 'cam-b3lyp_n50'
     base_dir_name = 'cam-b3lyp_6-311++G(2d,2p)_n125'
-    base_dir_name = 'wb97xd_6-311++G(2d,2p)_n125'
-    base_dir_names = ['cam-b3lyp_6-311++G(2d,2p)_n125', 'wb97xd_6-311++G(2d,2p)_n125', 'cam-b3lyp_6-311++G(2d,2p)', 'wb97xd_6-311++G(2d,2p)', 'cam-b3lyp', 'wb97xd'  ]
-    base_dir_names = ['cam-b3lyp_6-311++G(2d,2p)', 'wb97xd_6-311++G(2d,2p)']
-    #resubmit_lst = find_error_mexc(path, base_dir_name)
+    base_dir_name = 'mexc'
+    resubmit_lst = find_error_mexc(path, base_dir_name)
     #resubmit_mem(resubmit_lst, base_dir_name)
     #check_times(base_dir_name)
-    check_times_multi(base_dir_names)
     #resubmit_lst, keep_lst = find_error_mexc(path, base_dir_name)
     #resubmit_mem(resubmit_lst, base_dir_name)
+
+    #base_dir_names = ['cam-b3lyp_6-311++G(2d,2p)_n125', 'wb97xd_6-311++G(2d,2p)_n125', 'cam-b3lyp_6-311++G(2d,2p)', 'wb97xd_6-311++G(2d,2p)', 'cam-b3lyp', 'wb97xd'  ]
+    #check_times_multi(base_dir_names)

@@ -11,13 +11,13 @@ my $PWD = cwd();
 my $INPUT = "data";
 my $SPECTRUM = "spec";
 my $NPOINTS = 4000;
-my $DELTAG = 2;
 my @EX;
 my @PROP;
 my $NSTATES;
 my $LINESHAPE = "gaussian";
 #my $LINESHAPE = "lorentzian";
 my $i = 0;
+my ($minimum, $maximum, $DELTAG) = @ARGV;
 
 chdir ("$PWD");
 
@@ -38,7 +38,7 @@ my $MAX = max_el_array(\@EX);
 print "MIN X $MIN\n";
 print "MAX X $MAX\n";
 
-my @X = energy_range($MIN,$MAX,$DELTAG,$NPOINTS);
+my @X = energy_range($MIN,$MAX,$DELTAG,$NPOINTS, $minimum, $maximum);
 
 my @I; my @Y;
 my @J; my @Z;
@@ -104,8 +104,10 @@ sub energy_range
   my $np = $_[3];
   #my $min = $_[0]-$fwhm*$fwhm;
   #my $max = $_[1]+$fwhm*$fwhm;
-  my $min = 100;
-  my $max = 300;
+  #my $min = 100;
+  #my $max = 300;
+  my $min = $_[4];
+  my $max = $_[5];
   my $spacing = ($max-$min)/$np; 
 
   print "MIN X $min\n";

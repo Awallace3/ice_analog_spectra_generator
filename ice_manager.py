@@ -5,6 +5,7 @@ from src import error_mexc_v11
 from src import gather_energies
 from src import vibrational_frequencies
 from src import df_latexTable as df_latex
+from src import discrete_to_art as dis_art
 import time
 import glob
 import os
@@ -163,11 +164,9 @@ def boltzmannAnalysisSetup(complete, method_mexc='B3LYP',
     os.chdir("calc_zone")
     for i in analysis_ready:
         
-        #cmd = '''awk '/Excited State/ {print $7, $9}' geom%d/mexc/mexc.out | sed 's/f=//g' > ../results/mexc_values/mexc_out%d.csv''' % (
-        #    i+1, i+1)
-        #cmd = '''awk '/Excited State/ {print $7, $9}' geom%d/%s/mexc.out | sed 's/f=//g' > ../results/mexc_values/mexc_out%d.csv''' % (
-        #    i+1, method_mexc, i+1)
         cmd = '''awk '/Excited State/ {print $7, $9}' geom%d/%s/mexc.out | sed 's/f=//g' > ../results/mexc_values/mexc_out%d.csv''' % (
+            i+1, path_mexc, i+1)
+        cmd = '''awk '/Excited State/ {print $7, $9}' geom%d/%s/mexc.out | sed 's/f=//g' | tac | tail -n 12 > ../results/mexc_values/mexc_out%d.csv''' % (
             i+1, path_mexc, i+1)
         failure = subprocess.call(cmd, shell=True)
     os.chdir("..")
@@ -501,7 +500,9 @@ def electronicMultiPlot_Experiment(methods_lst,
             x_range=[2,16], x_units='eV', 
             peaks=False, spec_name='spec',
             complete=[], basis_set_mexc='6-31G(d,p)',
-            nStates='25', exp_data=[], colors=[], sec_y_axis=False, rounding=1
+            nStates='25', exp_data=[], 
+            colors=[], sec_y_axis=False, rounding=1,
+            extra_data=np.array([[-1, -1]])
             ):
 
     location = os.getcwd().split('/')[-1]
@@ -514,7 +515,7 @@ def electronicMultiPlot_Experiment(methods_lst,
         for i in range(len(num_geom)):
             complete.append(2)
     
-    fig, ax1 = plt.subplots()
+    fig, ax1 = plt.subplots(dpi=200)
     
     if peaks:
         if os.path.exists('latex_df_6-311++G(2d,2p).tex'):
@@ -579,6 +580,7 @@ def electronicMultiPlot_Experiment(methods_lst,
             df_latex.df_latexTable('latex_df_%s.tex' % basis_set_mexc, df, rounding )
 
     exp_names = [ "Exp. Solid", "Exp. Gas"]
+    exp_names = [ "Exp. Solid A", "Exp. Solid B"]
     exp_colors = [ "k","tab:grey"]
     ax2 = ax1.twinx()
     #for n, i in enumerate(exp_data):
@@ -604,6 +606,27 @@ def electronicMultiPlot_Experiment(methods_lst,
                     df.loc[len(df.index)] = [exp_names[n], basis_set_mexc, frequency, height]
                 df_latex.df_latexTable('latex_df_%s.tex' % basis_set_mexc, df, rounding)
     #ax1.set_xlim([x[0], x[-1]])
+    if extra_data[0,0]!=-1 and extra_data[0,1]!=-1 :
+        print("\n extra data\n")
+        ymax = np.amax(extra_data[:,1], axis=0)
+        for i in range(len(extra_data[:,1])):
+            extra_data[i,1] /= ymax
+        arr_y = extra_data[:,1]
+        arr_x = extra_data[:,0]
+        print(arr_y)
+        peaks_dat, _ = scipy.signal.find_peaks(arr_y, height=0)
+        print(peaks_dat)
+        for j in peaks_dat:
+                #print(round(x[i],2), arr_y[i])
+                height = arr_y[j]
+                frequency = round(arr_x[j], 4)
+            
+                print("x, y = %.1f, %.1f\n" % (frequency, height))
+                df.loc[len(df.index)] = ['8 Ribbon', basis_set_mexc, frequency, height]
+        
+        ax1.plot(extra_data[:,0], extra_data[:, 1], '-', label='CAM-B3LYP (Ribbon Octamer)')
+
+
     if sec_y_axis:
         #ax2.set_ylabel(r"Cross Section / cm$^2$ (Normalized)")
         ax2.set_ylim(0,1.5)
@@ -658,6 +681,16 @@ def method_update_selection(methods_lst, basis_set_mexc, nStates):
         methods_lst[n] = i
     return methods_lst
 
+def nmLst_evLst (nmData):
+    h = 6.62607004E-34
+    c = 299792458
+    c = 3E17
+    Joules_to_eV = 1.602E-19
+
+    for i in range(len(nmData[:,0])):
+        nmData[i,0] = h*c/(nmData[i,0]*Joules_to_eV)
+    nmData = nmData[nmData[:,0].argsort()]
+    return nmData
 
 def main():
     mol_xyz1 = "mon_nh3.xyz"
@@ -681,16 +714,16 @@ def main():
 
     
     # TD-DFT methods
-    method_mexc = "B3LYP"
+    #method_mexc = "B3LYP"
     #method_mexc = "PBE0"
-    #method_mexc = "wB97XD"
-    method_mexc = "CAM-B3LYP"
+    method_mexc = "wB97XD"
+    #method_mexc = "CAM-B3LYP"
     #method_mexc = "B3LYPD3"
     #method_mexc = "B97D3"
 
     # TD-DFT basis sets
-    #basis_set_mexc = "6-311G(d,p)"
-    basis_set_mexc = "6-311++G(2d,2p)"
+    basis_set_mexc = "6-311G(d,p)"
+    #basis_set_mexc = "6-311++G(2d,2p)"
 
     # TD-DFT NSTATES
     nStates = '25'
@@ -707,8 +740,8 @@ def main():
     #moleculeNameLatex = r'NH$_3$'
     #moleculeName = 'co2'
     #moleculeNameLatex = r'CO$_2$'
-    moleculeName = 'h2o'
-    moleculeNameLatex = r'H$_2$O'
+    #moleculeName = 'h2o'
+    #moleculeNameLatex = r'H$_2$O'
     moleculeName = 'co3h2'
     moleculeNameLatex = r'CO$_3$H$_2$'
 
@@ -759,10 +792,11 @@ def main():
     
     methods_lst = ["B3LYP", "PBE0", "wB97XD", "CAM-B3LYP", "B97D3"]
     colors = ["blue", 'orange', 'green', 'red', 'cyan']
-    methods_lst = ["CAM-B3LYP", 'wB97XD']
+    #methods_lst = ["CAM-B3LYP"]
     colors = [ 'red', 'green']
-    
-    #methods_lst = ["CAM-B3LYP", "wB97XD"]
+    methods_lst = ["CAM-B3LYP", "wB97XD"]
+    #methods_lst = ["B3LYP"]
+    #colors = [ 'blue']
 
     #methods_lst = ["B3LYP"]
     #colors = ['blue']
@@ -791,22 +825,28 @@ def main():
     print("OUTPUT =\n", filename)
     """
     filename = "30_8_%s_elec_n%s_%s_%sK_exp.pdf" % ( moleculeName, nStates, basis_set_mexc , T, )
-    title = r"30 Randomized Clusters of 8 %s Molecules with %s" % (moleculeNameLatex, basis_set_mexc) + "\nat %s K compared with experiment" % T 
     title = '' 
-    #filename = "105_32_%s_elec_n%s_%s_%sK.pdf" % ( moleculeName, nStates, basis_set_mexc , T, )
-    
+    filename = "30_8_%s_elec_n%s_%s_%sK_exp.png" % ( moleculeName, nStates, basis_set_mexc , T, )
     #exp_gas = np.genfromtxt('../../exp_data/%s_gas.csv' % moleculeName, delimiter=', ')
     #exp_solid = np.genfromtxt('../../exp_data/%s_solid.csv'% moleculeName, delimiter=', ')
-    
-    #exp_data = [exp_solid]
-    exp_data = []
-    
+    exp_solid1 = np.genfromtxt('../../exp_data/%s_200k.csv'% moleculeName, delimiter=', ')
+    exp_solid1 = nmLst_evLst(exp_solid1)
+    exp_solid2 = np.genfromtxt('../../exp_data/%s_80_200k.csv'% moleculeName, delimiter=', ')
+    exp_solid2 = nmLst_evLst(exp_solid2)
+    #exp_data = [exp_gas, exp_solid]
+    exp_data = [exp_solid1, exp_solid2]
+    exp_x_units = ['nm']
+
+    octa_rib = dis_art.discrete_to_art('../ribbon/8rib_cam.dat', ['nm', 'eV'], [100, 320], 2)
+
     electronicMultiPlot_Experiment(methods_lst, 
         T, title, filename, 
-        x_range=[100,320], x_units='nm', 
+        x_range=[2, 12], x_units='eV', 
         peaks=True, spec_name='spec', 
         complete=complete, basis_set_mexc=basis_set_mexc, nStates=nStates,
-        exp_data=exp_data, colors=colors, sec_y_axis=True, rounding=2
+        exp_data=exp_data, 
+        colors=colors, sec_y_axis=True, rounding=2,
+        extra_data=octa_rib
         )
     print("OUTPUT =\n", filename)
     
