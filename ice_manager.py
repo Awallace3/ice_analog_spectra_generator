@@ -356,7 +356,8 @@ def collectSpecSimData(x_units='eV', spec_name='spec', normalize=True):
 
     print(highest_y, "HIGHEST")
     cam_b3lyp_n125_y = 4.98005616
-    cam_b3lyp_n125_y = 1.9835017
+    #cam_b3lyp_n125_y = 1.9835017
+    #cam_b3lyp_n125_y = 10.17985964
 
     #print("CAM-B3LYP:", highest_y)
     for i in range(len(y)):
@@ -514,7 +515,7 @@ def electronicMultiPlot_Experiment(methods_lst,
         for i in range(len(num_geom)):
             complete.append(2)
     
-    fig, ax1 = plt.subplots()
+    fig, ax1 = plt.subplots(dpi=200)
     
     if peaks:
         if os.path.exists('latex_df_6-311++G(2d,2p).tex'):
@@ -636,6 +637,7 @@ def electronicMultiPlot_Experiment(methods_lst,
         os.mkdir("graphs")
     os.chdir("graphs")
     plt.savefig(filename)
+
     os.chdir("../../..")
 
 
@@ -690,14 +692,14 @@ def main():
 
     # TD-DFT basis sets
     basis_set_mexc = "6-311G(d,p)"
-    #basis_set_mexc = "6-311++G(2d,2p)"
+    basis_set_mexc = "6-311++G(2d,2p)"
 
     # TD-DFT NSTATES
     nStates = '25'
     #nStates = '50'
     #nStates = '100'
     #nStates = '150'
-    nStates = '125'
+    #nStates = '125'
 
     # TD-DFT memory
     mem_com_mexc = "2500"  # mb
@@ -709,16 +711,16 @@ def main():
     #moleculeNameLatex = r'CO$_2$'
    #moleculeName = 'h2o'
    #moleculeNameLatex = r'H$_2$O'
-    moleculeName = 'co3h2'
-    moleculeNameLatex = r'CO$_3$H$_2$'
+   # moleculeName = 'co3h2'
+   # moleculeNameLatex = r'CO$_3$H$_2$'
 
     # Temperatures (K)
     #T = 100  
     # T comes from the binding energy of the dimers for each strucutres converted from Hartrees to Kelvin
-    #T = 1348.768    # nh3
+    T = 1348.768    # nh3
     #T = 457.088     # co2
     #T = 2071.104    # h2o
-    T = 9259.3       # co3h2
+    #T = 9259.3       # co3h2
 
     if basis_set_mexc == '6-311G(d,p)':
         basis_dir_name = ''
@@ -760,8 +762,8 @@ def main():
     methods_lst = ["B3LYP", "PBE0", "wB97XD", "CAM-B3LYP", "B97D3"]
     colors = ["blue", 'orange', 'green', 'red', 'cyan']
     #methods_lst = ["CAM-B3LYP"]
-    methods_lst = ["CAM-B3LYP", "wB97XD"]
-    colors = ["red", 'green']
+    #methods_lst = ["CAM-B3LYP", "wB97XD"]
+    #colors = ["red", 'green']
 
     #methods_lst = ["B3LYP"]
     
@@ -773,6 +775,7 @@ def main():
     #filename = "30_8_%s_test_%sk.pdf" % ( moleculeName, T)
 
     filename = "30_8_%s_elec_n%s_%s_%sK.pdf" % ( moleculeName, nStates, basis_set_mexc , T, )
+    filename = "30_8_%s_elec_n%s_%s_%sK.png" % ( moleculeName, nStates, basis_set_mexc , T, )
     title = r"30 Randomized Clusters of 8 %s Molecules with %s" % (moleculeNameLatex, basis_set_mexc) + "\nat %s K" % T 
     #filename = "101_32_%s_elec_n%s_%s_%sK.pdf" % ( moleculeName, nStates, basis_set_mexc , T, )
     #title = r"101 Randomized Clusters of 32 %s Molecules with %s" % (moleculeNameLatex, basis_set_mexc) + "\nat %s K" % T 
@@ -780,16 +783,17 @@ def main():
     #methods_lst = method_update_selection(methods_lst, basis_set_mexc, nStates)
     #print(methods_lst)
 
+    """
     electronicMultiPlot(methods_lst, 
             T, title, filename, 
-            x_range=[100,320], x_units='nm', 
+            x_range=[5, 10], x_units='eV', 
             peaks=True, spec_name='spec', 
             complete=complete, basis_set_mexc=basis_set_mexc, nStates=nStates
 
             )
     print("OUTPUT =\n", filename)
-    """
     filename = "30_8_%s_elec_n%s_%s_%sK_exp.pdf" % ( moleculeName, nStates, basis_set_mexc , T, )
+    filename = "30_8_%s_elec_n%s_%s_%sK_exp.png" % ( moleculeName, nStates, basis_set_mexc , T, )
     title = r"30 Randomized Clusters of 8 %s Molecules with %s" % (moleculeNameLatex, basis_set_mexc) + "\nat %s K compared with experiment" % T 
     title = '' 
     #exp_gas = np.genfromtxt('../../exp_data/%s_gas.csv' % moleculeName, delimiter=', ')
@@ -798,24 +802,22 @@ def main():
     exp_data = [exp_solid]
     electronicMultiPlot_Experiment(methods_lst, 
         T, title, filename, 
-        x_range=[6,11], x_units='eV', 
+        x_range=[5,10], x_units='eV', 
         peaks=True, spec_name='spec', 
         complete=complete, basis_set_mexc=basis_set_mexc, nStates=nStates,
         exp_data=exp_data, colors=colors, sec_y_axis=True, rounding=2
         )
     print("OUTPUT =\n", filename)
-    
     """
+    
     T = 1000  # Kelvin (K)
     title = r"30 Randomized Clusters of 8 CO$_2$ Molecules: Vibrational"
     filename = "30_8_rand_%s_vib_wB97XD.png" % moleculeName
-    """
 
     # for vibrational frequency standard usage
-    """
-    #vibrational_frequencies.main()
-    #boltzmannAnalysis(T, energy_levels='vibrational')
-    #generateGraph("spec", T, title, filename, x_range=[3600, 50], x_units='cm-1', peaks=True)
+    vibrational_frequencies.main()
+    boltzmannAnalysis(T, energy_levels='vibrational')
+    generateGraph("spec", T, title, filename, x_range=[3600, 50], x_units='cm-1', peaks=False)
     
     # useful bash commands below
         # ps aux | grep test.py
