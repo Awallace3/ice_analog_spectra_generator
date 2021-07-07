@@ -11,14 +11,13 @@ my $PWD = cwd();
 my $INPUT = "data";
 my $SPECTRUM = "spec";
 my $NPOINTS = 4000;
-my $DELTAG = 2;
 my @EX;
 my @PROP;
 my $NSTATES;
 my $LINESHAPE = "gaussian";
 #my $LINESHAPE = "lorentzian";
 my $i = 0;
-my ($minimum, $maximum) = @ARGV;
+my ($minimum, $maximum, $DELTAG) = @ARGV;
 
 chdir ("$PWD");
 

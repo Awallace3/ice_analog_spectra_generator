@@ -71,6 +71,9 @@ def main():
         pass
     else:
         os.chdir("calc_zone")
+    
+    if not os.path.exists('../results/energies'):
+        os.mkdir("../results/energies")
 
     directories = glob.glob("geom*")
     #print(os.getcwd())

@@ -5,6 +5,7 @@ from src import error_mexc_v11
 from src import gather_energies
 from src import vibrational_frequencies
 from src import df_latexTable as df_latex
+from src import discrete_to_art as dis_art
 import time
 import glob
 import os
@@ -163,11 +164,9 @@ def boltzmannAnalysisSetup(complete, method_mexc='B3LYP',
     os.chdir("calc_zone")
     for i in analysis_ready:
         
-        #cmd = '''awk '/Excited State/ {print $7, $9}' geom%d/mexc/mexc.out | sed 's/f=//g' > ../results/mexc_values/mexc_out%d.csv''' % (
-        #    i+1, i+1)
-        #cmd = '''awk '/Excited State/ {print $7, $9}' geom%d/%s/mexc.out | sed 's/f=//g' > ../results/mexc_values/mexc_out%d.csv''' % (
-        #    i+1, method_mexc, i+1)
         cmd = '''awk '/Excited State/ {print $7, $9}' geom%d/%s/mexc.out | sed 's/f=//g' > ../results/mexc_values/mexc_out%d.csv''' % (
+            i+1, path_mexc, i+1)
+        cmd = '''awk '/Excited State/ {print $7, $9}' geom%d/%s/mexc.out | sed 's/f=//g' | tac | tail -n 12 > ../results/mexc_values/mexc_out%d.csv''' % (
             i+1, path_mexc, i+1)
         failure = subprocess.call(cmd, shell=True)
     os.chdir("..")
@@ -293,7 +292,7 @@ def generateGraph(spec_name, T, title, filename, x_range=[100,300], x_units='nm'
     ax1.plot(x, y, "k-", label="T = {0} K".format(T))
     #ax1.set_xlim([x[0], x[-1]])
     ax1.set_xlim(x_range)
-    ax1.set_ylim(0, 1.2)
+    ax1.set_ylim(1.2,0)
 
     plt.title(title)
     if x_units == 'ev' or x_units=='eV':
@@ -328,12 +327,14 @@ def generateGraph(spec_name, T, title, filename, x_range=[100,300], x_units='nm'
         ax1.legend(shadow=True, fancybox=True)
 
     plt.ylabel("Oscillator Strength")
-    plt.grid(b=None, which='major', axis='y', linewidth=1)
-    plt.grid(b=None, which='major', axis='x', linewidth=1)
+    #plt.grid(b=None, which='major', axis='y', linewidth=1)
+    #plt.grid(b=None, which='major', axis='x', linewidth=1)
     # os.chdir("results/final/graphs")
     os.chdir("results/final")
     if "graphs" not in glob.glob("graphs"):
         os.mkdir("graphs")
+    if x_units == 'cm-1':
+        ax1.yaxis_inverted()
     os.chdir("graphs")
     plt.savefig(filename)
     os.chdir("../../..")
@@ -356,7 +357,8 @@ def collectSpecSimData(x_units='eV', spec_name='spec', normalize=True):
 
     print(highest_y, "HIGHEST")
     cam_b3lyp_n125_y = 4.98005616
-    cam_b3lyp_n125_y = 1.9835017
+    #cam_b3lyp_n125_y = 1.9835017
+    #cam_b3lyp_n125_y = 10.17985964
 
     #print("CAM-B3LYP:", highest_y)
     for i in range(len(y)):
@@ -501,7 +503,9 @@ def electronicMultiPlot_Experiment(methods_lst,
             x_range=[2,16], x_units='eV', 
             peaks=False, spec_name='spec',
             complete=[], basis_set_mexc='6-31G(d,p)',
-            nStates='25', exp_data=[], colors=[], sec_y_axis=False, rounding=1
+            nStates='25', exp_data=[], 
+            colors=[], sec_y_axis=False, rounding=1,
+            extra_data=np.array([[-1, -1]])
             ):
 
     location = os.getcwd().split('/')[-1]
@@ -538,7 +542,7 @@ def electronicMultiPlot_Experiment(methods_lst,
         gather_energies.main()
         boltzmannAnalysisSetup(complete, i, basis_set_mexc, nStates)
         boltzmannAnalysis(T, energy_levels='electronic')    
-        x, y = collectSpecSimData()        
+        x, y = collectSpecSimData(x_units=x_units)        
         """
         if i == 'B3LYP':
             print(x, y)
@@ -579,31 +583,53 @@ def electronicMultiPlot_Experiment(methods_lst,
             df_latex.df_latexTable('latex_df_%s.tex' % basis_set_mexc, df, rounding )
 
     exp_names = [ "Exp. Solid", "Exp. Gas"]
+    exp_names = [ "Exp. Solid A", "Exp. Solid B"]
     exp_colors = [ "k","tab:grey"]
     ax2 = ax1.twinx()
     #for n, i in enumerate(exp_data):
     #    ax2.plot(i[:,0], i[:,1], "--", label="%s" % exp_names[n])
     #ax2.set_ylabel(r"Cross Section / cm$^2$")
     #ax2.set_ylim(0,5.0E-17*1.4)
-
-    for n, i in enumerate(exp_data):
-        ymax = np.amax(i[:,1], axis=0)
-        i[:,1] /= ymax
-        ax2.plot(i[:,0], i[:,1], "--", c='%s' % exp_colors[n], label="%s" % exp_names[n], zorder=2)
-        if peaks:
-            arr_y = i[:,1]
-            print("local maxima")
-            peaks_dat, _ = scipy.signal.find_peaks(arr_y, height=0)
-            for j in peaks_dat:
+    if len(exp_data) > 0:
+        for n, i in enumerate(exp_data):
+            ymax = np.amax(i[:,1], axis=0)
+            i[:,1] /= ymax
+            ax2.plot(i[:,0], i[:,1], "--", c='%s' % exp_colors[n], label="%s" % exp_names[n], zorder=2)
+            if peaks:
+                arr_y = i[:,1]
+                print("local maxima")
+                peaks_dat, _ = scipy.signal.find_peaks(arr_y, height=0)
+                for j in peaks_dat:
+                    #print(round(x[i],2), arr_y[i])
+                    height = arr_y[j]
+                    frequency = round(i[j,0], 2)
+                    print("x, y = %.2f, %.2f" % (frequency, height))
+                    line = "%s & %s & %.2f & %.2f \\\\\n" % (exp_names[n], basis_set_mexc, frequency, height) 
+                    #latexTable_addLine('latexTable.tex', line)
+                    df.loc[len(df.index)] = [exp_names[n], basis_set_mexc, frequency, height]
+                df_latex.df_latexTable('latex_df_%s.tex' % basis_set_mexc, df, rounding)
+    #ax1.set_xlim([x[0], x[-1]])
+    if extra_data[0,0]!=-1 and extra_data[0,1]!=-1 :
+        print("\n extra data\n")
+        ymax = np.amax(extra_data[:,1], axis=0)
+        for i in range(len(extra_data[:,1])):
+            extra_data[i,1] /= ymax
+        arr_y = extra_data[:,1]
+        arr_x = extra_data[:,0]
+        print(arr_y)
+        peaks_dat, _ = scipy.signal.find_peaks(arr_y, height=0)
+        print(peaks_dat)
+        for j in peaks_dat:
                 #print(round(x[i],2), arr_y[i])
                 height = arr_y[j]
-                frequency = round(i[j,0], 2)
-                print("x, y = %.2f, %.2f" % (frequency, height))
-                line = "%s & %s & %.2f & %.2f \\\\\n" % (exp_names[n], basis_set_mexc, frequency, height) 
-                #latexTable_addLine('latexTable.tex', line)
-                df.loc[len(df.index)] = [exp_names[n], basis_set_mexc, frequency, height]
-            df_latex.df_latexTable('latex_df_%s.tex' % basis_set_mexc, df, rounding)
-    #ax1.set_xlim([x[0], x[-1]])
+                frequency = round(arr_x[j], 4)
+            
+                print("x, y = %.1f, %.1f\n" % (frequency, height))
+                df.loc[len(df.index)] = ['8 Ribbon', basis_set_mexc, frequency, height]
+        
+        ax1.plot(extra_data[:,0], extra_data[:, 1], '-', label='CAM-B3LYP (Ribbon Octamer)')
+
+
     if sec_y_axis:
         #ax2.set_ylabel(r"Cross Section / cm$^2$ (Normalized)")
         ax2.set_ylim(0,1.5)
@@ -636,6 +662,7 @@ def electronicMultiPlot_Experiment(methods_lst,
         os.mkdir("graphs")
     os.chdir("graphs")
     plt.savefig(filename)
+
     os.chdir("../../..")
 
 
@@ -658,6 +685,16 @@ def method_update_selection(methods_lst, basis_set_mexc, nStates):
         methods_lst[n] = i
     return methods_lst
 
+def nmLst_evLst (nmData):
+    h = 6.62607004E-34
+    c = 299792458
+    c = 3E17
+    Joules_to_eV = 1.602E-19
+
+    for i in range(len(nmData[:,0])):
+        nmData[i,0] = h*c/(nmData[i,0]*Joules_to_eV)
+    nmData = nmData[nmData[:,0].argsort()]
+    return nmData
 
 def main():
     mol_xyz1 = "mon_nh3.xyz"
@@ -681,10 +718,10 @@ def main():
 
     
     # TD-DFT methods
-    method_mexc = "B3LYP"
+    #method_mexc = "B3LYP"
     #method_mexc = "PBE0"
-    #method_mexc = "wB97XD"
-    method_mexc = "CAM-B3LYP"
+    method_mexc = "wB97XD"
+    #method_mexc = "CAM-B3LYP"
     #method_mexc = "B3LYPD3"
     #method_mexc = "B97D3"
 
@@ -703,14 +740,14 @@ def main():
     mem_com_mexc = "2500"  # mb
     mem_pbs_mexc = "25"  # gb"
 
-    #moleculeName = 'nh3'
-    #moleculeNameLatex = r'NH$_3$'
+    moleculeName = 'nh3'
+    moleculeNameLatex = r'NH$_3$'
     #moleculeName = 'co2'
     #moleculeNameLatex = r'CO$_2$'
     moleculeName = 'h2o'
     moleculeNameLatex = r'H$_2$O'
-    #moleculeName = 'co3h2'
-    #moleculeNameLatex = r'CO$_3$H$_2$'
+   # moleculeName = 'co3h2'
+   # moleculeNameLatex = r'CO$_3$H$_2$'
 
     # Temperatures (K)
     #T = 100  
@@ -762,6 +799,7 @@ def main():
     #methods_lst = ["CAM-B3LYP"]
     #colors = [ 'red', 'green']
     #methods_lst = ["CAM-B3LYP", "wB97XD"]
+    #colors = ["red", 'green']
 
     #methods_lst = ["B3LYP"]
     #colors = ['blue']
@@ -774,6 +812,7 @@ def main():
     #filename = "30_8_%s_test_%sk.pdf" % ( moleculeName, T)
 
     filename = "30_8_%s_elec_n%s_%s_%sK.pdf" % ( moleculeName, nStates, basis_set_mexc , T, )
+    filename = "30_8_%s_elec_n%s_%s_%sK.png" % ( moleculeName, nStates, basis_set_mexc , T, )
     title = r"30 Randomized Clusters of 8 %s Molecules with %s" % (moleculeNameLatex, basis_set_mexc) + "\nat %s K" % T 
     
     #methods_lst = method_update_selection(methods_lst, basis_set_mexc, nStates)
@@ -782,42 +821,53 @@ def main():
     """
     electronicMultiPlot(methods_lst, 
             T, title, filename, 
-            x_range=[6,11], x_units='eV', 
+            x_range=[5, 10], x_units='eV', 
             peaks=True, spec_name='spec', 
             complete=complete, basis_set_mexc=basis_set_mexc, nStates=nStates
 
             )
     print("OUTPUT =\n", filename)
-    """
     filename = "30_8_%s_elec_n%s_%s_%sK_exp.pdf" % ( moleculeName, nStates, basis_set_mexc , T, )
     filename = "30_8_%s_elec_n%s_%s_%sK_exp.png" % ( moleculeName, nStates, basis_set_mexc , T, )
     title = r"30 Randomized Clusters of 8 %s Molecules with %s" % (moleculeNameLatex, basis_set_mexc) + "\nat %s K compared with experiment" % T 
     title = '' 
     #filename = "105_32_%s_elec_n%s_%s_%sK.pdf" % ( moleculeName, nStates, basis_set_mexc , T, )
     #filename = "105_32_%s_elec_n%s_%s_%sK.png" % ( moleculeName, nStates, basis_set_mexc , T, )
+    filename = "30_8_%s_elec_n%s_%s_%sK_exp.png" % ( moleculeName, nStates, basis_set_mexc , T, )
     #exp_gas = np.genfromtxt('../../exp_data/%s_gas.csv' % moleculeName, delimiter=', ')
     exp_solid = np.genfromtxt('../../exp_data/%s_solid.csv'% moleculeName, delimiter=', ')
-    #exp_data = [exp_gas, exp_solid]
-    exp_data = [exp_solid]
+    #exp_solid1 = np.genfromtxt('../../exp_data/%s_200k.csv'% moleculeName, delimiter=', ')
+    #exp_solid1 = nmLst_evLst(exp_solid1)
+    #exp_solid2 = np.genfromtxt('../../exp_data/%s_80_200k.csv'% moleculeName, delimiter=', ')
+    #exp_solid2 = nmLst_evLst(exp_solid2)
+    exp_data = [ exp_solid]
+    #exp_data = [exp_solid1, exp_solid2]
+    exp_x_units = ['nm']
+
+    #octa_rib = dis_art.discrete_to_art('../ribbon/8rib_cam.dat', ['nm', 'eV'], [100, 320], 2)
+
     electronicMultiPlot_Experiment(methods_lst, 
         T, title, filename, 
-        x_range=[6,11], x_units='eV', 
+        x_range=[5,10], x_units='eV', 
         peaks=True, spec_name='spec', 
         complete=complete, basis_set_mexc=basis_set_mexc, nStates=nStates,
-        exp_data=exp_data, colors=colors, sec_y_axis=True, rounding=2
+        exp_data=exp_data, 
+        colors=colors, sec_y_axis=True, rounding=2,
+        #extra_data=octa_rib
         )
     print("OUTPUT =\n", filename)
-    
     """
+    """
+    """
+    
     T = 1000  # Kelvin (K)
     title = r"30 Randomized Clusters of 8 CO$_2$ Molecules: Vibrational"
     filename = "30_8_rand_%s_vib_wB97XD.png" % moleculeName
-    """
 
     # for vibrational frequency standard usage
-    #vibrational_frequencies.main()
-    #boltzmannAnalysis(T, energy_levels='vibrational')
-    #generateGraph("spec", T, title, filename, x_range=[3600, 50], x_units='cm-1', peaks=True)
+    vibrational_frequencies.main()
+    boltzmannAnalysis(T, energy_levels='vibrational')
+    generateGraph("spec", T, title, filename, x_range=[3600, 50], x_units='cm-1', peaks=False)
     
     # useful bash commands below
         # ps aux | grep test.py

@@ -154,6 +154,7 @@ results/final/data/*
 calc_zone1_og
 *.tex
 calc_zone1
+calc_zone*
 calc_zone2
 calc_zone3
 data
