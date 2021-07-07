@@ -2,7 +2,41 @@ import numpy as np
 import os
 import glob
 import subprocess
+import math
+import matplotlib.pyplot as plt
 
+def overtones(filename, T=100):
+    # double the fundamental for the first one
+    data = np.genfromtxt(filename)
+    h = 6.626E-34
+    c = 2.998E10
+    k=1.38E-23
+    new_points = []
+    for i in range(len(data[:,0])):
+        for j in range(len(data[:,0])):
+            # if j == i or j+1 == i or j-1==i:
+            #print( data[i,1] + data[j,1] )
+            #print(i, j)
+            I_og =  ( data[i,1] + data[j,1] ) / 2
+            # E = hcv
+
+            e_1J = data[i,0]*h*c
+            e_2J = data[j,0]*h*c
+            e_fin = (e_1J + e_2J) / (h*c)
+            I = I_og * math.exp((e_1J-e_2J)/2/(k*T))
+            if I > 0.1:
+                print(I)
+
+            new_points.append([e_fin, I])
+
+    #print(data)
+    #print(new_points)
+    a = np.array(new_points)
+    a = a[a[:, 0].argsort()]
+    fig, ax1 = plt.subplots()
+    ax1.plot(a[:,0], a[:,1])
+    plt.show()
+    return
 
 def cleanLine(line, aList):
     cropped_line = line.rstrip()
@@ -74,5 +108,6 @@ def main():
         f.close()
         os.chdir("..")
     os.chdir("..")
-
-main()
+if __name__ == '__main__':
+    #main()
+    overtones("../results/vibrational_values/vib1.csv")

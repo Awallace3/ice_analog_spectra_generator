@@ -720,21 +720,21 @@ def main():
     # TD-DFT methods
     #method_mexc = "B3LYP"
     #method_mexc = "PBE0"
-    method_mexc = "wB97XD"
-    #method_mexc = "CAM-B3LYP"
+    #method_mexc = "wB97XD"
+    method_mexc = "CAM-B3LYP"
     #method_mexc = "B3LYPD3"
     #method_mexc = "B97D3"
 
     # TD-DFT basis sets
-    basis_set_mexc = "6-311G(d,p)"
+    #basis_set_mexc = "6-311G(d,p)"
     basis_set_mexc = "6-311++G(2d,2p)"
 
     # TD-DFT NSTATES
-    nStates = '25'
+    #nStates = '25'
     #nStates = '50'
     #nStates = '100'
     #nStates = '150'
-    #nStates = '125'
+    nStates = '125'
 
     # TD-DFT memory
     mem_com_mexc = "2500"  # mb
@@ -796,9 +796,9 @@ def main():
     
     methods_lst = ["B3LYP", "PBE0", "wB97XD", "CAM-B3LYP", "B97D3"]
     colors = ["blue", 'orange', 'green', 'red', 'cyan']
-    #methods_lst = ["CAM-B3LYP"]
+    methods_lst = ["CAM-B3LYP"]
     #methods_lst = ["CAM-B3LYP", "wB97XD"]
-    #colors = ["red", 'green']
+    colors = ["red", 'green']
 
     #methods_lst = ["B3LYP"]
     #colors = ['blue']
@@ -826,11 +826,12 @@ def main():
 
             )
     print("OUTPUT =\n", filename)
+    """
     filename = "30_8_%s_elec_n%s_%s_%sK_exp.pdf" % ( moleculeName, nStates, basis_set_mexc , T, )
     filename = "30_8_%s_elec_n%s_%s_%sK_exp.png" % ( moleculeName, nStates, basis_set_mexc , T, )
     title = r"30 Randomized Clusters of 8 %s Molecules with %s" % (moleculeNameLatex, basis_set_mexc) + "\nat %s K compared with experiment" % T 
     title = '' 
-    filename = "30_8_%s_elec_n%s_%s_%sK_exp.png" % ( moleculeName, nStates, basis_set_mexc , T, )
+    filename = "30_8_%s_elec_n%s_%s_%sK_expD1.png" % ( moleculeName, nStates, basis_set_mexc , T, )
     #exp_gas = np.genfromtxt('../../exp_data/%s_gas.csv' % moleculeName, delimiter=', ')
     exp_solid = np.genfromtxt('../../exp_data/%s_solid.csv'% moleculeName, delimiter=', ')
     #exp_solid1 = np.genfromtxt('../../exp_data/%s_200k.csv'% moleculeName, delimiter=', ')
@@ -854,8 +855,6 @@ def main():
         )
     print("OUTPUT =\n", filename)
     """
-    """
-    """
     
     T = 1000  # Kelvin (K)
     title = r"30 Randomized Clusters of 8 CO$_2$ Molecules: Vibrational"
@@ -866,6 +865,7 @@ def main():
     boltzmannAnalysis(T, energy_levels='vibrational')
     generateGraph("spec", T, title, filename, x_range=[3600, 50], x_units='cm-1', peaks=False)
     
+    """
     # useful bash commands below
         # ps aux | grep test.py
         # kill <pid> -9
