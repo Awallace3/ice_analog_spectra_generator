@@ -105,7 +105,7 @@ def jobResubmit(min_delay, number_delays,
 
 
 def boltzmannAnalysisSetup(complete, method_mexc='B3LYP', 
-                basis_set_mexc='6-311G(d,p)', nStates='25'):
+                basis_set_mexc='6-311G(d,p)', nStates='25', acquiredStates='25'):
 
     analysis_ready = []
     if "results" not in glob.glob("results"):
@@ -164,12 +164,14 @@ def boltzmannAnalysisSetup(complete, method_mexc='B3LYP',
     os.chdir("calc_zone")
     for i in analysis_ready:
         
-        cmd = '''awk '/Excited State/ {print $7, $9}' geom%d/%s/mexc.out | sed 's/f=//g' > ../results/mexc_values/mexc_out%d.csv''' % (
-            i+1, path_mexc, i+1)
-        cmd = '''awk '/Excited State/ {print $7, $9}' geom%d/%s/mexc.out | sed 's/f=//g' | tac | tail -n 12 > ../results/mexc_values/mexc_out%d.csv''' % (
-            i+1, path_mexc, i+1)
+        #cmd = '''awk '/Excited State/ {print $7, $9}' geom%d/%s/mexc.out | sed 's/f=//g' > ../results/mexc_values/mexc_out%d.csv''' % (
+        #    i+1, path_mexc, i+1)
+        cmd = '''awk '/Excited State/ {print $7, $9}' geom%d/%s/mexc.out | sed 's/f=//g' | tac | tail -n %s > ../results/mexc_values/mexc_out%d.csv''' % (
+            i+1, path_mexc, acquiredStates, i+1)
+        
         failure = subprocess.call(cmd, shell=True)
     os.chdir("..")
+    print(cmd)
     print('\nBoltzmann Analysis Setup Complete.\n')
     return
 
@@ -293,7 +295,7 @@ def generateGraph(spec_name, T, title, filename, x_range=[100,300], x_units='nm'
     ax1.plot(x, y, "k-", label="T = {0} K".format(T))
     #ax1.set_xlim([x[0], x[-1]])
     ax1.set_xlim(x_range)
-    ax1.set_ylim(0, 1.2)
+    ax1.set_ylim(1.2,0)
 
     plt.title(title)
     if x_units == 'ev' or x_units=='eV':
@@ -327,12 +329,14 @@ def generateGraph(spec_name, T, title, filename, x_range=[100,300], x_units='nm'
         ax1.legend(shadow=True, fancybox=True)
 
     plt.ylabel("Oscillator Strength")
-    plt.grid(b=None, which='major', axis='y', linewidth=1)
-    plt.grid(b=None, which='major', axis='x', linewidth=1)
+    #plt.grid(b=None, which='major', axis='y', linewidth=1)
+    #plt.grid(b=None, which='major', axis='x', linewidth=1)
     # os.chdir("results/final/graphs")
     os.chdir("results/final")
     if "graphs" not in glob.glob("graphs"):
         os.mkdir("graphs")
+    if x_units == 'cm-1':
+        ax1.yaxis_inverted()
     os.chdir("graphs")
     plt.savefig(filename)
     os.chdir("../../..")
@@ -355,7 +359,8 @@ def collectSpecSimData(x_units='eV', spec_name='spec', normalize=True):
 
     print(highest_y, "HIGHEST")
     cam_b3lyp_n125_y = 4.98005616
-    cam_b3lyp_n125_y = 1.9835017
+    #cam_b3lyp_n125_y = 1.9835017
+    #cam_b3lyp_n125_y = 10.17985964
 
     #print("CAM-B3LYP:", highest_y)
     for i in range(len(y)):
@@ -434,7 +439,7 @@ def electronicMultiPlot(methods_lst,
 
     for i in methods_lst:
         gather_energies.main()
-        boltzmannAnalysisSetup(complete, i, basis_set_mexc, nStates)
+        boltzmannAnalysisSetup(complete, i, basis_set_mexc, nStates, nStates)
         boltzmannAnalysis(T, energy_levels='electronic')    
         x, y = collectSpecSimData(x_units=x_units)        
         """
@@ -500,7 +505,7 @@ def electronicMultiPlot_Experiment(methods_lst,
             x_range=[2,16], x_units='eV', 
             peaks=False, spec_name='spec',
             complete=[], basis_set_mexc='6-31G(d,p)',
-            nStates='25', exp_data=[], 
+            nStates='25', acquiredStates='25', exp_data=[], 
             colors=[], sec_y_axis=False, rounding=1,
             extra_data=np.array([[-1, -1]])
             ):
@@ -537,7 +542,7 @@ def electronicMultiPlot_Experiment(methods_lst,
 
     for n, i in enumerate(methods_lst):
         gather_energies.main()
-        boltzmannAnalysisSetup(complete, i, basis_set_mexc, nStates)
+        boltzmannAnalysisSetup(complete, i, basis_set_mexc, nStates, acquiredStates)
         boltzmannAnalysis(T, energy_levels='electronic')    
         x, y = collectSpecSimData(x_units=x_units)        
         """
@@ -664,6 +669,7 @@ def electronicMultiPlot_Experiment(methods_lst,
         os.mkdir("graphs")
     os.chdir("graphs")
     plt.savefig(filename)
+
     os.chdir("../../..")
 
 
@@ -721,8 +727,8 @@ def main():
     # TD-DFT methods
     #method_mexc = "B3LYP"
     #method_mexc = "PBE0"
-    method_mexc = "wB97XD"
-    #method_mexc = "CAM-B3LYP"
+    #method_mexc = "wB97XD"
+    method_mexc = "CAM-B3LYP"
     #method_mexc = "B3LYPD3"
     #method_mexc = "B97D3"
 
@@ -755,8 +761,8 @@ def main():
     # T comes from the binding energy of the dimers for each strucutres converted from Hartrees to Kelvin
     #T = 1348.768    # nh3
     #T = 457.088     # co2
-    #T = 2071.104    # h2o
-    T = 9259.3       # co3h2
+    T = 2071.104    # h2o
+    #T = 9259.3       # co3h2
 
     if basis_set_mexc == '6-311G(d,p)':
         basis_dir_name = ''
@@ -800,14 +806,9 @@ def main():
     #methods_lst = ["CAM-B3LYP"]
     colors = [ 'red', 'green']
     methods_lst = ["CAM-B3LYP", "wB97XD"]
-    #methods_lst = ["CAM-B3LYP"]
-    methods_lst = []
+    colors = ["red", 'green']
     #methods_lst = ["B3LYP"]
-    #colors = [ 'blue']
-
-    #methods_lst = ["B3LYP"]
-    #colors = ['blue']
-    
+    #colors = ["blue"]
 
     title = r"30 Randomized Clusters of 8 %s Molecules with %s" % (moleculeNameLatex, basis_dir_name[1:].replace(nStates, '')) +  "\nat N=%s and T=%s K" % (nStates, T)
     filename = "30_8_%s_elec_n%s_%s_%sK.pdf" % ( moleculeName, nStates, basis_dir_name[1:].replace(nStates, ''), T, )
@@ -816,6 +817,7 @@ def main():
     #filename = "30_8_%s_test_%sk.pdf" % ( moleculeName, T)
 
     filename = "30_8_%s_elec_n%s_%s_%sK.pdf" % ( moleculeName, nStates, basis_set_mexc , T, )
+    filename = "30_8_%s_elec_n%s_%s_%sK.png" % ( moleculeName, nStates, basis_set_mexc , T, )
     title = r"30 Randomized Clusters of 8 %s Molecules with %s" % (moleculeNameLatex, basis_set_mexc) + "\nat %s K" % T 
     
     #methods_lst = method_update_selection(methods_lst, basis_set_mexc, nStates)
@@ -824,7 +826,7 @@ def main():
     """
     electronicMultiPlot(methods_lst, 
             T, title, filename, 
-            x_range=[6,11], x_units='eV', 
+            x_range=[5, 10], x_units='eV', 
             peaks=True, spec_name='spec', 
             complete=complete, basis_set_mexc=basis_set_mexc, nStates=nStates
 
@@ -832,49 +834,54 @@ def main():
     print("OUTPUT =\n", filename)
     """
     filename = "30_8_%s_elec_n%s_%s_%sK_exp.pdf" % ( moleculeName, nStates, basis_set_mexc , T, )
-    title = '' 
     filename = "30_8_%s_elec_n%s_%s_%sK_exp.png" % ( moleculeName, nStates, basis_set_mexc , T, )
+    title = r"30 Randomized Clusters of 8 %s Molecules with %s" % (moleculeNameLatex, basis_set_mexc) + "\nat %s K compared with experiment" % T 
+    title = '' 
+    filename = "30_8_%s_elec_n%s_%s_%sK_expD1.png" % ( moleculeName, nStates, basis_set_mexc , T, )
+    #filename = "105_32_%s_elec_n%s_%s_%sK.pdf" % ( moleculeName, nStates, basis_set_mexc , T, )
+    #filename = "105_32_%s_elec_n%s_%s_%sK.png" % ( moleculeName, nStates, basis_set_mexc , T, )
+    filename = "30_8_%s_elec_n%s_%s_%sK_exp.png" % ( moleculeName, nStates, basis_set_mexc , T, )
+    filename = "30_8_%s_elec_n%s_%s_%sK_exp_STATES.png" % ( moleculeName, nStates, basis_set_mexc , T, )
+    filename = "105_32_%s_elec_n%s_%s_%sK_exp_STATES.png" % ( moleculeName, nStates, basis_set_mexc , T, )
     #exp_gas = np.genfromtxt('../../exp_data/%s_gas.csv' % moleculeName, delimiter=', ')
-    #exp_solid = np.genfromtxt('../../exp_data/%s_solid.csv'% moleculeName, delimiter=', ')
-    exp_solid1 = np.genfromtxt('../../exp_data/%s_200k.csv'% moleculeName, delimiter=', ')
-    exp_solid1 = nmLst_evLst(exp_solid1)
-    exp_solid2 = np.genfromtxt('../../exp_data/%s_80_200k.csv'% moleculeName, delimiter=', ')
-    exp_solid2 = nmLst_evLst(exp_solid2)
-    #exp_data = [exp_gas, exp_solid]
-    exp_data = [exp_solid1, exp_solid2]
-    exp_data = [exp_solid2]
+    exp_solid = np.genfromtxt('../../exp_data/%s_solid.csv'% moleculeName, delimiter=', ')
+    #exp_solid1 = np.genfromtxt('../../exp_data/%s_200k.csv'% moleculeName, delimiter=', ')
+    #exp_solid1 = nmLst_evLst(exp_solid1)
+    #exp_solid2 = np.genfromtxt('../../exp_data/%s_80_200k.csv'% moleculeName, delimiter=', ')
+    #exp_solid2 = nmLst_evLst(exp_solid2)
+    exp_data = [ exp_solid ]
+    #exp_data = [exp_solid1, exp_solid2]
     exp_x_units = ['nm']
 
-    octa_rib = dis_art.discrete_to_art('../ribbon/8rib_cam.dat', ['nm', 'eV'], [100, 320], 2)
-    filename = "30_8_%s_%s_elec_n%s_%s_%sK_exp.png" % ( moleculeName, '8ribbon_ind_', nStates, basis_set_mexc , T )
-    #filename = "30_8_%s_%s_elec_n%s_%s_%sK_exp.png" % ( moleculeName, '_AS_', nStates, basis_set_mexc , T )
-
+    #octa_rib = dis_art.discrete_to_art('../ribbon/8rib_cam.dat', ['nm', 'eV'], [100, 320], 2)
+    acquiredStates = nStates
     electronicMultiPlot_Experiment(methods_lst, 
         T, title, filename, 
-        x_range=[4, 10.5], x_units='eV', 
-        peaks=False, spec_name='spec', 
-        complete=complete, basis_set_mexc=basis_set_mexc, nStates=nStates,
+        x_range=[6,11], x_units='eV', 
+        peaks=True, spec_name='spec', 
+        complete=complete, basis_set_mexc=basis_set_mexc, nStates=nStates, acquiredStates=acquiredStates,
         exp_data=exp_data, 
         colors=colors, sec_y_axis=True, rounding=2,
-        extra_data=octa_rib
+        #extra_data=octa_rib
         )
     print("OUTPUT =\n", filename)
-    
     """
+    
     T = 1000  # Kelvin (K)
     title = r"30 Randomized Clusters of 8 CO$_2$ Molecules: Vibrational"
     filename = "30_8_rand_%s_vib_wB97XD.png" % moleculeName
-    """
 
     # for vibrational frequency standard usage
-    #vibrational_frequencies.main()
-    #boltzmannAnalysis(T, energy_levels='vibrational')
-    #generateGraph("spec", T, title, filename, x_range=[3600, 50], x_units='cm-1', peaks=True)
+    vibrational_frequencies.main()
+    boltzmannAnalysis(T, energy_levels='vibrational')
+    generateGraph("spec", T, title, filename, x_range=[3600, 50], x_units='cm-1', peaks=False)
     
+    """
     # useful bash commands below
         # ps aux | grep test.py
         # kill <pid> -9
         # python3 -u ./ice_manager.py > output.log & disown -h
 
-main()
+if __name__ == '__main__':
+    main()
 
