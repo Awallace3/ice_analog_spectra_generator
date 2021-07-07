@@ -199,6 +199,7 @@ def boltzmannAnalysis(T, energy_levels='electronic'):
     energy_all = energy_all[np.argsort(energy_all[:, 0])]
     lowest_energy = np.amin(energy_all[:, 1])
     lowest_energy_ind = (np.where(energy_all[:, 1] == lowest_energy))[0][0]
+    print("LOWEST_ENERGY", lowest_energy)
     lowest_energy = lowest_energy * 4.3597E-18  # convert hartrees to joules
     kb = 1.380649E-23
     
@@ -296,7 +297,6 @@ def generateGraph(spec_name, T, title, filename, x_range=[100,300], x_units='nm'
 
     plt.title(title)
     if x_units == 'ev' or x_units=='eV':
-        print(x)
         plt.xlabel("Electronvolts (eV)")
         ax1.legend(shadow=True, fancybox=True)
         if peaks:
@@ -545,7 +545,7 @@ def electronicMultiPlot_Experiment(methods_lst,
             print(x, y)
         """
         #ax1.plot(x, y, "-", label="%s" % i, zorder=2)
-        ax1.plot(x, y, "-", c="%s" % (colors[n]), label="%s" % i, zorder=2)
+        ax1.plot(x, y, "-", c="%s" % (colors[n]), label="%s (Amorphous)" % i, zorder=2)
         
         if peaks:
             arr_y = np.array(y)
@@ -581,7 +581,10 @@ def electronicMultiPlot_Experiment(methods_lst,
 
     exp_names = [ "Exp. Solid", "Exp. Gas"]
     exp_names = [ "Exp. Solid A", "Exp. Solid B"]
+    exp_names = [ "Exp. Solid B"]
+    exp_names = [ "Exp. Solid A", "Exp. Solid B"]
     exp_colors = [ "k","tab:grey"]
+    exp_colors = [ "tab:grey"]
     ax2 = ax1.twinx()
     #for n, i in enumerate(exp_data):
     #    ax2.plot(i[:,0], i[:,1], "--", label="%s" % exp_names[n])
@@ -611,28 +614,30 @@ def electronicMultiPlot_Experiment(methods_lst,
         ymax = np.amax(extra_data[:,1], axis=0)
         for i in range(len(extra_data[:,1])):
             extra_data[i,1] /= ymax
-        arr_y = extra_data[:,1]
-        arr_x = extra_data[:,0]
-        print(arr_y)
-        peaks_dat, _ = scipy.signal.find_peaks(arr_y, height=0)
-        print(peaks_dat)
-        for j in peaks_dat:
-                #print(round(x[i],2), arr_y[i])
-                height = arr_y[j]
-                frequency = round(arr_x[j], 4)
-            
-                print("x, y = %.1f, %.1f\n" % (frequency, height))
-                df.loc[len(df.index)] = ['8 Ribbon', basis_set_mexc, frequency, height]
         
         ax1.plot(extra_data[:,0], extra_data[:, 1], '-', label='CAM-B3LYP (Ribbon Octamer)')
+        if peaks:
+            arr_y = extra_data[:,1]
+            arr_x = extra_data[:,0]
+            print(arr_y)
+            peaks_dat, _ = scipy.signal.find_peaks(arr_y, height=0)
+            print(peaks_dat)
+            for j in peaks_dat:
+                    #print(round(x[i],2), arr_y[i])
+                    height = arr_y[j]
+                    frequency = round(arr_x[j], 4)
+                
+                    print("x, y = %.1f, %.1f\n" % (frequency, height))
+                    df.loc[len(df.index)] = ['8 Ribbon', basis_set_mexc, frequency, height]
+        
 
 
     if sec_y_axis:
         #ax2.set_ylabel(r"Cross Section / cm$^2$ (Normalized)")
-        ax2.set_ylim(0,1.5)
+        ax2.set_ylim(0,1.3)
 
     ax1.set_xlim(x_range)
-    ax1.set_ylim(0, 1.5)
+    ax1.set_ylim(0, 1.3)
 
     plt.title(title)
     ax1.legend(shadow=True, fancybox=True, loc='upper left')
@@ -795,6 +800,8 @@ def main():
     #methods_lst = ["CAM-B3LYP"]
     colors = [ 'red', 'green']
     methods_lst = ["CAM-B3LYP", "wB97XD"]
+    #methods_lst = ["CAM-B3LYP"]
+    methods_lst = []
     #methods_lst = ["B3LYP"]
     #colors = [ 'blue']
 
@@ -835,14 +842,17 @@ def main():
     exp_solid2 = nmLst_evLst(exp_solid2)
     #exp_data = [exp_gas, exp_solid]
     exp_data = [exp_solid1, exp_solid2]
+    exp_data = [exp_solid2]
     exp_x_units = ['nm']
 
     octa_rib = dis_art.discrete_to_art('../ribbon/8rib_cam.dat', ['nm', 'eV'], [100, 320], 2)
+    filename = "30_8_%s_%s_elec_n%s_%s_%sK_exp.png" % ( moleculeName, '8ribbon_ind_', nStates, basis_set_mexc , T )
+    #filename = "30_8_%s_%s_elec_n%s_%s_%sK_exp.png" % ( moleculeName, '_AS_', nStates, basis_set_mexc , T )
 
     electronicMultiPlot_Experiment(methods_lst, 
         T, title, filename, 
-        x_range=[2, 12], x_units='eV', 
-        peaks=True, spec_name='spec', 
+        x_range=[4, 10.5], x_units='eV', 
+        peaks=False, spec_name='spec', 
         complete=complete, basis_set_mexc=basis_set_mexc, nStates=nStates,
         exp_data=exp_data, 
         colors=colors, sec_y_axis=True, rounding=2,

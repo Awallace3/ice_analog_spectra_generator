@@ -53,14 +53,16 @@ def clean_energies(hf_1, hf_2, zero_point):
 
     if hf_2 != 0:
         hf_2 = (hf_2[3:].replace("\n", "").split('\\'))
-        # print(hf_1[0], hf_2[0])
-
-        if hf_1[0] > hf_2[0]:
-            return float(hf_1[0]) + zero_point
+        #print(hf_1[0], hf_2[0])
+        #if hf_1[0] > hf_2[0]:
+            #-2119.1981428
+        if hf_1[0] < hf_2[0]:
+            #-2119.1981419999997
+            return float(hf_1[0]) + zero_point, hf_1[0]
         else:
-            return float(hf_2[0]) + zero_point
+            return float(hf_2[0]) + zero_point, hf_2[0]
     else:
-        return float(hf_1[0]) + zero_point
+        return float(hf_1[0]) + zero_point, hf_1[0]
 
 def main():
     print("Gathering Energies")
@@ -77,6 +79,7 @@ def main():
 
     directories = glob.glob("geom*")
     #print(os.getcwd())
+    lowest_energy = [0,0,0]
     cmd = 'rm ../results/energies/energy_all.csv'
     subprocess.call(cmd, shell=True)
     for i in directories:
@@ -108,7 +111,11 @@ def main():
             freq, hf_1, hf_2, zero_point = freq_hf_zero(
                 lines, filename=filename)
             #print(freq, hf_1, hf_2, zero_point)
-            sum_energy = clean_energies(hf_1, hf_2, zero_point)
+            sum_energy, hf = clean_energies(hf_1, hf_2, zero_point)
+            if sum_energy < lowest_energy[2]:
+                lowest_energy = [hf, zero_point, sum_energy]
+                
+
             #print("Sum Energy:",sum_energy)
             #os.chdir("../results/energies")
             path = '../../results/energies/'
@@ -124,5 +131,7 @@ def main():
             os.chdir("..")
         
     os.chdir("..")
+    print("LOWEST ENERGY\nHF\tZPE\tSUM")
+    print(lowest_energy)
 
 #main()
