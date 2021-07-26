@@ -502,7 +502,7 @@ def electronicMultiPlot(methods_lst,
 
 def electronicMultiPlot_Experiment(methods_lst, 
             T, title, filename, 
-            x_range=[2,16], x_units='eV', 
+            x_range=[2,16], x_units='eV',
             peaks=False, spec_name='spec',
             complete=[], basis_set_mexc='6-31G(d,p)',
             nStates='25', acquiredStates='25', exp_data=[], 
@@ -550,6 +550,8 @@ def electronicMultiPlot_Experiment(methods_lst,
             print(x, y)
         """
         #ax1.plot(x, y, "-", label="%s" % i, zorder=2)
+        if i == 'wB97XD':
+            i = r'$\omega$B97XD'
         ax1.plot(x, y, "-", c="%s" % (colors[n]), label="%s (Amorphous)" % i, zorder=2)
         
         if peaks:
@@ -584,21 +586,18 @@ def electronicMultiPlot_Experiment(methods_lst,
                 """
             df_latex.df_latexTable('latex_df_%s.tex' % basis_set_mexc, df, rounding )
 
-    exp_names = [ "Exp. Solid", "Exp. Gas"]
+    #exp_names = [ "Exp. Solid", "Exp. Gas"]
     exp_names = [ "Exp. Solid A", "Exp. Solid B"]
-    exp_names = [ "Exp. Solid B"]
-    exp_names = [ "Exp. Solid A", "Exp. Solid B"]
+    #exp_names = [ "Exp. Solid B"]
     exp_colors = [ "k","tab:grey"]
-    exp_colors = [ "tab:grey"]
+    #exp_colors = [ "tab:grey"]
     ax2 = ax1.twinx()
-    #for n, i in enumerate(exp_data):
-    #    ax2.plot(i[:,0], i[:,1], "--", label="%s" % exp_names[n])
-    #ax2.set_ylabel(r"Cross Section / cm$^2$")
-    #ax2.set_ylim(0,5.0E-17*1.4)
+
     if len(exp_data) > 0:
         for n, i in enumerate(exp_data):
             ymax = np.amax(i[:,1], axis=0)
             i[:,1] /= ymax
+            print(i)
             ax2.plot(i[:,0], i[:,1], "--", c='%s' % exp_colors[n], label="%s" % exp_names[n], zorder=2)
             if peaks:
                 arr_y = i[:,1]
@@ -620,7 +619,7 @@ def electronicMultiPlot_Experiment(methods_lst,
         for i in range(len(extra_data[:,1])):
             extra_data[i,1] /= ymax
         
-        ax1.plot(extra_data[:,0], extra_data[:, 1], '-', label='CAM-B3LYP (Ribbon Octamer)')
+        ax1.plot(extra_data[:,0], extra_data[:, 1], '-', label='CAM-B3LYP (Ribbon Octamer)', color='blue')
         if peaks:
             arr_y = extra_data[:,1]
             arr_x = extra_data[:,0]
@@ -692,6 +691,9 @@ def method_update_selection(methods_lst, basis_set_mexc, nStates):
         methods_lst[n] = i
     return methods_lst
 
+def sort_data (data):
+    return data[data[:,0].argsort()]
+
 def nmLst_evLst (nmData):
     h = 6.62607004E-34
     c = 299792458
@@ -761,8 +763,8 @@ def main():
     # T comes from the binding energy of the dimers for each strucutres converted from Hartrees to Kelvin
     #T = 1348.768    # nh3
     #T = 457.088     # co2
-    T = 2071.104    # h2o
-    #T = 9259.3       # co3h2
+    #T = 2071.104    # h2o
+    T = 9259.3       # co3h2
 
     if basis_set_mexc == '6-311G(d,p)':
         basis_dir_name = ''
@@ -806,6 +808,8 @@ def main():
     #methods_lst = ["CAM-B3LYP"]
     colors = [ 'red', 'green']
     methods_lst = ["CAM-B3LYP", "wB97XD"]
+    methods_lst = ["CAM-B3LYP"]
+    #methods_lst = []
     colors = ["red", 'green']
     #methods_lst = ["B3LYP"]
     #colors = ["blue"]
@@ -833,36 +837,41 @@ def main():
             )
     print("OUTPUT =\n", filename)
     """
+    acquiredStates = nStates
+    acquiredStates = '15' 
     filename = "30_8_%s_elec_n%s_%s_%sK_exp.pdf" % ( moleculeName, nStates, basis_set_mexc , T, )
     filename = "30_8_%s_elec_n%s_%s_%sK_exp.png" % ( moleculeName, nStates, basis_set_mexc , T, )
     title = r"30 Randomized Clusters of 8 %s Molecules with %s" % (moleculeNameLatex, basis_set_mexc) + "\nat %s K compared with experiment" % T 
     title = '' 
-    filename = "30_8_%s_elec_n%s_%s_%sK_expD1.png" % ( moleculeName, nStates, basis_set_mexc , T, )
-    #filename = "105_32_%s_elec_n%s_%s_%sK.pdf" % ( moleculeName, nStates, basis_set_mexc , T, )
-    #filename = "105_32_%s_elec_n%s_%s_%sK.png" % ( moleculeName, nStates, basis_set_mexc , T, )
-    filename = "30_8_%s_elec_n%s_%s_%sK_exp.png" % ( moleculeName, nStates, basis_set_mexc , T, )
-    filename = "30_8_%s_elec_n%s_%s_%sK_exp_STATES.png" % ( moleculeName, nStates, basis_set_mexc , T, )
-    filename = "105_32_%s_elec_n%s_%s_%sK_exp_STATES.png" % ( moleculeName, nStates, basis_set_mexc , T, )
+    filename = "30_8_%s_elec_n%s_%s_%sK_exp_STATES_%s_B.png" % ( moleculeName, nStates, basis_set_mexc , T, acquiredStates)
+    filename = "30_8_%s_elec_n%s_%s_%sK_exp_STATES_%s_EXP_RIB_AM.png" % ( moleculeName, nStates, basis_set_mexc , T, acquiredStates)
+    #filename = "105_32_%s_elec_n%s_%s_%sK_exp_STATES_%s.png" % ( moleculeName, nStates, basis_set_mexc , T, acquiredStates)
     #exp_gas = np.genfromtxt('../../exp_data/%s_gas.csv' % moleculeName, delimiter=', ')
-    exp_solid = np.genfromtxt('../../exp_data/%s_solid.csv'% moleculeName, delimiter=', ')
-    #exp_solid1 = np.genfromtxt('../../exp_data/%s_200k.csv'% moleculeName, delimiter=', ')
-    #exp_solid1 = nmLst_evLst(exp_solid1)
-    #exp_solid2 = np.genfromtxt('../../exp_data/%s_80_200k.csv'% moleculeName, delimiter=', ')
-    #exp_solid2 = nmLst_evLst(exp_solid2)
-    exp_data = [ exp_solid ]
-    #exp_data = [exp_solid1, exp_solid2]
-    exp_x_units = ['nm']
+    #exp_solid = np.genfromtxt('../../exp_data/%s_solid.csv'% moleculeName, delimiter=', ')
+    exp_solid1 = np.genfromtxt('../../exp_data/%s_200k.csv'% moleculeName, delimiter=', ')
+    exp_solid1 = nmLst_evLst(exp_solid1)
+    #exp_solid1 = sort_data(exp_solid1)
+    exp_solid2 = np.genfromtxt('../../exp_data/%s_80_200k.csv'% moleculeName, delimiter=', ')
+    #exp_solid2 = sort_data(exp_solid2)
+    exp_solid2 = nmLst_evLst(exp_solid2)
+    #exp_data = [ exp_solid ]
 
-    #octa_rib = dis_art.discrete_to_art('../ribbon/8rib_cam.dat', ['nm', 'eV'], [100, 320], 2)
-    acquiredStates = nStates
+    exp_data = [exp_solid1, exp_solid2]
+    #exp_data = [ exp_solid2 ]
+    exp_x_units = ['nm']
+    #print(exp_da#ta)
+    
+    octa_rib = dis_art.discrete_to_art('../ribbon/8rib_cam.dat', ['nm', 'eV'], [100, 320], 2)
+    #octa_rib = dis_art.discrete_to_art('../ribbon/8rib_cam.dat', ['nm', 'nm'], [100, 320], 2)
+    #print(octa_rib)
     electronicMultiPlot_Experiment(methods_lst, 
         T, title, filename, 
-        x_range=[6,11], x_units='eV', 
+        x_range=[4,10.5], x_units='eV',
         peaks=True, spec_name='spec', 
         complete=complete, basis_set_mexc=basis_set_mexc, nStates=nStates, acquiredStates=acquiredStates,
         exp_data=exp_data, 
         colors=colors, sec_y_axis=True, rounding=2,
-        #extra_data=octa_rib
+        extra_data=octa_rib
         )
     print("OUTPUT =\n", filename)
     """
