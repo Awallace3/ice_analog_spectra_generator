@@ -609,14 +609,11 @@ def electronicMultiPlot_Experiment(methods_lst,
                 """
             df_latex.df_latexTable('latex_df_%s.tex' % basis_set_mexc, df, rounding )
 
-<<<<<<< HEAD
     #exp_names = [ "Exp. Solid", "Exp. Gas"]
     exp_names = [ "Exp. Solid A", "Exp. Solid B"]
     #exp_names = [ "Exp. Solid B"]
-=======
     exp_names = [ "Exp. Solid", "Exp. Gas"]
     #exp_names = [ "Exp. Solid A", "Exp. Solid B"]
->>>>>>> e9b02960718b2740e5fa01c508c1754e11af142d
     exp_colors = [ "k","tab:grey"]
     #exp_colors = [ "tab:grey"]
     ax2 = ax1.twinx()
@@ -625,12 +622,8 @@ def electronicMultiPlot_Experiment(methods_lst,
         for n, i in enumerate(exp_data):
             ymax = np.amax(i[:,1], axis=0)
             i[:,1] /= ymax
-<<<<<<< HEAD
-            print(i)
+            #print(i)
             ax2.plot(i[:,0], i[:,1], "--", c='%s' % exp_colors[n], label="%s" % exp_names[n], zorder=2)
-=======
-            ax1.plot(i[:,0], i[:,1], "--", c='%s' % exp_colors[n], label="%s" % exp_names[n], zorder=2)
->>>>>>> e9b02960718b2740e5fa01c508c1754e11af142d
             if peaks:
                 arr_y = i[:,1]
                 print("local maxima")
@@ -838,16 +831,13 @@ def main():
     methods_lst = ["B3LYP", "PBE0", "wB97XD", "CAM-B3LYP", "B97D3"]
     colors = ["blue", 'orange', 'green', 'red', 'cyan']
     #methods_lst = ["CAM-B3LYP"]
-<<<<<<< HEAD
     colors = [ 'red', 'green']
     methods_lst = ["CAM-B3LYP", "wB97XD"]
     methods_lst = ["CAM-B3LYP"]
     #methods_lst = []
     colors = ["red", 'green']
-=======
     #methods_lst = ["CAM-B3LYP", "wB97XD"]
     #colors = ["red", 'green']
->>>>>>> e9b02960718b2740e5fa01c508c1754e11af142d
     #methods_lst = ["B3LYP"]
     #colors = ["blue"]
 
@@ -874,21 +864,16 @@ def main():
             )
     print("OUTPUT =\n", filename)
     """
-<<<<<<< HEAD
     acquiredStates = nStates
     acquiredStates = '15' 
-=======
     """
->>>>>>> e9b02960718b2740e5fa01c508c1754e11af142d
     filename = "30_8_%s_elec_n%s_%s_%sK_exp.pdf" % ( moleculeName, nStates, basis_set_mexc , T, )
     filename = "30_8_%s_elec_n%s_%s_%sK_exp.png" % ( moleculeName, nStates, basis_set_mexc , T, )
     title = r"30 Randomized Clusters of 8 %s Molecules with %s" % (moleculeNameLatex, basis_set_mexc) + "\nat %s K compared with experiment" % T 
     title = '' 
-<<<<<<< HEAD
     filename = "30_8_%s_elec_n%s_%s_%sK_exp_STATES_%s_B.png" % ( moleculeName, nStates, basis_set_mexc , T, acquiredStates)
     filename = "30_8_%s_elec_n%s_%s_%sK_exp_STATES_%s_EXP_RIB_AM.png" % ( moleculeName, nStates, basis_set_mexc , T, acquiredStates)
     #filename = "105_32_%s_elec_n%s_%s_%sK_exp_STATES_%s.png" % ( moleculeName, nStates, basis_set_mexc , T, acquiredStates)
-=======
     filename = "30_8_%s_elec_n%s_%s_%sK_expD1.png" % ( moleculeName, nStates, basis_set_mexc , T, )
     #filename = "105_32_%s_elec_n%s_%s_%sK.pdf" % ( moleculeName, nStates, basis_set_mexc , T, )
     #filename = "105_32_%s_elec_n%s_%s_%sK.png" % ( moleculeName, nStates, basis_set_mexc , T, )
@@ -896,7 +881,6 @@ def main():
     filename = "30_8_%s_elec_n%s_%s_%sK_exp_STATES.png" % ( moleculeName, nStates, basis_set_mexc , T, )
     filename = "legend.png" 
     filename = "105_32_%s_elec_n%s_%s_%sK_exp_STATES.png" % ( moleculeName, nStates, basis_set_mexc , T, )
->>>>>>> e9b02960718b2740e5fa01c508c1754e11af142d
     #exp_gas = np.genfromtxt('../../exp_data/%s_gas.csv' % moleculeName, delimiter=', ')
     #exp_solid = np.genfromtxt('../../exp_data/%s_solid.csv'% moleculeName, delimiter=', ')
     exp_solid1 = np.genfromtxt('../../exp_data/%s_200k.csv'% moleculeName, delimiter=', ')
