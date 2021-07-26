@@ -65,7 +65,7 @@ def clean_energies(hf_1, hf_2, zero_point):
         return float(hf_1[0]) + zero_point, hf_1[0]
 
 def main():
-    print("Gathering Energies")
+    #print("Gathering Energies")
     location = os.getcwd().split('/')[-1]
     if location == 'src':
         os.chdir("../calc_zone")
@@ -122,6 +122,7 @@ def main():
             #print(os.getcwd())
             f = open(path + 'energy%s.txt' % n, 'w')
             f.write(str(sum_energy))
+            #print(sum_energy)
             f.close()
             line = '%s,%s\n' % (n,sum_energy)
             f = open(path + 'energy_all.csv', 'a')
@@ -131,7 +132,7 @@ def main():
             os.chdir("..")
         
     os.chdir("..")
-    print("LOWEST ENERGY\nHF\tZPE\tSUM")
-    print(lowest_energy)
+    #print("LOWEST ENERGY\nHF\tZPE\tSUM")
+    #print(lowest_energy)
 
 #main()

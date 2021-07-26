@@ -910,6 +910,9 @@ def main():
         )
     print("OUTPUT =\n", filename)
     """
+
+    
+    """
     overTones = False
     overTonesBoltzmannAnalysis = True
     if overTones: 
@@ -926,6 +929,7 @@ def main():
     vibrational_frequencies.main(overTones, T=500)
     boltzmannAnalysis(T, energy_levels='vibrational', DeltaN='10', x_range=[50, 4100], overtones=overTonesBoltzmannAnalysis)
     generateGraph("spec", T, title, filename, x_range=[4000, 400], x_units='cm-1', peaks=False)
+    """
     
     # useful bash commands below
         # ps aux | grep test.py
