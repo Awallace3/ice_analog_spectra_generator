@@ -564,9 +564,9 @@ def clean_many_txt():
     """ This will replace the numerical forms of the elements as their letters numbered in order """
 
     f = open('many.txt', 'r')
-    a = ['6.0 ', '8.0 ', '1.0 ', '7.0 ']
+    a = ['6.000000 ', '8.000000 ', '1.000000 ', '7.000000 ']
     table = {
-        '6.0 ': 'C', '8.0 ': 'O', '1.0 ': 'H', '7.0 ': 'N'
+        '6.000000 ': 'C', '8.000000 ': 'O', '1.000000 ': 'H', '7.000000 ': 'N'
     }
 
     lst = []
@@ -967,7 +967,7 @@ def main(molecules_in_cluster, number_clusters, box_length,  minium_distance_bet
         out_file = "many.txt"
 
         np.savetxt(out_file, final,
-                   fmt="%s")
+                   fmt="%.6f")
         """ end """
 
         clean_many_txt()

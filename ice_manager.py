@@ -611,8 +611,8 @@ def electronicMultiPlot_Experiment(methods_lst,
 
     #exp_names = [ "Exp. Solid", "Exp. Gas"]
     exp_names = [ "Exp. Solid A", "Exp. Solid B"]
-    #exp_names = [ "Exp. Solid B"]
-    exp_names = [ "Exp. Solid", "Exp. Gas"]
+    exp_names = [ "Exp. Solid B"]
+    #exp_names = [ "Exp. Solid", "Exp. Gas"]
     #exp_names = [ "Exp. Solid A", "Exp. Solid B"]
     exp_colors = [ "k","tab:grey"]
     #exp_colors = [ "tab:grey"]
@@ -734,10 +734,12 @@ def main():
     mol_xyz1 = "mon_nh3.xyz"
     mol_xyz1 = "mon_h2o.xyz"
     mol_xyz2 = "mon_h2co3.xyz"
+    mol_xyz2 = "mon_h2co3_tt.xyz"
+    mol_xyz1= "mon_h2co3_tt.xyz"
     #mol_xyz2 = "mon_methanol.xyz"
     number_clusters = 1
     # enter the number of molecules of each geometry in the respective index
-    molecules_in_cluster = [8, 16]
+    molecules_in_cluster = [7, 1]
     box_length = 15               # in angstroms
     minium_distance_between_molecules = 3.0
 
