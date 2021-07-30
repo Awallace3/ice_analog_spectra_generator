@@ -733,14 +733,14 @@ def nmLst_evLst (nmData):
 def main():
     mol_xyz1 = "mon_nh3.xyz"
     mol_xyz1 = "mon_h2o.xyz"
-    mol_xyz2 = "mon_h2co3.xyz"
+    mol_xyz1 = "mon_h2co3.xyz"
+    mol_xyz1 = "mon_h2co3_ct.xyz"
     mol_xyz2 = "mon_h2co3_tt.xyz"
-    mol_xyz1= "mon_h2co3_tt.xyz"
     #mol_xyz2 = "mon_methanol.xyz"
     number_clusters = 1
     # enter the number of molecules of each geometry in the respective index
-    molecules_in_cluster = [7, 1]
-    box_length = 15               # in angstroms
+    molecules_in_cluster = [4, 4]
+    box_length = 9               # in angstroms
     minium_distance_between_molecules = 3.0
 
     resubmit_delay_min = 0.01
