@@ -26,7 +26,7 @@ matplotlib.use('Agg')
 def jobResubmit(min_delay, number_delays,
                 method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt,
                 method_mexc, basis_set_mexc, mem_com_mexc, mem_pbs_mexc,
-                nStates
+                nStates, SCRF=''
                 ):
 
     min_delay = min_delay * 60
@@ -54,6 +54,8 @@ def jobResubmit(min_delay, number_delays,
                 pass
             else:
                 basis_dir_name += '_n%s' % nStates
+            if SCRF != '':
+                basis_dir_name += '_SCRF_%s' % SCRF
 
             if method_mexc == 'B3LYP':
                 mexc_check = glob.glob("mexc" + basis_dir_name)
@@ -82,7 +84,7 @@ def jobResubmit(min_delay, number_delays,
                 action, resubmissions = error_mexc_v11.main(
                     num, method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt,
                     method_mexc, basis_set_mexc, mem_com_mexc, mem_pbs_mexc,
-                    resubmissions, delay, nStates
+                    resubmissions, delay, nStates, SCRF=SCRF
                 )
                 #print(resubmissions)
            
@@ -106,7 +108,9 @@ def jobResubmit(min_delay, number_delays,
 
 
 def boltzmannAnalysisSetup(complete, method_mexc='B3LYP', 
-                basis_set_mexc='6-311G(d,p)', nStates='25', acquiredStates='25'):
+                basis_set_mexc='6-311G(d,p)', nStates='25', acquiredStates='25',
+                SCRF=''
+                ):
 
     analysis_ready = []
     if "results" not in glob.glob("results"):
@@ -127,6 +131,9 @@ def boltzmannAnalysisSetup(complete, method_mexc='B3LYP',
         pass
     else:
         basis_dir_name += '_n%s' % nStates
+    
+    if SCRF != '':
+        basis_dir_name += '_SCRF_%s' % SCRF
 
     if method_mexc == 'PBE0':
         path_mexc = method_mexc.lower() + basis_dir_name
@@ -528,7 +535,8 @@ def electronicMultiPlot_Experiment(methods_lst,
             complete=[], basis_set_mexc='6-31G(d,p)',
             nStates='25', acquiredStates='25', exp_data=[], 
             colors=[], sec_y_axis=False, rounding=1,
-            extra_data=np.array([[-1, -1]])
+            extra_data=np.array([[-1, -1]]),
+            SCRF=''
             ):
 
     location = os.getcwd().split('/')[-1]
@@ -698,7 +706,7 @@ def electronicMultiPlot_Experiment(methods_lst,
     os.chdir("../../..")
 
 
-def method_update_selection(methods_lst, basis_set_mexc, nStates):
+def method_update_selection(methods_lst, basis_set_mexc, nStates, SCRF=''):
     if basis_set_mexc == '6-311G(d,p)':
         basis_dir_name = ''
     else:
@@ -707,6 +715,8 @@ def method_update_selection(methods_lst, basis_set_mexc, nStates):
         pass
     else:
         basis_dir_name += '_n%s' % nStates
+    if SCRF != '':
+        basis_dir_name += '_SCRF_%s' % SCRF
     for n, i in enumerate(methods_lst):
         if i == 'B3LYP':
             i = 'mexc' + basis_dir_name
@@ -765,35 +775,38 @@ def main():
 
     # TD-DFT basis sets
     basis_set_mexc = "6-311G(d,p)"
-    #basis_set_mexc = "6-311++G(2d,2p)"
+    basis_set_mexc = "6-311++G(2d,2p)"
+
+    SCRF = ""
+    SCRF = "PCM"
 
     # TD-DFT NSTATES
     nStates = '25'
     #nStates = '50'
     #nStates = '100'
     #nStates = '150'
-    #nStates = '125'
+    nStates = '125'
 
     # TD-DFT memory
     mem_com_mexc = "2500"  # mb
     mem_pbs_mexc = "25"  # gb"
 
-    #moleculeName = 'nh3'
-    #moleculeNameLatex = r'NH$_3$'
+    moleculeName = 'nh3'
+    moleculeNameLatex = r'NH$_3$'
     #moleculeName = 'co2'
     #moleculeNameLatex = r'CO$_2$'
     #moleculeName = 'h2o'
     #moleculeNameLatex = r'H$_2$O'
-    moleculeName = 'co3h2'
-    moleculeNameLatex = r'CO$_3$H$_2$'
+    #moleculeName = 'co3h2'
+    #moleculeNameLatex = r'CO$_3$H$_2$'
 
     # Temperatures (K)
     #T = 100  
     # T comes from the binding energy of the dimers for each strucutres converted from Hartrees to Kelvin
-    #T = 1348.768    # nh3
+    T = 1348.768    # nh3
     #T = 457.088     # co2
     #T = 2071.104    # h2o
-    T = 9259.3       # co3h2
+    #T = 9259.3       # co3h2
 
     if basis_set_mexc == '6-311G(d,p)':
         basis_dir_name = ''
@@ -825,6 +838,7 @@ def main():
     box_length = 9               # in angstroms
     minium_distance_between_molecules = 3.0
     filenames = ["mon_h2co3.xyz", "mon_nh3.xyz", "mon_h2o.xyz"]
+    """
     ice_build_geoms_v2.main(
         filenames, molecules_in_cluster, number_clusters, 
         box_length, minium_distance_between_molecules,
@@ -834,13 +848,13 @@ def main():
     )
 
     """
-    
     complete = jobResubmit(resubmit_delay_min, resubmit_max_attempts,
                            method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt,
                            method_mexc, basis_set_mexc, mem_com_mexc, mem_pbs_mexc,
-                           nStates
+                           nStates, 
+                           SCRF=SCRF
                            )  # delay_min, num_delays
-    """
+    
     # for standard usage
     """
     boltzmannAnalysisSetup(complete, method_mexc, nStates=nStates)
@@ -932,7 +946,8 @@ def main():
         complete=complete, basis_set_mexc=basis_set_mexc, nStates=nStates, acquiredStates=acquiredStates,
         exp_data=exp_data, 
         colors=colors, sec_y_axis=True, rounding=2,
-        extra_data=octa_rib
+        extra_data=octa_rib,
+        SCRF=SCRF
         )
     print("OUTPUT =\n", filename)
     """
