@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 from src import ice_build_geoms
+from src import ice_build_geoms_v2
 #from src import error_mexc_v9
 from src import error_mexc_v11
 from src import gather_energies
@@ -806,10 +807,32 @@ def main():
 
     filename = "30_8_rand_%s_%s%s.png" % ( moleculeName, method_mexc, basis_dir_name)
     title = r"30 Randomized Clusters of 8 %s Molecules %s" % (moleculeNameLatex, basis_dir_name)
-
+    """
+    # ice_build_geoms version 1 can only take two geometries max with explicitly 
     # for generating the structures
     ice_build_geoms.main(molecules_in_cluster, number_clusters, box_length, minium_distance_between_molecules,
                         mol_xyz1, mol_xyz2, method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt)
+    """
+    mol_xyz1 = "mon_nh3.xyz"
+    mol_xyz1 = "mon_h2o.xyz"
+    mol_xyz1 = "mon_h2co3.xyz"
+    mol_xyz1 = "mon_h2co3_ct.xyz"
+    mol_xyz2 = "mon_h2co3_tt.xyz"
+    #mol_xyz2 = "mon_methanol.xyz"
+    number_clusters = 1
+    # enter the number of molecules of each geometry in the respective index
+    molecules_in_cluster = [3, 1, 2]
+    box_length = 9               # in angstroms
+    minium_distance_between_molecules = 3.0
+    filenames = ["mon_h2co3.xyz", "mon_nh3.xyz", "mon_h2o.xyz"]
+    ice_build_geoms_v2.main(
+        filenames, molecules_in_cluster, number_clusters, 
+        box_length, minium_distance_between_molecules,
+
+        method_opt, basis_set_opt, 
+        mem_com_opt, mem_pbs_opt
+    )
+
     """
     
     complete = jobResubmit(resubmit_delay_min, resubmit_max_attempts,
