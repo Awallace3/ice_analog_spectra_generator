@@ -616,6 +616,8 @@ def main(index,
                 os.chdir("mexc" + basis_dir_name)
             else: 
                 os.chdir(method_mexc.lower() + basis_dir_name)
+            if SCRF != '':
+                basis_dir_name += '_SCRF_%s' % SCRF
 
             #os.system("qsub mexc.pbs")
             # os.path.abspath(os.getcwd())
