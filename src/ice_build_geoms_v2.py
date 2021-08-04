@@ -982,7 +982,8 @@ def main(
     box_length,  minium_distance_between_molecules,
 
     method_opt, basis_set_opt,
-    mem_com_opt, mem_pbs_opt
+    mem_com_opt, mem_pbs_opt,
+    start_num = 0,
     ):
     #geo1, geo2 = xyz_remove_whitespace(mol_xyz1, mol_xyz2)
 
@@ -995,7 +996,7 @@ def main(
     #print(geo_dict)
 
     # plus two since starting at 1 and range goes up to second val
-    for i in range(1, number_clusters + 1, 1):
+    for i in range(start_num, number_clusters + start_num, 1):
 
         """ Takes array and saves it to file """
 
@@ -1044,16 +1045,8 @@ def main(
                        mem_pbs_opt)  # uncomment when want directories
         print("\n\n\n next directory \n\n\n")
 
-    """
-    os.remove("many.txt")
+    os.remove("d*.txt")
+    os.remove("a*.txt")
     os.remove("dataframe_test.csv")
-    os.remove("bonds1.txt")
-    os.remove("angles1.txt")
-    os.remove("bonds2.txt")
-    os.remove("angles2.txt")
-
-    # uncomment line 404
-
-    """
 
 # main()
