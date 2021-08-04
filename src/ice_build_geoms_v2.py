@@ -983,7 +983,7 @@ def main(
 
     method_opt, basis_set_opt,
     mem_com_opt, mem_pbs_opt,
-    start_num = 0,
+    start_num = 1,
     ):
     #geo1, geo2 = xyz_remove_whitespace(mol_xyz1, mol_xyz2)
 
