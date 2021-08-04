@@ -1084,12 +1084,9 @@ def main(molecules_in_cluster, number_clusters, box_length,  minium_distance_bet
                        mem_pbs_opt)  # uncomment when want directories
         print("\n\n\n next directory \n\n\n")
 
-    os.remove("many.txt")
+    os.remove("b*.txt")
+    os.remove("a*.txt")
     os.remove("dataframe_test.csv")
-    os.remove("bonds1.txt")
-    os.remove("angles1.txt")
-    os.remove("bonds2.txt")
-    os.remove("angles2.txt")
 
     # uncomment line 404
 
