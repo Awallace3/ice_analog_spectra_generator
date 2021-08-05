@@ -468,7 +468,10 @@ def make_mexc(method_mexc, basis_set_mexc,
         fp.write("""  echo "Not on a compute node!"\n  exit 1;\nfi\n\n""")
         fp.write(
             "cd $PBS_O_WORKDIR\n. $g16root/g16/bsd/g16.profile\ng16 mexc.com mexc.out\n\nrm -r $scrdir\n")
-
+    os.chdir(new_dir)
+    print("qsub", os.getcwd())
+    subprocess.call('qsub mexc.pbs', shell=True)
+    os.chdir("..")
 
 def clean_energies(hf_1, hf_2, zero_point):
     zero_point = zero_point[30:].replace(" (Hartree/Particle)", "")
@@ -621,7 +624,7 @@ def main(index,
 
             #os.system("qsub mexc.pbs")
             # os.path.abspath(os.getcwd())
-            failure = subprocess.call(cmd, shell=True)
+            #failure = subprocess.call(cmd, shell=True)
             resubmissions[index] += 1
             os.chdir("..")
             os.remove("tmp.txt")

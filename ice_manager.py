@@ -839,13 +839,15 @@ def main():
     box_length = 9               # in angstroms
     minium_distance_between_molecules = 3.0
     filenames = ["mon_h2co3.xyz", "mon_nh3.xyz", "mon_h2o.xyz"]
+    start_num = 6
     """
     ice_build_geoms_v2.main(
         filenames, molecules_in_cluster, number_clusters, 
         box_length, minium_distance_between_molecules,
 
         method_opt, basis_set_opt, 
-        mem_com_opt, mem_pbs_opt
+        mem_com_opt, mem_pbs_opt,
+        start_num=start_num
     )
 
     """
