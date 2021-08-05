@@ -344,7 +344,7 @@ def make_input_files_no_constraints(output_num, method_opt,
     with open('mex.com', 'w') as fp:
         fp.write("%mem={0}mb\n".format(mem_com_opt))
         fp.write("%nprocs=4\n")
-        fp.write("#N {0}".format(method_opt) +"/{0} OPT FREQ\n".format(basis_set_opt))
+        #fp.write("#N {0}".format(method_opt) +"/{0} OPT FREQ\n".format(basis_set_opt))
         fp.write("#N %s/%s OPT FREQ %s\n" % (method_opt, basis_set_opt, SCRF))
         fp.write("\n")
         fp.write("Name ModRedundant - Minimalist working constrained optimisation\n")
