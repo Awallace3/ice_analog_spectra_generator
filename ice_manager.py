@@ -849,14 +849,12 @@ def main():
         mem_com_opt, mem_pbs_opt,
         start_num=start_num
     )
-    """
     complete = jobResubmit(resubmit_delay_min, resubmit_max_attempts,
                            method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt,
                            method_mexc, basis_set_mexc, mem_com_mexc, mem_pbs_mexc,
                            nStates, 
                            SCRF=SCRF
                            )  # delay_min, num_delays
-    """
     
     # for standard usage
     """
