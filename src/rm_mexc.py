@@ -10,7 +10,7 @@ import pandas as pd
 import glob
 import subprocess
 
-def rm_mexc(method_mexc, basis_set_mexc, nStates):
+def rm_mexc(method_mexc, basis_set_mexc, nStates, SCRF=''):
     """
     if method_mexc == 'PBE0':
         path_mexc = 'pbe0'
@@ -31,6 +31,8 @@ def rm_mexc(method_mexc, basis_set_mexc, nStates):
         pass
     else:
         basis_dir_name += '_n%s' % nStates
+    if SCRF != '':
+        basis_dir_name += '_SCRF_%s' % SCRF
 
     if method_mexc == 'B3LYP':
         path_mexc = 'mexc' + basis_dir_name
@@ -71,11 +73,15 @@ def main():
     basis_set_mexc = '6-311++G(2d,2p)'
     #basis_set_mexc = '6-311G(d,p)'
     
-    #nStates = '25'
+    nStates = '25'
     #nStates = '50'
-    nStates = '150'
+    #nStates = '150'
+    nStates = '125'
     
-    rm_mexc(method_mexc, basis_set_mexc, nStates)
+    SCRF=''
+    SCRF='PCM'
+
+    rm_mexc(method_mexc, basis_set_mexc, nStates, SCRF=SCRF)
 main()
 #if __name__ == "__main__":
 #    main()

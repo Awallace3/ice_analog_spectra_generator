@@ -32,7 +32,8 @@ def discrete_to_art(path, x_units=['nm', 'eV'], x_range=[100, 320], broadening=2
 	data = np.genfromtxt('spec')
 	os.remove('data')
 	os.remove('spec')
-	data = unit_conversion(data, x_units)
+	if x_units[0] != x_units[1]:
+		data = unit_conversion(data, x_units)
 	return data
 
 if __name__ == '__main__':

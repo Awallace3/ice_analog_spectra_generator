@@ -327,9 +327,12 @@ def find_geom(lines, error, filename, imaginary):
 
 def make_input_files_no_constraints(output_num, method_opt, 
             basis_set_opt, mem_com_opt, 
-            mem_pbs_opt):
+            mem_pbs_opt,
+            SCRF=''
+            ):
     """ Combines the geometry output and the constrained output. Then makes the .com and .pbs files in a subdirectory """
-
+    if SCRF != '':
+        SCRF = "SCRF=%s" % SCRF
     data = ""
 
     with open('tmp.txt') as fp:
@@ -341,8 +344,8 @@ def make_input_files_no_constraints(output_num, method_opt,
     with open('mex.com', 'w') as fp:
         fp.write("%mem={0}mb\n".format(mem_com_opt))
         fp.write("%nprocs=4\n")
-        fp.write("#N {0}".format(method_opt) +
-                 "/{0} OPT FREQ\n".format(basis_set_opt))
+        #fp.write("#N {0}".format(method_opt) +"/{0} OPT FREQ\n".format(basis_set_opt))
+        fp.write("#N %s/%s OPT FREQ %s\n" % (method_opt, basis_set_opt, SCRF))
         fp.write("\n")
         fp.write("Name ModRedundant - Minimalist working constrained optimisation\n")
         fp.write("\n")
@@ -376,8 +379,12 @@ def make_input_files_no_constraints(output_num, method_opt,
 
 def make_mexc(method_mexc, basis_set_mexc, 
             mem_com_mexc, mem_pbs_mexc, 
-            nStates='25'):
-    """ Combines the geometry output and the constrained output. Then makes the .com and .pbs files in a subdirectory """
+            nStates='25',
+            SCRF=''
+            ):
+    """ 
+    Combines the geometry output and the constrained output. Then makes the .com and .pbs files in a subdirectory 
+    """
 
     data = ""
 
@@ -393,6 +400,10 @@ def make_mexc(method_mexc, basis_set_mexc,
         pass
     else:
         basis_dir_name += '_n%s' % nStates
+    
+    if SCRF != '':
+        basis_dir_name += '_SCRF_%s' % SCRF
+        SCRF = 'SCRF=%s' % SCRF
 
     # Reading data from file2
     charges = "0 1"
@@ -413,6 +424,7 @@ def make_mexc(method_mexc, basis_set_mexc,
     elif method_mexc == 'CAM-B3LYP':
         new_dir = 'cam-b3lyp'
         new_dir = method_mexc.lower()+ basis_dir_name
+        print(new_dir)
         method_mexc = 'CAM-B3LYP'
     elif method_mexc == 'B97D3':
         new_dir = 'b97d3'
@@ -425,7 +437,7 @@ def make_mexc(method_mexc, basis_set_mexc,
     with open(new_dir + '/mexc.com', 'w') as fp:
         fp.write("%mem={0}mb\n".format(mem_com_mexc))
         fp.write("%nprocs=4\n")
-        fp.write("#N TD(NStates=%s) %s" % (nStates, method_mexc) + "/{0}\n".format(basis_set_mexc))
+        fp.write("#N TD(NStates=%s) %s/%s %s\n" % (nStates, method_mexc, basis_set_mexc, SCRF) )
         fp.write("\n")
         fp.write("Name ModRedundant - Minimalist working constrained optimisation\n")
         fp.write("\n")
@@ -436,7 +448,7 @@ def make_mexc(method_mexc, basis_set_mexc,
     with open(new_dir + '/mexc.pbs', 'w') as fp:
         fp.write("#!/bin/sh\n")
         fp.write(
-            "#PBS -N mexc_o\n#PBS -S /bin/bash\n#PBS -j oe\n#PBS -m abe\n#PBS -l")
+            "#PBS -N mexc_o\n#PBS -S /bin/bash\n#PBS -j oe\n#PBS -m abe\n#PBS -l ")
         fp.write("mem={0}gb\n".format(mem_pbs_mexc))
         fp.write(
             "#PBS -l nodes=1:ppn=4\n#PBS -W umask=022\n#PBS -q gpu\n\nscrdir=/tmp/$USER.$PBS_JOBID\n\n")
@@ -456,7 +468,10 @@ def make_mexc(method_mexc, basis_set_mexc,
         fp.write("""  echo "Not on a compute node!"\n  exit 1;\nfi\n\n""")
         fp.write(
             "cd $PBS_O_WORKDIR\n. $g16root/g16/bsd/g16.profile\ng16 mexc.com mexc.out\n\nrm -r $scrdir\n")
-
+    os.chdir(new_dir)
+    print("qsub", os.getcwd())
+    subprocess.call('qsub mexc.pbs', shell=True)
+    os.chdir("..")
 
 def clean_energies(hf_1, hf_2, zero_point):
     zero_point = zero_point[30:].replace(" (Hartree/Particle)", "")
@@ -488,7 +503,7 @@ orientation = []
 def main(index,
          method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt,
          method_mexc, basis_set_mexc, mem_com_mexc, mem_pbs_mexc,
-         resubmissions, delay, nStates
+         resubmissions, delay, nStates, SCRF=''
          ):
     print(os.getcwd())
     out_files = glob.glob("*.out*")
@@ -550,7 +565,9 @@ def main(index,
             find_geom(lines, error=True, filename=filename,
                         imaginary=imaginary)
             make_input_files_no_constraints(
-                output_num, method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt)
+                output_num, method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt,
+                SCRF=SCRF
+                )
             #os.system("qsub mex.pbs")
             failure = subprocess.call(cmd, shell=True)
             resubmissions[index] += 1
@@ -562,7 +579,9 @@ def main(index,
             add_imaginary(freq_clean, freq_lst_len, filename)
             print("Imaginary!")
             make_input_files_no_constraints(
-                output_num, method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt)
+                output_num, method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt,
+                SCRF=SCRF
+                )
             #os.system("qsub mex.pbs")
             failure = subprocess.call(cmd, shell=True)
             print('imaginary frequency handling...')
@@ -584,7 +603,7 @@ def main(index,
             print('Total energy {0}: '.format(index+1), sum_energy)
             make_mexc(method_mexc, basis_set_mexc,
                         mem_com_mexc, mem_pbs_mexc,
-                        nStates
+                        nStates, SCRF=SCRF
                         )
 
             if basis_set_mexc == '6-311G(d,p)':
@@ -600,10 +619,12 @@ def main(index,
                 os.chdir("mexc" + basis_dir_name)
             else: 
                 os.chdir(method_mexc.lower() + basis_dir_name)
+            if SCRF != '':
+                basis_dir_name += '_SCRF_%s' % SCRF
 
             #os.system("qsub mexc.pbs")
             # os.path.abspath(os.getcwd())
-            failure = subprocess.call(cmd, shell=True)
+            #failure = subprocess.call(cmd, shell=True)
             resubmissions[index] += 1
             os.chdir("..")
             os.remove("tmp.txt")

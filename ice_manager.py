@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 from src import ice_build_geoms
+from src import ice_build_geoms_v2
 #from src import error_mexc_v9
 from src import error_mexc_v11
 from src import gather_energies
@@ -25,7 +26,7 @@ matplotlib.use('Agg')
 def jobResubmit(min_delay, number_delays,
                 method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt,
                 method_mexc, basis_set_mexc, mem_com_mexc, mem_pbs_mexc,
-                nStates
+                nStates, SCRF=''
                 ):
 
     min_delay = min_delay * 60
@@ -53,6 +54,8 @@ def jobResubmit(min_delay, number_delays,
                 pass
             else:
                 basis_dir_name += '_n%s' % nStates
+            if SCRF != '':
+                basis_dir_name += '_SCRF_%s' % SCRF
 
             if method_mexc == 'B3LYP':
                 mexc_check = glob.glob("mexc" + basis_dir_name)
@@ -81,7 +84,7 @@ def jobResubmit(min_delay, number_delays,
                 action, resubmissions = error_mexc_v11.main(
                     num, method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt,
                     method_mexc, basis_set_mexc, mem_com_mexc, mem_pbs_mexc,
-                    resubmissions, delay, nStates
+                    resubmissions, delay, nStates, SCRF=SCRF
                 )
                 #print(resubmissions)
            
@@ -105,7 +108,9 @@ def jobResubmit(min_delay, number_delays,
 
 
 def boltzmannAnalysisSetup(complete, method_mexc='B3LYP', 
-                basis_set_mexc='6-311G(d,p)', nStates='25', acquiredStates='25'):
+                basis_set_mexc='6-311G(d,p)', nStates='25', acquiredStates='25',
+                SCRF=''
+                ):
 
     analysis_ready = []
     if "results" not in glob.glob("results"):
@@ -126,6 +131,9 @@ def boltzmannAnalysisSetup(complete, method_mexc='B3LYP',
         pass
     else:
         basis_dir_name += '_n%s' % nStates
+    
+    if SCRF != '':
+        basis_dir_name += '_SCRF_%s' % SCRF
 
     if method_mexc == 'PBE0':
         path_mexc = method_mexc.lower() + basis_dir_name
@@ -176,7 +184,7 @@ def boltzmannAnalysisSetup(complete, method_mexc='B3LYP',
     return
 
 
-def boltzmannAnalysis(T, energy_levels='electronic'):
+def boltzmannAnalysis(T, energy_levels='electronic', DeltaN='2', x_range=[50, 4100], overtones=False):
     if energy_levels == 'electronic':
         os.chdir('results/mexc_values')
         csv_name = 'mexc_out'
@@ -184,7 +192,8 @@ def boltzmannAnalysis(T, energy_levels='electronic'):
     elif energy_levels == 'vibrational':
         os.chdir('results/vibrational_values')
         csv_name = 'vib'
-        cmd = "perl ../../../src/specsim_xrange.pl 50 3600"
+        cmd = "perl ../../../src/specsim_xrange.pl 50 4100"
+        cmd = "perl ../../../src/specsim_args.pl %d %d %s" % (x_range[0], x_range[1], DeltaN)
     #print(os.getcwd())
     mexc_out_names = glob.glob("*.csv")
     #print(mexc_out_names)
@@ -201,7 +210,9 @@ def boltzmannAnalysis(T, energy_levels='electronic'):
     energy_all = energy_all[np.argsort(energy_all[:, 0])]
     lowest_energy = np.amin(energy_all[:, 1])
     lowest_energy_ind = (np.where(energy_all[:, 1] == lowest_energy))[0][0]
+    print("LOWEST_ENERGY", lowest_energy)
     lowest_energy = lowest_energy * 4.3597E-18  # convert hartrees to joules
+    print("lowest energy:", lowest_energy, lowest_energy_ind)
     kb = 1.380649E-23
     
     #combining_mexc = mexc_dict['mexc_out{0}'.format(lowest_energy_ind+1)]
@@ -250,10 +261,28 @@ def boltzmannAnalysis(T, energy_levels='electronic'):
 
     np.savetxt("data", combining_mexc, fmt="%s")
     print("\ndata file made for specsim.pl\n")
-    #cmd = "perl ../../../src/specsim.pl"
     subprocess.call(cmd, shell=True)
-    # if multiple, mv "spec" to new name
-
+    
+    if overtones:
+        x, y = collectSpecSimData(x_units='cm-1', path_to_data='./')        
+        
+        arr_y = np.array(y)
+        print("local maxima")
+        peaks_dat, _ = scipy.signal.find_peaks(arr_y, height=0)
+        with open("extra_bands", 'w') as fp:
+            for j in peaks_dat:
+                #print(round(x[i],2), arr_y[i])
+                height = arr_y[j]
+                frequency = round(x[j], 4)
+                fp.write(str(height) + ' ' + str(frequency) + '\n')
+        
+        a = vibrational_frequencies.overtones('extra_bands', T=T)
+        a = vibrational_frequencies.combine_modes_overtones('spec', a)
+        #time_data
+        np.savetxt("data", a, fmt="%s")
+        print("\ndata file made for specsim.pl after overtones\n")
+        subprocess.call(cmd, shell=True)
+            
     os.chdir("../../../")
     return
 
@@ -294,11 +323,10 @@ def generateGraph(spec_name, T, title, filename, x_range=[100,300], x_units='nm'
     ax1.plot(x, y, "k-", label="T = {0} K".format(T))
     #ax1.set_xlim([x[0], x[-1]])
     ax1.set_xlim(x_range)
-    ax1.set_ylim(1.2,0)
+    ax1.set_ylim(0, 1.4)
 
     plt.title(title)
     if x_units == 'ev' or x_units=='eV':
-        print(x)
         plt.xlabel("Electronvolts (eV)")
         ax1.legend(shadow=True, fancybox=True)
         if peaks:
@@ -343,8 +371,8 @@ def generateGraph(spec_name, T, title, filename, x_range=[100,300], x_units='nm'
 
     return
 
-def collectSpecSimData(x_units='eV', spec_name='spec', normalize=True):
-    data = np.genfromtxt("results/final/data/" + spec_name, delimiter=" ")
+def collectSpecSimData(x_units='eV', spec_name='spec', normalize=True, path_to_data='results/final/data/'):
+    data = np.genfromtxt(path_to_data + spec_name, delimiter=" ")
     data = data.tolist()
     # print(data)
     x = []
@@ -474,13 +502,13 @@ def electronicMultiPlot(methods_lst,
 
     #ax1.set_xlim([x[0], x[-1]])
     ax1.set_xlim(x_range)
-    ax1.set_ylim(0, 1.2)
+    ax1.set_ylim(0, 1.4)
 
     plt.title(title)
     if x_units == 'ev' or x_units=='eV':
         #print(x)
         plt.xlabel("Electronvolts (eV)")
-        ax1.legend(shadow=True, fancybox=True)
+        ax1.legend(shadow=True, fancybox=True, loc='upper right')
 
     elif x_units == 'cm-1':
         plt.xlabel(r"Wavenumbers cm$^{-1}$")
@@ -502,12 +530,13 @@ def electronicMultiPlot(methods_lst,
 
 def electronicMultiPlot_Experiment(methods_lst, 
             T, title, filename, 
-            x_range=[2,16], x_units='eV', 
+            x_range=[2,16], x_units='eV',
             peaks=False, spec_name='spec',
             complete=[], basis_set_mexc='6-31G(d,p)',
             nStates='25', acquiredStates='25', exp_data=[], 
             colors=[], sec_y_axis=False, rounding=1,
-            extra_data=np.array([[-1, -1]])
+            extra_data=np.array([[-1, -1]]),
+            SCRF=''
             ):
 
     location = os.getcwd().split('/')[-1]
@@ -520,7 +549,7 @@ def electronicMultiPlot_Experiment(methods_lst,
         for i in range(len(num_geom)):
             complete.append(2)
     
-    fig, ax1 = plt.subplots(dpi=200)
+    fig, ax1 = plt.subplots(dpi=400)
     
     if peaks:
         if os.path.exists('latex_df_6-311++G(2d,2p).tex'):
@@ -542,7 +571,7 @@ def electronicMultiPlot_Experiment(methods_lst,
 
     for n, i in enumerate(methods_lst):
         gather_energies.main()
-        boltzmannAnalysisSetup(complete, i, basis_set_mexc, nStates, acquiredStates)
+        boltzmannAnalysisSetup(complete, i, basis_set_mexc, nStates, acquiredStates, SCRF)
         boltzmannAnalysis(T, energy_levels='electronic')    
         x, y = collectSpecSimData(x_units=x_units)        
         """
@@ -550,6 +579,11 @@ def electronicMultiPlot_Experiment(methods_lst,
             print(x, y)
         """
         #ax1.plot(x, y, "-", label="%s" % i, zorder=2)
+        # if i == 'wB97XD':
+        #     i = r'$\omega$B97XD'
+        # ax1.plot(x, y, "-", c="%s" % (colors[n]), label="%s (Amorphous)" % i, zorder=2)
+        if i == "wB97XD":
+            i = r'$\omega$B97XD'
         ax1.plot(x, y, "-", c="%s" % (colors[n]), label="%s" % i, zorder=2)
         
         if peaks:
@@ -584,18 +618,21 @@ def electronicMultiPlot_Experiment(methods_lst,
                 """
             df_latex.df_latexTable('latex_df_%s.tex' % basis_set_mexc, df, rounding )
 
-    exp_names = [ "Exp. Solid", "Exp. Gas"]
+    #exp_names = [ "Exp. Solid", "Exp. Gas"]
     exp_names = [ "Exp. Solid A", "Exp. Solid B"]
+    #exp_names = [ "Exp. Solid B"]
+    #exp_names = [ "Exp. Solid", "Exp. Gas"]
+    #exp_names = [ "Exp. Solid A", "Exp. Solid B"]
     exp_colors = [ "k","tab:grey"]
+    #exp_colors = [ "tab:grey"]
     ax2 = ax1.twinx()
-    #for n, i in enumerate(exp_data):
-    #    ax2.plot(i[:,0], i[:,1], "--", label="%s" % exp_names[n])
-    #ax2.set_ylabel(r"Cross Section / cm$^2$")
-    #ax2.set_ylim(0,5.0E-17*1.4)
+
     if len(exp_data) > 0:
         for n, i in enumerate(exp_data):
+            print(i)
             ymax = np.amax(i[:,1], axis=0)
             i[:,1] /= ymax
+            #print(i)
             ax2.plot(i[:,0], i[:,1], "--", c='%s' % exp_colors[n], label="%s" % exp_names[n], zorder=2)
             if peaks:
                 arr_y = i[:,1]
@@ -616,20 +653,22 @@ def electronicMultiPlot_Experiment(methods_lst,
         ymax = np.amax(extra_data[:,1], axis=0)
         for i in range(len(extra_data[:,1])):
             extra_data[i,1] /= ymax
-        arr_y = extra_data[:,1]
-        arr_x = extra_data[:,0]
-        print(arr_y)
-        peaks_dat, _ = scipy.signal.find_peaks(arr_y, height=0)
-        print(peaks_dat)
-        for j in peaks_dat:
-                #print(round(x[i],2), arr_y[i])
-                height = arr_y[j]
-                frequency = round(arr_x[j], 4)
-            
-                print("x, y = %.1f, %.1f\n" % (frequency, height))
-                df.loc[len(df.index)] = ['8 Ribbon', basis_set_mexc, frequency, height]
         
-        ax1.plot(extra_data[:,0], extra_data[:, 1], '-', label='CAM-B3LYP (Ribbon Octamer)')
+        ax1.plot(extra_data[:,0], extra_data[:, 1], '-', label='CAM-B3LYP (Ribbon Octamer)', color='blue')
+        if peaks:
+            arr_y = extra_data[:,1]
+            arr_x = extra_data[:,0]
+            print(arr_y)
+            peaks_dat, _ = scipy.signal.find_peaks(arr_y, height=0)
+            print(peaks_dat)
+            for j in peaks_dat:
+                    #print(round(x[i],2), arr_y[i])
+                    height = arr_y[j]
+                    frequency = round(arr_x[j], 4)
+                
+                    print("x, y = %.1f, %.1f\n" % (frequency, height))
+                    df.loc[len(df.index)] = ['8 Ribbon', basis_set_mexc, frequency, height]
+        
 
 
     if sec_y_axis:
@@ -668,7 +707,7 @@ def electronicMultiPlot_Experiment(methods_lst,
     os.chdir("../../..")
 
 
-def method_update_selection(methods_lst, basis_set_mexc, nStates):
+def method_update_selection(methods_lst, basis_set_mexc, nStates, SCRF=''):
     if basis_set_mexc == '6-311G(d,p)':
         basis_dir_name = ''
     else:
@@ -677,6 +716,8 @@ def method_update_selection(methods_lst, basis_set_mexc, nStates):
         pass
     else:
         basis_dir_name += '_n%s' % nStates
+    if SCRF != '':
+        basis_dir_name += '_SCRF_%s' % SCRF
     for n, i in enumerate(methods_lst):
         if i == 'B3LYP':
             i = 'mexc' + basis_dir_name
@@ -686,6 +727,9 @@ def method_update_selection(methods_lst, basis_set_mexc, nStates):
             print(i.lower() + basis_dir_name) 
         methods_lst[n] = i
     return methods_lst
+
+def sort_data (data):
+    return data[data[:,0].argsort()]
 
 def nmLst_evLst (nmData):
     h = 6.62607004E-34
@@ -700,12 +744,16 @@ def nmLst_evLst (nmData):
 
 def main():
     mol_xyz1 = "mon_nh3.xyz"
-    mol_xyz2 = "mon_nh3.xyz"
+    mol_xyz1 = "mon_h2o.xyz"
+    
+    mol_xyz1 = "mon_h2co3.xyz"
+    mol_xyz1 = "mon_h2co3_ct.xyz"
+    mol_xyz2 = "mon_h2co3_tt.xyz"
     #mol_xyz2 = "mon_methanol.xyz"
-    number_clusters = 30
+    number_clusters = 1
     # enter the number of molecules of each geometry in the respective index
-    molecules_in_cluster = [8, 0]
-    box_length = 9                   # in angstroms
+    molecules_in_cluster = [4, 4]
+    box_length = 9               # in angstroms
     minium_distance_between_molecules = 3.0
 
     resubmit_delay_min = 0.01
@@ -731,6 +779,9 @@ def main():
     basis_set_mexc = "6-311G(d,p)"
     #basis_set_mexc = "6-311++G(2d,2p)"
 
+    SCRF = ""
+    #SCRF = "PCM"
+
     # TD-DFT NSTATES
     #nStates = '25'
     nStates = '50'
@@ -742,21 +793,21 @@ def main():
     mem_com_mexc = "2500"  # mb
     mem_pbs_mexc = "25"  # gb"
 
-    #moleculeName = 'nh3'
-    #moleculeNameLatex = r'NH$_3$'
+    moleculeName = 'nh3'
+    moleculeNameLatex = r'NH$_3$'
     #moleculeName = 'co2'
     #moleculeNameLatex = r'CO$_2$'
-    moleculeName = 'h2o'
-    moleculeNameLatex = r'H$_2$O'
-   # moleculeName = 'co3h2'
-   # moleculeNameLatex = r'CO$_3$H$_2$'
+    #moleculeName = 'h2o'
+    #moleculeNameLatex = r'H$_2$O'
+    #moleculeName = 'co3h2'
+    #moleculeNameLatex = r'CO$_3$H$_2$'
 
     # Temperatures (K)
     #T = 100  
     # T comes from the binding energy of the dimers for each strucutres converted from Hartrees to Kelvin
-    #T = 1348.768    # nh3
+    T = 1348.768    # nh3
     #T = 457.088     # co2
-    T = 2071.104    # h2o
+    #T = 2071.104    # h2o
     #T = 9259.3       # co3h2
 
     if basis_set_mexc == '6-311G(d,p)':
@@ -771,18 +822,42 @@ def main():
 
     filename = "30_8_rand_%s_%s%s.png" % ( moleculeName, method_mexc, basis_dir_name)
     title = r"30 Randomized Clusters of 8 %s Molecules %s" % (moleculeNameLatex, basis_dir_name)
-
-    # for generating the structures
     """
+    # ice_build_geoms version 1 can only take two geometries max with explicitly 
+    # for generating the structures
     ice_build_geoms.main(molecules_in_cluster, number_clusters, box_length, minium_distance_between_molecules,
                         mol_xyz1, mol_xyz2, method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt)
     """
-    
+    mol_xyz1 = "mon_nh3.xyz"
+    mol_xyz1 = "mon_h2o.xyz"
+    mol_xyz1 = "mon_h2co3.xyz"
+    mol_xyz1 = "mon_h2co3_ct.xyz"
+    mol_xyz2 = "mon_h2co3_tt.xyz"
+    #mol_xyz2 = "mon_methanol.xyz"
+    number_clusters = 5
+    # enter the number of molecules of each geometry in the respective index
+    molecules_in_cluster = [16, 0, 0]
+    box_length = 10               # in angstroms
+    minium_distance_between_molecules = 3.0
+    filenames = ["mon_h2o.xyz", "mon_h2o.xyz", "mon_h2o.xyz"]
+    start_num = 1
+    """
+    ice_build_geoms_v2.main(
+        filenames, molecules_in_cluster, number_clusters, 
+        box_length, minium_distance_between_molecules,
+
+        method_opt, basis_set_opt, 
+        mem_com_opt, mem_pbs_opt,
+        start_num=start_num
+    )
+    """
     complete = jobResubmit(resubmit_delay_min, resubmit_max_attempts,
                            method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt,
                            method_mexc, basis_set_mexc, mem_com_mexc, mem_pbs_mexc,
-                           nStates
+                           nStates, 
+                           SCRF=SCRF
                            )  # delay_min, num_delays
+    
     # for standard usage
     """
     boltzmannAnalysisSetup(complete, method_mexc, nStates=nStates)
@@ -798,15 +873,16 @@ def main():
     
     methods_lst = ["B3LYP", "PBE0", "wB97XD", "CAM-B3LYP", "B97D3"]
     colors = ["blue", 'orange', 'green', 'red', 'cyan']
+    #methods_lst = ["CAM-B3LYP"]
+    colors = [ 'red', 'green']
+    methods_lst = ["CAM-B3LYP", "wB97XD"]
     methods_lst = ["CAM-B3LYP"]
-    #methods_lst = ["CAM-B3LYP", "wB97XD"]
+    #methods_lst = []
     colors = ["red", 'green']
+    #methods_lst = ["CAM-B3LYP", "wB97XD"]
+    #colors = ["red", 'green']
     #methods_lst = ["B3LYP"]
     #colors = ["blue"]
-
-    #methods_lst = ["B3LYP"]
-    #colors = ['blue']
-    
 
     title = r"30 Randomized Clusters of 8 %s Molecules with %s" % (moleculeNameLatex, basis_dir_name[1:].replace(nStates, '')) +  "\nat N=%s and T=%s K" % (nStates, T)
     filename = "30_8_%s_elec_n%s_%s_%sK.pdf" % ( moleculeName, nStates, basis_dir_name[1:].replace(nStates, ''), T, )
@@ -821,39 +897,35 @@ def main():
     #methods_lst = method_update_selection(methods_lst, basis_set_mexc, nStates)
     #print(methods_lst)
 
-    """
-    electronicMultiPlot(methods_lst, 
-            T, title, filename, 
-            x_range=[5, 10], x_units='eV', 
-            peaks=True, spec_name='spec', 
-            complete=complete, basis_set_mexc=basis_set_mexc, nStates=nStates
-
-            )
-    print("OUTPUT =\n", filename)
-    """
+    acquiredStates = nStates
+    #acquiredStates = '15' 
     filename = "30_8_%s_elec_n%s_%s_%sK_exp.pdf" % ( moleculeName, nStates, basis_set_mexc , T, )
     filename = "30_8_%s_elec_n%s_%s_%sK_exp.png" % ( moleculeName, nStates, basis_set_mexc , T, )
     title = r"30 Randomized Clusters of 8 %s Molecules with %s" % (moleculeNameLatex, basis_set_mexc) + "\nat %s K compared with experiment" % T 
     title = '' 
-    filename = "30_8_%s_elec_n%s_%s_%sK_expD1.png" % ( moleculeName, nStates, basis_set_mexc , T, )
-    #filename = "105_32_%s_elec_n%s_%s_%sK.pdf" % ( moleculeName, nStates, basis_set_mexc , T, )
-    #filename = "105_32_%s_elec_n%s_%s_%sK.png" % ( moleculeName, nStates, basis_set_mexc , T, )
-    filename = "30_8_%s_elec_n%s_%s_%sK_exp.png" % ( moleculeName, nStates, basis_set_mexc , T, )
     filename = "30_8_%s_elec_n%s_%s_%sK_exp_STATES.png" % ( moleculeName, nStates, basis_set_mexc , T, )
-    filename = "105_32_%s_elec_n%s_%s_%sK_exp_STATES.png" % ( moleculeName, nStates, basis_set_mexc , T, )
-    #filename = "cover_article_plot.png"
-    #exp_gas = np.genfromtxt('../../exp_data/%s_gas.csv' % moleculeName, delimiter=', ')
-    exp_solid = np.genfromtxt('../../exp_data/%s_solid.csv'% moleculeName, delimiter=', ')
-    #exp_solid1 = np.genfromtxt('../../exp_data/%s_200k.csv'% moleculeName, delimiter=', ')
-    #exp_solid1 = nmLst_evLst(exp_solid1)
-    #exp_solid2 = np.genfromtxt('../../exp_data/%s_80_200k.csv'% moleculeName, delimiter=', ')
-    #exp_solid2 = nmLst_evLst(exp_solid2)
-    exp_data = [ exp_solid ]
-    #exp_data = [exp_solid1, exp_solid2]
-    exp_x_units = ['nm']
+    #filename = "30_8_%s_elec_n%s_%s_%sK_exp_STATES_%s_B.png" % ( moleculeName, nStates, basis_set_mexc , T, acquiredStates)
+    if SCRF != '':
+        filename = "30_8_%s_elec_n%s_%s_%sK_exp_STATES_%s_%s.png" % ( moleculeName, nStates, basis_set_mexc , T, acquiredStates, SCRF)
 
+    """
+    # co3h2 start
+    exp_solid1 = np.genfromtxt('../../exp_data/%s_200k.csv'% moleculeName, delimiter=', ')
+    exp_solid1 = nmLst_evLst(exp_solid1)
+    exp_solid2 = np.genfromtxt('../../exp_data/%s_80_200k.csv'% moleculeName, delimiter=', ')
+    exp_solid2 = nmLst_evLst(exp_solid2)
+    #exp_data = [ exp_solid ]
+    exp_data = [exp_solid1, exp_solid2]
+    #exp_data = [ exp_solid2 ]
+    #print(exp_da#ta)
+    
     #octa_rib = dis_art.discrete_to_art('../ribbon/8rib_cam.dat', ['nm', 'eV'], [100, 320], 2)
-    acquiredStates = nStates
+    # co3h2 end
+    """
+    exp_solid1 = np.genfromtxt("../../exp_data/%s_solid.csv" % moleculeName, delimiter=", ")
+    #exp_solid1 = nmLst_evLst(exp_solid1)
+    exp_data=[exp_solid1]
+    
     electronicMultiPlot_Experiment(methods_lst, 
         T, title, filename, 
         x_range=[7,10.25], x_units='eV', 
@@ -861,26 +933,39 @@ def main():
         complete=complete, basis_set_mexc=basis_set_mexc, nStates=nStates, acquiredStates=acquiredStates,
         exp_data=exp_data, 
         colors=colors, sec_y_axis=True, rounding=2,
-        #extra_data=octa_rib
+        #extra_data=octa_rib,
+        SCRF=SCRF,
         )
     print("OUTPUT =\n", filename)
     """
-    
-    T = 1000  # Kelvin (K)
-    title = r"30 Randomized Clusters of 8 CO$_2$ Molecules: Vibrational"
-    filename = "30_8_rand_%s_vib_wB97XD.png" % moleculeName
+    """
 
-    # for vibrational frequency standard usage
-    vibrational_frequencies.main()
-    boltzmannAnalysis(T, energy_levels='vibrational')
-    generateGraph("spec", T, title, filename, x_range=[3600, 50], x_units='cm-1', peaks=False)
     
     """
+    overTones = False
+    overTonesBoltzmannAnalysis = True
+    if overTones: 
+        filename = "30_8_rand_%s_vib_wB97XD_overtones.png" % moleculeName
+        title = "30 8 rand %s with overtones" % moleculeName
+    else: 
+        filename = "30_8_rand_%s_vib_wB97XD_none.png" % moleculeName
+        title = "30 8 rand %s with no" % moleculeName
+
+    if overTonesBoltzmannAnalysis:
+        filename = "30_8_rand_%s_vib_wB97XD_overtones_from_maximas.png" % moleculeName
+    # for vibrational frequency standard usage
+
+    vibrational_frequencies.main(overTones, T=500)
+    boltzmannAnalysis(T, energy_levels='vibrational', DeltaN='10', x_range=[50, 4100], overtones=overTonesBoltzmannAnalysis)
+    generateGraph("spec", T, title, filename, x_range=[4000, 400], x_units='cm-1', peaks=False)
+    """
+    
     # useful bash commands below
         # ps aux | grep test.py
         # kill <pid> -9
         # python3 -u ./ice_manager.py > output.log & disown -h
 
+    print("OUTPUT =\n", filename)
 if __name__ == '__main__':
     main()
 

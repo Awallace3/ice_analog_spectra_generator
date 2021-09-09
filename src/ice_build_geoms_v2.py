@@ -7,6 +7,8 @@ import numpy as npimport
 from numpy import genfromtxt
 import pandas as pd
 import glob
+
+from scipy.signal.signaltools import decimate
 #import secrets
 
 
@@ -352,109 +354,12 @@ def distance(geom1, geom2):
     return math.sqrt((geom1[1] - geom2[1]) ** 2 + (geom1[2] - geom2[2])**2 + (geom1[3] - geom2[3])**2)
 
 
-"""
-def random_arrangement_2(geom1, geom2, geom_num, num_molecules, percent_chance_mol_1, box_length, minium_distance_between_molecules):
-    num = 0
-    random_list = []
-    for n, i in enumerate(num_molecules):
-        num += i
-        for j in range(i):
-            random_list.append(n)
-    print(random_list)
-    choice = int(np.random.choice(range(100)))
-    sequence = []
-    spacer_1 = len(geom1[:, 0])  # if spacing issue... investigate
-    spacer_2 = len(geom2[:, 0])
-    current_spacer = 0
-    if choice >= percent_chance_mol_1:
-        geom = geom1
-        sequence.append(0)
-        current_spacer = spacer_1
-    else:
-        geom = geom2
-        sequence.append(1)
-        current_spacer = spacer_2
-    arching = geom[:, :]
-    cnt = 1
-    molecule = [current_spacer]
-
-    check_tf = False
-    while (cnt < num):
-        #choice = int(np.random.choice([0, 1]))
-        if check_tf == False:
-            choice = int(np.random.choice(range(100)))
-            mol_num = 0
-
-            if choice >= percent_chance_mol_1:
-                geom = geom1
-                current_spacer = spacer_1
-
-            else:
-                geom = geom2
-                mol_num = 1
-                current_spacer = spacer_2
-            check_tf = True
-
-
-        yz = yz_rotate(geom, ran_angle())
-        xy = xy_rotate(yz, ran_angle())
-        xz = xz_rotate(xy, ran_angle())
-
-        dis = displacement(xz, ran_dis(box_length), ran_dis(
-            box_length), ran_dis(box_length))
-        #check_tf = False
-
-        for i in range(len(molecule)):
-            # print(molecule)
-
-            #dist_CC = distance(dis[0, :], arching[0 + i*spacer_1, :])
-            #length_sum = 0
-            #dist_CC = distance(dis[0, :], arching[0 + length_sum, :])
-            check_lst = []
-            length_check = 0
-            for m in molecule:
-                length_check += m
-            for k in range(len(dis)):
-                for j in range(length_check):
-                    dist_atoms = distance(dis[k, :], arching[j, :])
-                    # print(dist_atoms)
-                    # print(minium_distance_between_molecules)
-                    if dist_atoms > minium_distance_between_molecules:
-                        check_lst.append(True)
-                    else:
-                        check_lst.append(False)
-            #print(arching[0 + length_sum, :])
-            # print(check_lst)
-            # print(sum(check_lst))
-            # print(len(check_lst))
-            #length_sum += molecule[i]
-            if sum(check_lst) == len(check_lst):
-                check_tf = False
-            # if dist_CC < minium_distance_between_molecules:  # change for the minimum distance between molecules
-            #    check_tf = True
-
-        if check_tf == False:
-            molecule.append(current_spacer)
-            arching = np.concatenate((arching, dis))
-            cnt += 1
-            sequence.append(mol_num)
-
-    arching = np.round_(arching, decimals=16)
-    print("\nXYZ molecule {0}\n".format(geom_num))
-    for k in arching:
-        print(int(k[0]), k[1], k[2], k[3])  # for quick testing purposes
-    print()
-    return arching, len(molecule), spacer_1, sequence
-
-"""
-
-
 def sample_without_replacement(arr):
     random.shuffle(arr)
     return arr.pop()
 
 
-def random_arrangement_2(geom1, geom2, geom_num, num_molecules, box_length, minium_distance_between_molecules):
+def random_arrangement_2(geo_dict, geom_num, num_molecules, box_length, minium_distance_between_molecules):
     num = 0
     random_list = []
     for n, i in enumerate(num_molecules):
@@ -466,6 +371,7 @@ def random_arrangement_2(geom1, geom2, geom_num, num_molecules, box_length, mini
     # print(choice)
     print(random_list)
     sequence = []
+    
     spacer_1 = len(geom1[:, 0])  # if spacing issue... investigate
     spacer_2 = len(geom2[:, 0])
     current_spacer = 0
@@ -559,69 +465,50 @@ def random_arrangement_2(geom1, geom2, geom_num, num_molecules, box_length, mini
     print() """
     return arching, len(molecule), spacer_1, sequence
 
-"""
-
-def random_arrangement_3(geoms, geom_num, num_molecules, box_length, minium_distance_between_molecules):
+def random_arrangement_3(
+    filenames, 
+    geo_dict, geom_num,
+    num_molecules, box_length,
+    minimum_distance_between_molecules,
+    ):
     num = 0
     random_list = []
     for n, i in enumerate(num_molecules):
         num += i
         for j in range(i):
             random_list.append(n)
-    #choice = int(np.random.choice(random_list, replace=False))
+    print(filenames, random_list, num_molecules)
     choice = sample_without_replacement(random_list)
-    # print(choice)
-    print(random_list)
-    sequence = []
-    
-    spacer_1 = len(geom1[:, 0])  # if spacing issue... investigate
-    spacer_2 = len(geom2[:, 0])
-    current_spacer = 0
-    if choice == 0:
-        geom = geom1
-        sequence.append(0)
-        current_spacer = spacer_1
-    else:
-        geom = geom2
-        sequence.append(1)
-        current_spacer = spacer_2
-    arching = geom[:, :]
-    cnt = 1
-    molecule = [current_spacer]
+    #print(random_list)
+    sequence = [choice]
 
+    geo_spacer = {}
+    for key, val in geo_dict.items():
+        print(key)
+        geo_spacer[key] = len(val)
+    geom = geo_dict[filenames[choice]]
+    spacer = geo_spacer[filenames[choice]]
+
+    arching = geom[:,:]
+    cnt = 1
+    molecule = [spacer]
     check_tf = False
     while (cnt < num):
-        #choice = int(np.random.choice([0, 1]))
         if check_tf == False:
-            # choice = int(np.random.choice(random_list, replace=False))
             choice = sample_without_replacement(random_list)
-            # print(choice)
             print(random_list)
-            mol_num = 0
-
-            if choice == 0:
-                geom = geom1
-                current_spacer = spacer_1
-
-            else:
-                geom = geom2
-                mol_num = 1
-                current_spacer = spacer_2
+            geom = geo_dict[filenames[choice]]
+            spacer = geo_spacer[filenames[choice]]
             check_tf = True
+
         yz = yz_rotate(geom, ran_angle())
         xy = xy_rotate(yz, ran_angle())
         xz = xz_rotate(xy, ran_angle())
 
         dis = displacement(xz, ran_dis(box_length), ran_dis(
             box_length), ran_dis(box_length))
-        #check_tf = False
 
         for i in range(len(molecule)):
-            # print(molecule)
-
-            #dist_CC = distance(dis[0, :], arching[0 + i*spacer_1, :])
-            #length_sum = 0
-            #dist_CC = distance(dis[0, :], arching[0 + length_sum, :])
             check_lst = []
             length_check = 0
             for m in molecule:
@@ -629,33 +516,24 @@ def random_arrangement_3(geoms, geom_num, num_molecules, box_length, minium_dist
             for k in range(len(dis)):
                 for j in range(length_check):
                     dist_atoms = distance(dis[k, :], arching[j, :])
-                    # print(dist_atoms)
-                    # print(minium_distance_between_molecules)
-                    if dist_atoms > minium_distance_between_molecules:
+                    if dist_atoms > minimum_distance_between_molecules:
                         check_lst.append(True)
                     else:
                         check_lst.append(False)
-            #print(arching[0 + length_sum, :])
-            # print(check_lst)
-            # print(sum(check_lst))
-            # print(len(check_lst))
-            #length_sum += molecule[i]
+
             if sum(check_lst) == len(check_lst):
                 check_tf = False
-            # if dist_CC < minium_distance_between_molecules:  # change for the minimum distance between molecules
-            #    check_tf = True
-
         if check_tf == False:
-            molecule.append(current_spacer)
+            molecule.append(spacer)
             arching = np.concatenate((arching, dis))
             cnt += 1
-            sequence.append(mol_num)
-    print(molecule)
+            sequence.append(choice)
+    #print(molecule)
     arching = np.round_(arching, decimals=16)
     print("\nXYZ molecule {0}\n".format(geom_num))
-  
-    return arching, len(molecule), spacer_1, sequence
-"""
+    #print("sequence", sequence)
+    return arching, len(molecule), spacer, sequence
+
 
 def clean_many_txt():
     """ This will replace the numerical forms of the elements as their letters numbered in order """
@@ -905,6 +783,61 @@ def constraints_2(molecule_cnt, spacer, sequence, dihedral=False):
 
     return df
 
+def constraints_3(
+    spacer,
+    sequence, geo_dict, filenames, 
+    dihedral=False
+    ):
+    pos = 0
+    for i in sequence:
+        filename = filenames[i][:-4]
+        dict_name = filenames[i]
+        spacer = len(geo_dict[dict_name])
+        print(i, spacer, pos)
+        bsas = pd.read_csv('bonds_%s.txt'%filename, sep=' ', header=None)
+        df_bds = bsas.replace(np.nan, " ", regex=True)
+        bsas = pd.read_csv('angles_%s.txt'%filename, sep=' ', header=None)
+        df_ang = bsas.replace(np.nan, ' ', regex=True)
+        if dihedral:
+            bsas = pd.read_csv('dihedral_%s.txt', sep=' ', header=None)
+            dh_ang = bsas.replace(np.nan, ' ', regex=True)
+        
+        for row in df_bds.itertuples():
+            df_bds.loc[row.Index, 0] += pos
+            df_bds.loc[row.Index, 1] += pos
+
+        for row in df_ang.itertuples():
+
+            df_ang.loc[row.Index, 0] += pos
+            df_ang.loc[row.Index, 1] += pos
+            df_ang.loc[row.Index, 2] += pos
+
+        if dihedral == True:
+            for row in dh_ang.itertuples():
+
+                dh_ang.loc[row.Index, 0] += pos
+                dh_ang.loc[row.Index, 1] += pos
+                dh_ang.loc[row.Index, 2] += pos
+                dh_ang.loc[row.Index, 3] += pos
+
+            df = pd.concat([df, df_ang, df_bds, dh_ang], ignore_index=True)
+            
+            fnames = [df_ang, df_bds, dh_ang]
+        else:
+            fnames = [df_ang, df_bds]
+        if pos == 0:
+            df = pd.concat(fnames, ignore_index=True)
+        else:
+            
+            if dihedral:
+                df = pd.concat([df, df_ang, df_bds, dh_ang], ignore_index=True)
+            else:
+                df = pd.concat([df, df_ang, df_bds], ignore_index=True)
+        
+        pos += spacer
+
+    return df
+    
 
 def clean_dataframe(df):
     """ This cleans the output of the dataframe to remove blanks """
@@ -932,7 +865,7 @@ def make_input_dir(dir_name_number, method, basis_set, mem_com, mem_pbs):
 
     with open('many.txt') as fp:
         data = fp.read()
-    print(data)
+    #print(data)
     # Reading data from file2
     with open('dataframe_test.csv') as fp:
         data2 = fp.read()
@@ -1044,54 +977,75 @@ def xyz_remove_whitespace(mol_xyz1, mol_xyz2):
     return geo1, geo2
 
 
-def main(molecules_in_cluster, number_clusters, box_length,  minium_distance_between_molecules,
-         mol_xyz1, mol_xyz2, method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt):
+def main(
+    filenames, molecules_in_cluster, number_clusters, 
+    box_length,  minium_distance_between_molecules,
+
+    method_opt, basis_set_opt,
+    mem_com_opt, mem_pbs_opt,
+    start_num = 1,
+    ):
     #geo1, geo2 = xyz_remove_whitespace(mol_xyz1, mol_xyz2)
 
-    geo1 = genfromtxt(mol_xyz1, delimiter=' ')
-    geo2 = genfromtxt(mol_xyz2, delimiter=' ')
+    # geo1 = genfromtxt(mol_xyz1, delimiter=' ')
+    # geo2 = genfromtxt(mol_xyz2, delimiter=' ')
+
+    geo_dict = {}
+    for f in filenames:
+        geo_dict[f] = genfromtxt(f, delimiter=' ')
+    #print(geo_dict)
 
     # plus two since starting at 1 and range goes up to second val
-    for i in range(1, number_clusters + 1, 1):
+    for i in range(start_num, number_clusters + start_num, 1):
 
         """ Takes array and saves it to file """
 
+        """
         final, mole, spacer, sequence = random_arrangement_2(
-            geo1, geo2, i, molecules_in_cluster, box_length, minium_distance_between_molecules)
-
+            geo_dict, i, molecules_in_cluster, box_length, minium_distance_between_molecules)
+        """
+        final, mole, spacer, sequence = random_arrangement_3(
+            filenames,
+            geo_dict, i, molecules_in_cluster,
+            box_length, minium_distance_between_molecules
+        )
         # print(sequence)
 
         out_file = "many.txt"
 
         np.savetxt(out_file, final,
                    fmt="%.6f")
-        """ end """
+
 
         clean_many_txt()
+        pos = 0
+        for key, val in geo_dict.items():
+            print(pos, key[:-4], val)
+            bond_lengths_2(val, 'bonds_%s.txt'%key[:-4])
+            bond_angles_2(val, 'angles_%s.txt'%key[:-4])
+            pos += 1
+        # bond_lengths_2(geo1, 'bonds1.txt')
+        # bond_angles_2(geo1, 'angles1.txt')
 
-        bond_lengths_2(geo1, 'bonds1.txt')
-        bond_angles_2(geo1, 'angles1.txt')
+        # bond_lengths_2(geo2, 'bonds2.txt')
+        # bond_angles_2(geo2, 'angles2.txt')
 
-        bond_lengths_2(geo2, 'bonds2.txt')
-        bond_angles_2(geo2, 'angles2.txt')
-
-        df = constraints_2(mole, spacer, sequence)
+        #df = constraints_2(mole, spacer, sequence)
+        
+        df = constraints_3(
+            spacer, 
+            sequence, geo_dict, 
+            filenames
+        )
 
         clean_dataframe(df)
 
-        # make_input_files()
+        
         make_input_dir(i, method_opt, basis_set_opt, mem_com_opt,
                        mem_pbs_opt)  # uncomment when want directories
         print("\n\n\n next directory \n\n\n")
 
-    os.remove("many.txt")
+    #os.remove("*.txt")
     os.remove("dataframe_test.csv")
-    os.remove("bonds1.txt")
-    os.remove("angles1.txt")
-    os.remove("bonds2.txt")
-    os.remove("angles2.txt")
-
-    # uncomment line 404
-
 
 # main()
