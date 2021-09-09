@@ -834,14 +834,13 @@ def main():
     mol_xyz1 = "mon_h2co3_ct.xyz"
     mol_xyz2 = "mon_h2co3_tt.xyz"
     #mol_xyz2 = "mon_methanol.xyz"
-    number_clusters = 1
+    number_clusters = 5
     # enter the number of molecules of each geometry in the respective index
-    molecules_in_cluster = [3, 1, 2]
-    box_length = 9               # in angstroms
+    molecules_in_cluster = [16, 0, 0]
+    box_length = 10               # in angstroms
     minium_distance_between_molecules = 3.0
-    filenames = ["mon_h2co3.xyz", "mon_nh3.xyz", "mon_h2o.xyz"]
-    start_num = 6
-    """
+    filenames = ["mon_h2o.xyz", "mon_h2o.xyz", "mon_h2o.xyz"]
+    start_num = 1
     ice_build_geoms_v2.main(
         filenames, molecules_in_cluster, number_clusters, 
         box_length, minium_distance_between_molecules,
@@ -850,7 +849,6 @@ def main():
         mem_com_opt, mem_pbs_opt,
         start_num=start_num
     )
-
     """
     complete = jobResubmit(resubmit_delay_min, resubmit_max_attempts,
                            method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt,
@@ -858,6 +856,7 @@ def main():
                            nStates, 
                            SCRF=SCRF
                            )  # delay_min, num_delays
+    """
     
     # for standard usage
     """
