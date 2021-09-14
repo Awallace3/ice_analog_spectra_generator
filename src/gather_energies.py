@@ -10,8 +10,6 @@ import pandas as pd
 import glob
 import subprocess
 
-
-
 def freq_hf_zero(lines, filename):
     frequency = "Frequencies --"
     freqs = []
@@ -43,7 +41,7 @@ def freq_hf_zero(lines, filename):
     else:
         return freqs[0], HFs[0], HFs[1], zeros[0]
     
-
+# testing
 def clean_energies(hf_1, hf_2, zero_point):
     zero_point = zero_point[30:].replace(" (Hartree/Particle)", "")
     for i in range(10):
@@ -54,9 +52,9 @@ def clean_energies(hf_1, hf_2, zero_point):
     if hf_2 != 0:
         hf_2 = (hf_2[3:].replace("\n", "").split('\\'))
         #print(hf_1[0], hf_2[0])
-        #if hf_1[0] > hf_2[0]:
+        if hf_1[0] > hf_2[0]:
             #-2119.1981428
-        if hf_1[0] < hf_2[0]:
+        # if hf_1[0] < hf_2[0]:
             #-2119.1981419999997
             return float(hf_1[0]) + zero_point, hf_1[0]
         else:

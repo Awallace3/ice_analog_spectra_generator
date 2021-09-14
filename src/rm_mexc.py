@@ -21,7 +21,7 @@ def rm_mexc(method_mexc, basis_set_mexc, nStates, SCRF='', spectroscopy_type='me
     else:
         print("This method is not supported for TD-DFT yet.")
     """
-    print('entered')
+    
     if spectroscopy_type == 'mexc':
         if basis_set_mexc == '6-311G(d,p)':
             basis_dir_name = ''
@@ -32,7 +32,7 @@ def rm_mexc(method_mexc, basis_set_mexc, nStates, SCRF='', spectroscopy_type='me
         if basis_set_mexc == '6-311G(d,p)':
             pass
         else:
-            basis_dir_name = '_' + basis_set_mexc
+            basis_dir_name += '_' + basis_set_mexc
 
 
     if nStates == '25':
@@ -60,9 +60,6 @@ def rm_mexc(method_mexc, basis_set_mexc, nStates, SCRF='', spectroscopy_type='me
     cmd = 'rm -r "%s"' % path_mexc
     for i in directories:
         os.chdir(i)
-        #sub_dir = glob.glob("*")
-        #if path_mexc in sub_dir:
-        print(cmd)
         print('Removing %s from %s' % (path_mexc, i))
         subprocess.call(cmd, shell=True)
         os.chdir("..")
@@ -80,7 +77,7 @@ def main():
     
     basis_set_mexc = '6-311++G(2d,2p)'
     basis_set_mexc = '6-311G(d,p)'
-
+    basis_set_mexc = 'aug-cc-pVDZ'
     
     nStates = '25'
     #nStates = '50'

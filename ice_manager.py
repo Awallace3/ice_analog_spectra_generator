@@ -111,7 +111,7 @@ def vibrational_resubmit(
     min_delay, number_delays,
     method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt,
     method_vib, basis_set_vib, mem_com_vib, mem_pbs_vib,
-    SCRF=''
+    SCRF='', overall_name='vib'
             
     ):
     min_delay = min_delay * 60
@@ -161,7 +161,8 @@ def vibrational_resubmit(
                 action, resubmissions = error_mexc_vib.main(
                     num, method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt,
                     method_vib, basis_set_vib, mem_com_vib, mem_pbs_vib,                
-                    resubmissions, delay, '25', SCRF=SCRF, spectroscopy_type='vib'
+                    resubmissions, delay, '25', SCRF=SCRF, spectroscopy_type='vib',
+                    overall_name=overall_name
                 )
            
             mexc_check = []
@@ -917,7 +918,6 @@ def main():
     minium_distance_between_molecules = 3.0
     filenames = ["mon_h2o.xyz", "mon_h2o.xyz", "mon_h2o.xyz"]
     start_num = 1
-
     """
     ice_build_geoms_v2.main(
         filenames, molecules_in_cluster, number_clusters, 
@@ -927,6 +927,7 @@ def main():
         mem_com_opt, mem_pbs_opt,
         start_num=start_num
     )
+    
     complete = jobResubmit(resubmit_delay_min, resubmit_max_attempts,
                            method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt,
                            method_mexc, basis_set_mexc, mem_com_mexc, mem_pbs_mexc,
@@ -1006,7 +1007,7 @@ def main():
     """
     electronicMultiPlot_Experiment(methods_lst, 
         T, title, filename, 
-        x_range=[5,10], x_units='eV',
+        x_range=[7,10.25], x_units='eV', 
         peaks=True, spec_name='spec', 
         complete=complete, basis_set_mexc=basis_set_mexc, nStates=nStates, acquiredStates=acquiredStates,
         exp_data=exp_data, 
@@ -1022,12 +1023,13 @@ def main():
     basis_set_vib = "aug-cc-pVDZ"
     mem_com_vib = mem_com_opt 
     mem_pbs_vib = mem_pbs_opt
+    overall_name = '8_nh3'
 
     vibrational_resubmit(
             resubmit_delay_min, resubmit_max_attempts,
             method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt,
             method_vib, basis_set_vib, mem_com_vib, mem_pbs_vib,
-            SCRF=SCRF
+            SCRF=SCRF, overall_name=overall_name
     )
 
     """

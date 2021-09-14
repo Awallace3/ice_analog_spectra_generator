@@ -478,7 +478,7 @@ def make_mexc(method_mexc, basis_set_mexc,
 def make_vib(method_mexc, basis_set_mexc, 
             mem_com_mexc, mem_pbs_mexc, 
             nStates='25',
-            SCRF=''
+            SCRF='', overall_name='vib'
             ):
     print("making vib!!!")
     data = ""
@@ -489,7 +489,7 @@ def make_vib(method_mexc, basis_set_mexc,
     if basis_set_mexc == '6-311G(d,p)':
         pass
     else:
-        basis_dir_name = '_' + basis_set_mexc
+        basis_dir_name += '_' + basis_set_mexc
     
     if nStates == '25':
         pass
@@ -525,12 +525,14 @@ def make_vib(method_mexc, basis_set_mexc,
         method_mexc = 'M062X'
     else:
         print("This method is not supported for Vibrational Frequencies yet.")
+    
+    print('making %s' % new_dir)
     os.mkdir(new_dir)
 
     with open(new_dir + '/mexc.com', 'w') as fp:
         fp.write("%mem={0}mb\n".format(mem_com_mexc))
         fp.write("%nprocs=4\n")
-        fp.write("#N %s/%s OPT FREQ %s\n" % (nStates, method_mexc, basis_set_mexc, SCRF) )
+        fp.write("#N %s/%s OPT FREQ %s\n" % (method_mexc, basis_set_mexc, SCRF) )
         fp.write("\n")
         fp.write("Name ModRedundant - Minimalist working constrained optimisation\n")
         fp.write("\n")
@@ -541,7 +543,7 @@ def make_vib(method_mexc, basis_set_mexc,
     with open(new_dir + '/mexc.pbs', 'w') as fp:
         fp.write("#!/bin/sh\n")
         fp.write(
-            "#PBS -N mexc_o\n#PBS -S /bin/bash\n#PBS -j oe\n#PBS -m abe\n#PBS -l ")
+            "#PBS -N %s_o\n#PBS -S /bin/bash\n#PBS -j oe\n#PBS -m abe\n#PBS -l " % overall_name)
         fp.write("mem={0}gb\n".format(mem_pbs_mexc))
         fp.write(
             "#PBS -l nodes=1:ppn=4\n#PBS -W umask=022\n#PBS -q gpu\n\nscrdir=/tmp/$USER.$PBS_JOBID\n\n")
@@ -596,7 +598,8 @@ orientation = []
 def main(index,
          method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt,
          method_mexc, basis_set_mexc, mem_com_mexc, mem_pbs_mexc,
-         resubmissions, delay, nStates, SCRF='', spectroscopy_type='mexc'
+         resubmissions, delay, nStates, SCRF='', spectroscopy_type='mexc',
+         overall_name='mexc'
          ):
     print(os.getcwd())
     out_files = glob.glob("*.out*")
@@ -702,13 +705,14 @@ def main(index,
                 make_vib(
                     method_mexc, basis_set_mexc,
                     mem_com_mexc, mem_pbs_mexc,
-                    nStates, SCRF=SCRF
+                    nStates, SCRF=SCRF,
+                    overall_name=overall_name
                 )
                 basis_dir_name = '_vib'
                 if basis_set_mexc == '6-311G(d,p)':
                     pass
                 else:
-                    basis_dir_name = '_' + basis_set_mexc
+                    basis_dir_name += '_' + basis_set_mexc
 
             
             if nStates == '25':
