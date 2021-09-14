@@ -3,6 +3,7 @@ from src import ice_build_geoms
 from src import ice_build_geoms_v2
 #from src import error_mexc_v9
 from src import error_mexc_v11
+from src import error_mexc_vib
 from src import gather_energies
 from src import vibrational_frequencies
 from src import df_latexTable as df_latex
@@ -87,6 +88,81 @@ def jobResubmit(min_delay, number_delays,
                     resubmissions, delay, nStates, SCRF=SCRF
                 )
                 #print(resubmissions)
+           
+            mexc_check = []
+            os.chdir('../..')
+        stage = 0
+        for k in range(len(complete)):
+            stage += complete[k]
+            if stage == len(complete)*2:
+                calculations_complete = True
+
+        if calculations_complete == True:
+            print(complete)
+            print('\nCalculations are complete.')
+            print('Took %.2f hours' % (i*min_delay / 60))
+            return complete
+        print('Completion List\n', complete, '\n')
+        print('delay %d' % (i))
+        time.sleep(min_delay)
+    return complete
+
+def vibrational_resubmit(
+    min_delay, number_delays,
+    method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt,
+    method_vib, basis_set_vib, mem_com_vib, mem_pbs_vib,
+    SCRF=''
+            
+    ):
+    min_delay = min_delay * 60
+    cluster_list = glob.glob("calc_zone/geom*")
+    print(cluster_list)
+    complete = []
+    resubmissions = []
+    for i in range(len(cluster_list)):
+        complete.append(0)
+        resubmissions.append(2)
+    calculations_complete = False
+
+    for i in range(number_delays):
+        for num, j in enumerate(cluster_list):
+            os.chdir(j)
+            print(j)
+            delay = i
+            basis_dir_name = "_vib"
+            if basis_set_vib == '6-311G(d,p)':
+                pass
+            else:
+                basis_dir_name = '_' + basis_set_vib
+            
+            if SCRF != '':
+                basis_dir_name += '_SCRF_%s' % SCRF
+
+            if method_vib == 'B3LYP':
+                mexc_check = glob.glob("mexc" + basis_dir_name)
+                path_mexc = 'mexc' + basis_dir_name
+                print(method_vib.lower() + basis_dir_name)
+            else:
+                mexc_check = glob.glob(method_vib.lower() + basis_dir_name)
+                path_mexc = method_vib.lower() + basis_dir_name
+                print(method_vib.lower() + basis_dir_name)
+
+            #print(mexc_check)
+            if len(mexc_check) > 0:
+                print('{0} entered mexc checkpoint 1'.format(num+1))
+                complete[num] = 1
+                mexc_check_out = glob.glob("%s/mexc.o*" % path_mexc)
+                mexc_check_out_complete = glob.glob("%s/mexc_o.o*" % path_mexc)
+
+                if complete[num] != 2 and len(mexc_check_out) > 0 and len(mexc_check_out_complete) > 0:
+                    print('{0} entered mexc checkpoint 2'.format(num+1))
+                    complete[num] = 2
+            if complete[num] < 1:
+                action, resubmissions = error_mexc_vib.main(
+                    num, method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt,
+                    method_vib, basis_set_vib, mem_com_vib, mem_pbs_vib,                
+                    resubmissions, delay, '25', SCRF=SCRF, spectroscopy_type='vib'
+                )
            
             mexc_check = []
             os.chdir('../..')
@@ -841,6 +917,8 @@ def main():
     minium_distance_between_molecules = 3.0
     filenames = ["mon_h2o.xyz", "mon_h2o.xyz", "mon_h2o.xyz"]
     start_num = 1
+
+    """
     ice_build_geoms_v2.main(
         filenames, molecules_in_cluster, number_clusters, 
         box_length, minium_distance_between_molecules,
@@ -856,6 +934,7 @@ def main():
                            SCRF=SCRF
                            )  # delay_min, num_delays
     
+    """
     # for standard usage
     """
     boltzmannAnalysisSetup(complete, method_mexc, nStates=nStates)
@@ -924,6 +1003,7 @@ def main():
     #exp_solid1 = nmLst_evLst(exp_solid1)
     exp_data=[exp_solid1]
     
+    """
     electronicMultiPlot_Experiment(methods_lst, 
         T, title, filename, 
         x_range=[5,10], x_units='eV',
@@ -936,9 +1016,20 @@ def main():
         )
     print("OUTPUT =\n", filename)
     """
-    """
+    # method_vib = "M062X"
+    method_vib = "CAM-B3LYP"
+    # basis_set_vib = "6-31+G(d,p)"
+    basis_set_vib = "aug-cc-pVDZ"
+    mem_com_vib = mem_com_opt 
+    mem_pbs_vib = mem_pbs_opt
 
-    
+    vibrational_resubmit(
+            resubmit_delay_min, resubmit_max_attempts,
+            method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt,
+            method_vib, basis_set_vib, mem_com_vib, mem_pbs_vib,
+            SCRF=SCRF
+    )
+
     """
     overTones = False
     overTonesBoltzmannAnalysis = True
