@@ -10,7 +10,7 @@ import pandas as pd
 import glob
 import subprocess
 
-def rm_mexc(method_mexc, basis_set_mexc, nStates, SCRF=''):
+def rm_mexc(method_mexc, basis_set_mexc, nStates, SCRF='', spectroscopy_type='mexc'):
     """
     if method_mexc == 'PBE0':
         path_mexc = 'pbe0'
@@ -21,12 +21,20 @@ def rm_mexc(method_mexc, basis_set_mexc, nStates, SCRF=''):
     else:
         print("This method is not supported for TD-DFT yet.")
     """
-    print('entered')
-    if basis_set_mexc == '6-311G(d,p)':
-        basis_dir_name = ''
-    else:
-        basis_dir_name = '_' + basis_set_mexc
     
+    if spectroscopy_type == 'mexc':
+        if basis_set_mexc == '6-311G(d,p)':
+            basis_dir_name = ''
+        else:
+            basis_dir_name = '_' + basis_set_mexc
+    elif spectroscopy_type == 'vib':
+        basis_dir_name = '_vib'
+        if basis_set_mexc == '6-311G(d,p)':
+            pass
+        else:
+            basis_dir_name += '_' + basis_set_mexc
+
+
     if nStates == '25':
         pass
     else:
@@ -52,9 +60,6 @@ def rm_mexc(method_mexc, basis_set_mexc, nStates, SCRF=''):
     cmd = 'rm -r "%s"' % path_mexc
     for i in directories:
         os.chdir(i)
-        #sub_dir = glob.glob("*")
-        #if path_mexc in sub_dir:
-        print(cmd)
         print('Removing %s from %s' % (path_mexc, i))
         subprocess.call(cmd, shell=True)
         os.chdir("..")
@@ -70,17 +75,19 @@ def main():
     #method_mexc = "b3lypd3"
     #method_mexc = 'b97d3'
     
-    #basis_set_mexc = '6-311++G(2d,2p)'
+    basis_set_mexc = '6-311++G(2d,2p)'
     basis_set_mexc = '6-311G(d,p)'
+    basis_set_mexc = 'aug-cc-pVDZ'
     
     nStates = '25'
     #nStates = '50'
     #nStates = '150'
+    #nStates = '125'
     
     SCRF=''
-    SCRF='PCM'
+    #SCRF='PCM'
 
-    rm_mexc(method_mexc, basis_set_mexc, nStates, SCRF=SCRF)
+    rm_mexc(method_mexc, basis_set_mexc, nStates, SCRF=SCRF, spectroscopy_type='vib')
 main()
 #if __name__ == "__main__":
 #    main()

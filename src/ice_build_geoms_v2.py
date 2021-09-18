@@ -1045,7 +1045,7 @@ def main(
                        mem_pbs_opt)  # uncomment when want directories
         print("\n\n\n next directory \n\n\n")
 
-    os.remove("*.txt")
+    #os.remove("*.txt")
     os.remove("dataframe_test.csv")
 
 # main()

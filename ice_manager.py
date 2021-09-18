@@ -3,6 +3,7 @@ from src import ice_build_geoms
 from src import ice_build_geoms_v2
 #from src import error_mexc_v9
 from src import error_mexc_v11
+from src import error_mexc_vib
 from src import gather_energies
 from src import vibrational_frequencies
 from src import df_latexTable as df_latex
@@ -87,6 +88,82 @@ def jobResubmit(min_delay, number_delays,
                     resubmissions, delay, nStates, SCRF=SCRF
                 )
                 #print(resubmissions)
+           
+            mexc_check = []
+            os.chdir('../..')
+        stage = 0
+        for k in range(len(complete)):
+            stage += complete[k]
+            if stage == len(complete)*2:
+                calculations_complete = True
+
+        if calculations_complete == True:
+            print(complete)
+            print('\nCalculations are complete.')
+            print('Took %.2f hours' % (i*min_delay / 60))
+            return complete
+        print('Completion List\n', complete, '\n')
+        print('delay %d' % (i))
+        time.sleep(min_delay)
+    return complete
+
+def vibrational_resubmit(
+    min_delay, number_delays,
+    method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt,
+    method_vib, basis_set_vib, mem_com_vib, mem_pbs_vib,
+    SCRF='', overall_name='vib'
+            
+    ):
+    min_delay = min_delay * 60
+    cluster_list = glob.glob("calc_zone/geom*")
+    print(cluster_list)
+    complete = []
+    resubmissions = []
+    for i in range(len(cluster_list)):
+        complete.append(0)
+        resubmissions.append(2)
+    calculations_complete = False
+
+    for i in range(number_delays):
+        for num, j in enumerate(cluster_list):
+            os.chdir(j)
+            print(j)
+            delay = i
+            basis_dir_name = "_vib"
+            if basis_set_vib == '6-311G(d,p)':
+                pass
+            else:
+                basis_dir_name = '_' + basis_set_vib
+            
+            if SCRF != '':
+                basis_dir_name += '_SCRF_%s' % SCRF
+
+            if method_vib == 'B3LYP':
+                mexc_check = glob.glob("mexc" + basis_dir_name)
+                path_mexc = 'mexc' + basis_dir_name
+                print(method_vib.lower() + basis_dir_name)
+            else:
+                mexc_check = glob.glob(method_vib.lower() + basis_dir_name)
+                path_mexc = method_vib.lower() + basis_dir_name
+                print(method_vib.lower() + basis_dir_name)
+
+            #print(mexc_check)
+            if len(mexc_check) > 0:
+                print('{0} entered mexc checkpoint 1'.format(num+1))
+                complete[num] = 1
+                mexc_check_out = glob.glob("%s/mexc.o*" % path_mexc)
+                mexc_check_out_complete = glob.glob("%s/mexc_o.o*" % path_mexc)
+
+                if complete[num] != 2 and len(mexc_check_out) > 0 and len(mexc_check_out_complete) > 0:
+                    print('{0} entered mexc checkpoint 2'.format(num+1))
+                    complete[num] = 2
+            if complete[num] < 1:
+                action, resubmissions = error_mexc_vib.main(
+                    num, method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt,
+                    method_vib, basis_set_vib, mem_com_vib, mem_pbs_vib,                
+                    resubmissions, delay, '25', SCRF=SCRF, spectroscopy_type='vib',
+                    overall_name=overall_name
+                )
            
             mexc_check = []
             os.chdir('../..')
@@ -323,7 +400,7 @@ def generateGraph(spec_name, T, title, filename, x_range=[100,300], x_units='nm'
     ax1.plot(x, y, "k-", label="T = {0} K".format(T))
     #ax1.set_xlim([x[0], x[-1]])
     ax1.set_xlim(x_range)
-    ax1.set_ylim(0, 1.2)
+    ax1.set_ylim(0, 1.4)
 
     plt.title(title)
     if x_units == 'ev' or x_units=='eV':
@@ -502,7 +579,7 @@ def electronicMultiPlot(methods_lst,
 
     #ax1.set_xlim([x[0], x[-1]])
     ax1.set_xlim(x_range)
-    ax1.set_ylim(0, 1.2)
+    ax1.set_ylim(0, 1.4)
 
     plt.title(title)
     if x_units == 'ev' or x_units=='eV':
@@ -571,7 +648,7 @@ def electronicMultiPlot_Experiment(methods_lst,
 
     for n, i in enumerate(methods_lst):
         gather_energies.main()
-        boltzmannAnalysisSetup(complete, i, basis_set_mexc, nStates, acquiredStates)
+        boltzmannAnalysisSetup(complete, i, basis_set_mexc, nStates, acquiredStates, SCRF)
         boltzmannAnalysis(T, energy_levels='electronic')    
         x, y = collectSpecSimData(x_units=x_units)        
         """
@@ -620,7 +697,7 @@ def electronicMultiPlot_Experiment(methods_lst,
 
     #exp_names = [ "Exp. Solid", "Exp. Gas"]
     exp_names = [ "Exp. Solid A", "Exp. Solid B"]
-    exp_names = [ "Exp. Solid B"]
+    #exp_names = [ "Exp. Solid B"]
     #exp_names = [ "Exp. Solid", "Exp. Gas"]
     #exp_names = [ "Exp. Solid A", "Exp. Solid B"]
     exp_colors = [ "k","tab:grey"]
@@ -629,6 +706,7 @@ def electronicMultiPlot_Experiment(methods_lst,
 
     if len(exp_data) > 0:
         for n, i in enumerate(exp_data):
+            print(i)
             ymax = np.amax(i[:,1], axis=0)
             i[:,1] /= ymax
             #print(i)
@@ -672,10 +750,10 @@ def electronicMultiPlot_Experiment(methods_lst,
 
     if sec_y_axis:
         #ax2.set_ylabel(r"Cross Section / cm$^2$ (Normalized)")
-        ax2.set_ylim(0,1.3)
+        ax2.set_ylim(0,1.5)
 
     ax1.set_xlim(x_range)
-    ax1.set_ylim(0, 1.3)
+    ax1.set_ylim(0, 1.5)
 
     plt.title(title)
     ax1.legend(shadow=True, fancybox=True, loc='upper left')
@@ -776,17 +854,17 @@ def main():
 
     # TD-DFT basis sets
     basis_set_mexc = "6-311G(d,p)"
-    basis_set_mexc = "6-311++G(2d,2p)"
+    #basis_set_mexc = "6-311++G(2d,2p)"
 
     SCRF = ""
-    SCRF = "PCM"
+    #SCRF = "PCM"
 
     # TD-DFT NSTATES
-    nStates = '25'
-    #nStates = '50'
+    #nStates = '25'
+    nStates = '50'
     #nStates = '100'
     #nStates = '150'
-    nStates = '125'
+    #nStates = '125'
 
     # TD-DFT memory
     mem_com_mexc = "2500"  # mb
@@ -833,13 +911,13 @@ def main():
     mol_xyz1 = "mon_h2co3_ct.xyz"
     mol_xyz2 = "mon_h2co3_tt.xyz"
     #mol_xyz2 = "mon_methanol.xyz"
-    number_clusters = 1
+    number_clusters = 5
     # enter the number of molecules of each geometry in the respective index
-    molecules_in_cluster = [3, 1, 2]
-    box_length = 9               # in angstroms
+    molecules_in_cluster = [16, 0, 0]
+    box_length = 10               # in angstroms
     minium_distance_between_molecules = 3.0
-    filenames = ["mon_h2co3.xyz", "mon_nh3.xyz", "mon_h2o.xyz"]
-    start_num = 6
+    filenames = ["mon_h2o.xyz", "mon_h2o.xyz", "mon_h2o.xyz"]
+    start_num = 1
     """
     ice_build_geoms_v2.main(
         filenames, molecules_in_cluster, number_clusters, 
@@ -849,8 +927,7 @@ def main():
         mem_com_opt, mem_pbs_opt,
         start_num=start_num
     )
-
-    """
+    
     complete = jobResubmit(resubmit_delay_min, resubmit_max_attempts,
                            method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt,
                            method_mexc, basis_set_mexc, mem_com_mexc, mem_pbs_mexc,
@@ -858,6 +935,7 @@ def main():
                            SCRF=SCRF
                            )  # delay_min, num_delays
     
+    """
     # for standard usage
     """
     boltzmannAnalysisSetup(complete, method_mexc, nStates=nStates)
@@ -897,65 +975,63 @@ def main():
     #methods_lst = method_update_selection(methods_lst, basis_set_mexc, nStates)
     #print(methods_lst)
 
-    """
-    electronicMultiPlot(methods_lst, 
-            T, title, filename, 
-            x_range=[5, 10], x_units='eV', 
-            peaks=True, spec_name='spec', 
-            complete=complete, basis_set_mexc=basis_set_mexc, nStates=nStates
-
-            )
-    print("OUTPUT =\n", filename)
-    """
     acquiredStates = nStates
-    acquiredStates = '15' 
-    """
+    #acquiredStates = '15' 
     filename = "30_8_%s_elec_n%s_%s_%sK_exp.pdf" % ( moleculeName, nStates, basis_set_mexc , T, )
     filename = "30_8_%s_elec_n%s_%s_%sK_exp.png" % ( moleculeName, nStates, basis_set_mexc , T, )
     title = r"30 Randomized Clusters of 8 %s Molecules with %s" % (moleculeNameLatex, basis_set_mexc) + "\nat %s K compared with experiment" % T 
     title = '' 
-    filename = "30_8_%s_elec_n%s_%s_%sK_exp_STATES_%s_B.png" % ( moleculeName, nStates, basis_set_mexc , T, acquiredStates)
-    filename = "30_8_%s_elec_n%s_%s_%sK_exp_STATES_%s_EXP_RIB_AM.png" % ( moleculeName, nStates, basis_set_mexc , T, acquiredStates)
-    #filename = "105_32_%s_elec_n%s_%s_%sK_exp_STATES_%s.png" % ( moleculeName, nStates, basis_set_mexc , T, acquiredStates)
-    filename = "30_8_%s_elec_n%s_%s_%sK_expD1.png" % ( moleculeName, nStates, basis_set_mexc , T, )
-    #filename = "105_32_%s_elec_n%s_%s_%sK.pdf" % ( moleculeName, nStates, basis_set_mexc , T, )
-    #filename = "105_32_%s_elec_n%s_%s_%sK.png" % ( moleculeName, nStates, basis_set_mexc , T, )
-    filename = "30_8_%s_elec_n%s_%s_%sK_exp.png" % ( moleculeName, nStates, basis_set_mexc , T, )
     filename = "30_8_%s_elec_n%s_%s_%sK_exp_STATES.png" % ( moleculeName, nStates, basis_set_mexc , T, )
-    filename = "legend.png" 
-    filename = "105_32_%s_elec_n%s_%s_%sK_exp_STATES.png" % ( moleculeName, nStates, basis_set_mexc , T, )
-    #exp_gas = np.genfromtxt('../../exp_data/%s_gas.csv' % moleculeName, delimiter=', ')
-    #exp_solid = np.genfromtxt('../../exp_data/%s_solid.csv'% moleculeName, delimiter=', ')
+    #filename = "30_8_%s_elec_n%s_%s_%sK_exp_STATES_%s_B.png" % ( moleculeName, nStates, basis_set_mexc , T, acquiredStates)
+    if SCRF != '':
+        filename = "30_8_%s_elec_n%s_%s_%sK_exp_STATES_%s_%s.png" % ( moleculeName, nStates, basis_set_mexc , T, acquiredStates, SCRF)
+
+    """
+    # co3h2 start
     exp_solid1 = np.genfromtxt('../../exp_data/%s_200k.csv'% moleculeName, delimiter=', ')
     exp_solid1 = nmLst_evLst(exp_solid1)
-    #exp_solid1 = sort_data(exp_solid1)
     exp_solid2 = np.genfromtxt('../../exp_data/%s_80_200k.csv'% moleculeName, delimiter=', ')
-    #exp_solid2 = sort_data(exp_solid2)
     exp_solid2 = nmLst_evLst(exp_solid2)
     #exp_data = [ exp_solid ]
-
     exp_data = [exp_solid1, exp_solid2]
     #exp_data = [ exp_solid2 ]
-    exp_x_units = ['nm']
     #print(exp_da#ta)
     
-    octa_rib = dis_art.discrete_to_art('../ribbon/8rib_cam.dat', ['nm', 'eV'], [100, 320], 2)
-    #octa_rib = dis_art.discrete_to_art('../ribbon/8rib_cam.dat', ['nm', 'nm'], [100, 320], 2)
-    #print(octa_rib)
+    #octa_rib = dis_art.discrete_to_art('../ribbon/8rib_cam.dat', ['nm', 'eV'], [100, 320], 2)
+    # co3h2 end
+    """
+    exp_solid1 = np.genfromtxt("../../exp_data/%s_solid.csv" % moleculeName, delimiter=", ")
+    #exp_solid1 = nmLst_evLst(exp_solid1)
+    exp_data=[exp_solid1]
+    
+    """
     electronicMultiPlot_Experiment(methods_lst, 
         T, title, filename, 
-        x_range=[4,10.5], x_units='eV',
+        x_range=[7,10.25], x_units='eV', 
         peaks=True, spec_name='spec', 
         complete=complete, basis_set_mexc=basis_set_mexc, nStates=nStates, acquiredStates=acquiredStates,
         exp_data=exp_data, 
         colors=colors, sec_y_axis=True, rounding=2,
-        extra_data=octa_rib,
-        SCRF=SCRF
+        #extra_data=octa_rib,
+        SCRF=SCRF,
         )
     print("OUTPUT =\n", filename)
     """
+    # method_vib = "M062X"
+    method_vib = "CAM-B3LYP"
+    # basis_set_vib = "6-31+G(d,p)"
+    basis_set_vib = "aug-cc-pVDZ"
+    mem_com_vib = mem_com_opt 
+    mem_pbs_vib = mem_pbs_opt
+    overall_name = '8_nh3'
 
-    
+    vibrational_resubmit(
+            resubmit_delay_min, resubmit_max_attempts,
+            method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt,
+            method_vib, basis_set_vib, mem_com_vib, mem_pbs_vib,
+            SCRF=SCRF, overall_name=overall_name
+    )
+
     """
     overTones = False
     overTonesBoltzmannAnalysis = True
