@@ -826,15 +826,17 @@ def main():
     mol_xyz1 = "mon_h2co3.xyz"
     mol_xyz1 = "mon_h2co3_ct.xyz"
     mol_xyz2 = "mon_h2co3_tt.xyz"
+    mol_xyz1 = "mon_co.xyz"
+    mol_xyz2 = "mon_co.xyz"
     #mol_xyz2 = "mon_methanol.xyz"
     number_clusters = 1
     # enter the number of molecules of each geometry in the respective index
-    molecules_in_cluster = [4, 4]
+    molecules_in_cluster = [16, 0]
     box_length = 9               # in angstroms
-    minium_distance_between_molecules = 3.0
+    minium_distance_between_molecules = 2.5
 
-    resubmit_delay_min = 0.01
-    resubmit_max_attempts = 3
+    resubmit_delay_min = 60*12
+    resubmit_max_attempts = 40
 
 
     # geometry optimization options
@@ -860,8 +862,8 @@ def main():
     #SCRF = "PCM"
 
     # TD-DFT NSTATES
-    #nStates = '25'
-    nStates = '50'
+    nStates = '25'
+    #nStates = '50'
     #nStates = '100'
     #nStates = '150'
     #nStates = '125'
@@ -870,8 +872,10 @@ def main():
     mem_com_mexc = "2500"  # mb
     mem_pbs_mexc = "25"  # gb"
 
-    moleculeName = 'nh3'
-    moleculeNameLatex = r'NH$_3$'
+    #moleculeName = 'nh3'
+    #moleculeNameLatex = r'NH$_3$'
+    moleculeName = 'co'
+    moleculeNameLatex = r'CO'
     #moleculeName = 'co2'
     #moleculeNameLatex = r'CO$_2$'
     #moleculeName = 'h2o'
@@ -886,6 +890,7 @@ def main():
     #T = 457.088     # co2
     #T = 2071.104    # h2o
     #T = 9259.3       # co3h2
+    T = 100 # need to calculate for co
 
     if basis_set_mexc == '6-311G(d,p)':
         basis_dir_name = ''
@@ -910,15 +915,16 @@ def main():
     mol_xyz1 = "mon_h2co3.xyz"
     mol_xyz1 = "mon_h2co3_ct.xyz"
     mol_xyz2 = "mon_h2co3_tt.xyz"
+    mol_xyz1 = "mon_co.xyz"
+    mol_xyz2 = "mon_co.xyz"
     #mol_xyz2 = "mon_methanol.xyz"
-    number_clusters = 5
+    number_clusters = 1
     # enter the number of molecules of each geometry in the respective index
     molecules_in_cluster = [16, 0, 0]
     box_length = 10               # in angstroms
     minium_distance_between_molecules = 3.0
-    filenames = ["mon_h2o.xyz", "mon_h2o.xyz", "mon_h2o.xyz"]
+    filenames = ["mon_co.xyz", "mon_co.xyz", "mon_co.xyz"]
     start_num = 1
-    """
     ice_build_geoms_v2.main(
         filenames, molecules_in_cluster, number_clusters, 
         box_length, minium_distance_between_molecules,
@@ -928,6 +934,7 @@ def main():
         start_num=start_num
     )
     
+    """
     complete = jobResubmit(resubmit_delay_min, resubmit_max_attempts,
                            method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt,
                            method_mexc, basis_set_mexc, mem_com_mexc, mem_pbs_mexc,
@@ -999,10 +1006,10 @@ def main():
     
     #octa_rib = dis_art.discrete_to_art('../ribbon/8rib_cam.dat', ['nm', 'eV'], [100, 320], 2)
     # co3h2 end
-    """
     exp_solid1 = np.genfromtxt("../../exp_data/%s_solid.csv" % moleculeName, delimiter=", ")
     #exp_solid1 = nmLst_evLst(exp_solid1)
     exp_data=[exp_solid1]
+    """
     
     """
     electronicMultiPlot_Experiment(methods_lst, 
@@ -1016,7 +1023,7 @@ def main():
         SCRF=SCRF,
         )
     print("OUTPUT =\n", filename)
-    """
+
     # method_vib = "M062X"
     method_vib = "CAM-B3LYP"
     # basis_set_vib = "6-31+G(d,p)"
@@ -1032,6 +1039,7 @@ def main():
             SCRF=SCRF, overall_name=overall_name
     )
 
+    """
     """
     overTones = False
     overTonesBoltzmannAnalysis = True

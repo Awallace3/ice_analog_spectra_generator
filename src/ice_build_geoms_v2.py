@@ -789,6 +789,7 @@ def constraints_3(
     dihedral=False
     ):
     pos = 0
+    print("spacer:", spacer)
     for i in sequence:
         filename = filenames[i][:-4]
         dict_name = filenames[i]
@@ -796,8 +797,9 @@ def constraints_3(
         print(i, spacer, pos)
         bsas = pd.read_csv('bonds_%s.txt'%filename, sep=' ', header=None)
         df_bds = bsas.replace(np.nan, " ", regex=True)
-        bsas = pd.read_csv('angles_%s.txt'%filename, sep=' ', header=None)
-        df_ang = bsas.replace(np.nan, ' ', regex=True)
+        if spacer > 2:
+            bsas = pd.read_csv('angles_%s.txt'%filename, sep=' ', header=None)
+            df_ang = bsas.replace(np.nan, ' ', regex=True)
         if dihedral:
             bsas = pd.read_csv('dihedral_%s.txt', sep=' ', header=None)
             dh_ang = bsas.replace(np.nan, ' ', regex=True)
@@ -805,26 +807,31 @@ def constraints_3(
         for row in df_bds.itertuples():
             df_bds.loc[row.Index, 0] += pos
             df_bds.loc[row.Index, 1] += pos
+        if spacer > 2:
+            # spacer >2
+            for row in df_ang.itertuples():
 
-        for row in df_ang.itertuples():
+                df_ang.loc[row.Index, 0] += pos
+                df_ang.loc[row.Index, 1] += pos
+                df_ang.loc[row.Index, 2] += pos
 
-            df_ang.loc[row.Index, 0] += pos
-            df_ang.loc[row.Index, 1] += pos
-            df_ang.loc[row.Index, 2] += pos
+            if dihedral == True:
+                for row in dh_ang.itertuples():
 
-        if dihedral == True:
-            for row in dh_ang.itertuples():
+                    dh_ang.loc[row.Index, 0] += pos
+                    dh_ang.loc[row.Index, 1] += pos
+                    dh_ang.loc[row.Index, 2] += pos
+                    dh_ang.loc[row.Index, 3] += pos
 
-                dh_ang.loc[row.Index, 0] += pos
-                dh_ang.loc[row.Index, 1] += pos
-                dh_ang.loc[row.Index, 2] += pos
-                dh_ang.loc[row.Index, 3] += pos
+                df = pd.concat([df, df_ang, df_bds, dh_ang], ignore_index=True)
+                
+                fnames = [df_ang, df_bds, dh_ang]
+            else:
+                fnames = [df_ang, df_bds]
 
-            df = pd.concat([df, df_ang, df_bds, dh_ang], ignore_index=True)
-            
-            fnames = [df_ang, df_bds, dh_ang]
+        # spacer >2
         else:
-            fnames = [df_ang, df_bds]
+            fnames = [df_bds]
         if pos == 0:
             df = pd.concat(fnames, ignore_index=True)
         else:
@@ -832,7 +839,12 @@ def constraints_3(
             if dihedral:
                 df = pd.concat([df, df_ang, df_bds, dh_ang], ignore_index=True)
             else:
-                df = pd.concat([df, df_ang, df_bds], ignore_index=True)
+                if spacer > 2:
+                    df = pd.concat([df, df_ang, df_bds], ignore_index=True)
+                # spacer >2
+                else:
+                    df = pd.concat([df, df_bds], ignore_index=True)
+
         
         pos += spacer
 
