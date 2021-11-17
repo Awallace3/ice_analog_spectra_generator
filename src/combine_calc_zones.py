@@ -30,7 +30,7 @@ def combine_calcs(num_calcs):
             cnt += 1
         os.chdir("..")
 
-def combine_calcs_no_errors(calc_names):
+def combine_calcs_no_errors(calc_names, mexc_check='mexc'):
     if not os.path.exists('../calc_zone'):
         os.mkdir('../calc_zone')
     os.chdir("..")
@@ -38,7 +38,7 @@ def combine_calcs_no_errors(calc_names):
     #print(calc_names)
     for i in calc_names:
         os.chdir(i)
-        del_lst, keep_lst = check_status.find_error_mexc('.')
+        del_lst, keep_lst = check_status.find_error_mexc('.', mexc_check)
         print(keep_lst)
         for i in keep_lst:
             cmd = "cp -r %s ../calc_zone/geom%d" % (i, cnt)
@@ -57,14 +57,16 @@ def delete_nested_geoms(path):
             #os.chdir(dup[0])
             print(os.getcwd())
             print(dup[0])
-            cmd = 'rm -r %s' % dup[0] 
+            cmd = 'rm -r %s' % dup[0]
             subprocess.call(cmd, shell=True)
             #os.chdir("..")
         os.chdir("..")
 def main():
     #combine_calcs(1)
     #delete_nested_geoms('../calc_zone1')
-    calc_names = ['calc_zone1_rm']
-    combine_calcs_no_errors(calc_names)
+    calc_names = ['og_calc_zone']
+    mexc_check = 'cam-b3lyp_n50'
+    mexc_check = 'cam-b3lyp'
+    combine_calcs_no_errors(calc_names, mexc_check)
 
 main()
