@@ -1,0 +1,145 @@
+{
+  "buildGeoms": {
+    "enable": true,
+    "dataPath": "data/48_1_1_h2o_nh3",
+    "inputCartesianFiles": [
+      { "file": "mon_h2o.xyz", "count": 5 },
+      { "file": "mon_nh3.xyz", "count": 5 }
+    ],
+    "clusters": 1,
+    "boxLength": 3,
+    "boxGrowth": {
+        "enable": true,
+        "increment": 3
+    },
+    "minDistanceMolecules": 2,
+    "optMethod": "B3LYP",
+    "optBasisSet": "6-31G(d)",
+    "memComFile": "1600",
+    "memPBSFile": "15",
+    "nProcs": "4",
+    "startNum": 1
+  },
+  "jobResubmit": {
+    "enable": { "exc": false, "vib": false },
+    "dataPath": "data/48_1_1_h2o_nh3",
+    "qmgr": { "minDelay": 360, "maxResub": 100 },
+    "optResub": {
+      "optMethod": "B3LYP",
+      "optBasisSet": "6-31G(d)",
+      "memComFile": "1600",
+      "memPBSFile": "15"
+    },
+    "excCreate": [
+      {
+        "excMethod": "CAM-B3LYP",
+        "excBasisSet": "6-311G(d,p)",
+        "memComFile": "1600",
+        "memPBSFile": "15",
+        "nStates": 25,
+        "SCRF": ""
+      },
+      {
+        "excMethod": "CAM-B3LYP",
+        "excBasisSet": "6-311G(d,p)",
+        "memComFile": "1600",
+        "memPBSFile": "15",
+        "nStates": 50,
+        "SCRF": ""
+      },
+      {
+        "excMethod": "wB97XD",
+        "excBasisSet": "6-311G(d,p)",
+        "memComFile": "1600",
+        "memPBSFile": "15",
+        "nStates": 25,
+        "SCRF": ""
+      }
+    ],
+    "vibCreate": [
+      {
+        "excMethod": "CAM-B3LYP",
+        "excBasisSet": "6-31+G(d,p)",
+        "memComFile": "1600",
+        "memPBSFile": "15"
+      }
+    ]
+  },
+  "dataAnalysis": {
+    "enable": false,
+    "dataPath": "data/48_1_1_h2o_nh3",
+    "temperature": 273.15,
+    "type": "exc",
+    "output": {
+      "numerical": {
+        "enable": true,
+        "type": ".json",
+        "outFile": "tmp.json",
+        "excList": [
+          {
+            "excMethod": "CAM-B3LYP",
+            "excBasisSet": "6-311G(d,p)",
+            "nStates": 25,
+            "acquiredStates": "25",
+            "SCRF": ""
+          },
+          {
+            "excMethod": "wB97XD",
+            "excBasisSet": "6-311G(d,p)",
+            "nStates": 25,
+            "acquiredStates": "25",
+            "SCRF": ""
+          }
+        ]
+      },
+      "plot": {
+        "enable": true,
+        "range": { "x": [1, 12], "y": [0, 1] },
+        "x_units": "eV",
+        "fileName": "data",
+        "title": "",
+        "dpi": 400,
+        "dft": {
+          "legendLabelBasisSet": false,
+          "peaks": false,
+          "excList": [
+            {
+              "excMethod": "CAM-B3LYP",
+              "excBasisSet": "6-311G(d,p)",
+              "nStates": 25,
+              "acquiredStates": "25",
+              "SCRF": "",
+              "line": { "color": "red", "type": "-" }
+            },
+            {
+              "excMethod": "wB97XD",
+              "excBasisSet": "6-311G(d,p)",
+              "nStates": 25,
+              "acquiredStates": "25",
+              "SCRF": "",
+              "line": { "color": "green", "type": "-" }
+            }
+          ]
+        },
+        "exp": {
+          "enable": true,
+          "peaks": false,
+          "expData": [
+            {
+              "path": "exp_data/nh3_gas.csv",
+              "units": { "input": "eV", "output": "eV" },
+              "line": { "color": "k", "type": "--" },
+              "legendLabel": "Test 1"
+            },
+            {
+              "path": "exp_data/nh3_solid.csv",
+              "units": { "input": "eV", "output": "eV" },
+              "line": { "color": "b", "type": "-" },
+              "legendLabel": "Test 2"
+            }
+          ]
+        }
+      }
+    }
+  }
+}
