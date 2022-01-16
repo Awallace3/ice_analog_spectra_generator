@@ -3,14 +3,8 @@ import os
 import math
 import random
 from numpy import genfromtxt
-import numpy as npimport
-from numpy import genfromtxt
+from .qmgr import add_qsub_dir
 import pandas as pd
-import glob
-
-from scipy.signal.signaltools import decimate
-
-# import secrets
 
 
 def yz_rotate(geom, yz_angle=np.pi / 4):
@@ -755,9 +749,9 @@ def constraints_2(molecule_cnt, spacer, sequence, dihedral=False):
 
 def constraints_3(default_dir, spacer, sequence, geo_dict, filenames, dihedral=False):
     pos = 0
-    bonds_txt = default_dir + "bonds.txt"
-    angles_txt = default_dir + "angles.txt"
-    dihedral_txt = default_dir + "dihedral.txt"
+    bonds_txt = default_dir + "/bonds.txt"
+    angles_txt = default_dir + "/angles.txt"
+    dihedral_txt = default_dir + "/dihedral.txt"
     for i in sequence:
         dict_name = filenames[i]
         spacer = len(geo_dict[dict_name])
@@ -902,10 +896,16 @@ def make_input_dir(
         )
 
     print("geom" + str(dir_name_number))
-    os.chdir(new_dir)
-    os.system("qsub mex.pbs")
-    os.chdir(default_dir)
-    os.chdir("../..")
+    add_qsub_dir(
+            './',
+            new_dir,
+            default_dir + '/qsub_queue.txt'
+            )
+    # os.chdir(new_dir)
+    # os.system("qsub mex.pbs")
+    # os.chdir(default_dir)
+
+    # os.chdir("../..")
 
 
 def make_input_files():
@@ -1035,9 +1035,9 @@ def ice_build(
         clean_many_txt()
         pos = 0
         for key, val in geo_dict.items():
-            bonds_txt = default_dir + "bonds.txt"
-            angles_txt = default_dir + "angles.txt"
-            dihedral_txt = default_dir + "dihedral.txt"
+            bonds_txt = default_dir + "/bonds.txt"
+            angles_txt = default_dir + "/angles.txt"
+            dihedral_txt = default_dir + "/dihedral.txt"
 
             bond_lengths_2(val, bonds_txt)
             bond_angles_2(val, angles_txt)
@@ -1059,7 +1059,10 @@ def ice_build(
         print("\n next directory\n")
 
     # os.remove("*.txt")
-    os.chdir(default_dir)
+    os.remove('bonds.txt')
+    os.remove('angles.txt')
+    os.remove('many.txt')
+    # os.remove('dihedral.txt')
     os.remove("dataframe_test.csv")
 
 

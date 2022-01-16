@@ -911,7 +911,8 @@ def job_progression(
     stat=['data/30_8_co2/geom1', -1, 2, 1, 1],
     cluster='map',
     geomDirName='geom',
-    spec_type='electronic'
+    spec_type='electronic',
+    vib_only=False,
 ):
     method_opt = config['optResub']['optMethod']
     basis_set_opt = config['optResub']['optBasisSet']
@@ -937,6 +938,8 @@ def job_progression(
     elif spec_type == 'vibrational':
         if stat[1] == -1:
             excStep = 0
+        elif vib_only:
+            excStep = stat[1]
         else:
             excStep = stat[1] - stat[3]
         method_mexc = config['vibList'][excStep]['excMethod']

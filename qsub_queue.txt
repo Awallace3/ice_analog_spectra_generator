@@ -1,1 +1,10 @@
-data/30_8_co2/geom1
+data/30_8_co2/geom1/cam-b3lyp
+data/30_8_co2/geom1/cam-b3lyp_6-31g(d,p)
+data/30_8_co2/geom1/wb97xd
+data/30_8_co2/geom1/cam-b3lyp_vib_6-31+g(d,p)
+data/30_8_co2/geom1/wb97xd_vib_6-31+g(d,p)
+data/30_8_co2/geom1/cam-b3lyp
+data/30_8_co2/geom1/cam-b3lyp_6-31g(d,p)
+data/30_8_co2/geom1/wb97xd
+data/30_8_co2/geom1/cam-b3lyp_vib_6-31+g(d,p)
+data/30_8_co2/geom1/wb97xd_vib_6-31+g(d,p)

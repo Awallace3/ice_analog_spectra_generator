@@ -9,7 +9,11 @@ def main():
     if config["buildGeoms"]["enable"]:
         src.ice_build(config=config["buildGeoms"])
 
-    if config["qmgr"]["enable"]["exc"]:
+    if (
+            config["qmgr"]["enable"]["exc"]
+            or
+            config["qmgr"]["enable"]["vib"]
+    ):
         src.qmgr(config["qmgr"])
 
     if (
@@ -19,13 +23,6 @@ def main():
         src.electronicMultiPlotExpSetup(config["dataAnalysis"])
 
     """
-    vibrational_resubmit(
-            resubmit_delay_min, resubmit_max_attempts,
-            method_opt, basis_set_opt, mem_com_opt, mem_pbs_opt,
-            method_vib, basis_set_vib, mem_com_vib, mem_pbs_vib,
-            SCRF=SCRF, overall_name=overall_name
-    )
-
     overTones = False
     overTonesBoltzmannAnalysis = True
     if overTones: 
