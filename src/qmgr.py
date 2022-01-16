@@ -649,7 +649,7 @@ def qmgr(
     # total_time = minDelay * maxResub
     for i in range(maxResub):
         status = queue_logic(default_dir, status, delay, enabled)
-        # qsub_to_max(maxQueue, user)
+        qsub_to_max(maxQueue, user)
         if not delay:
             delay = True
         if len(status) == 0:
