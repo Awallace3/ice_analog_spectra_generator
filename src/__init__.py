@@ -8,6 +8,7 @@ from .df_latexTable import latexTable_df
 from .ice_build import ice_build
 from .qmgr import qmgr
 from .job_progression import construct_dir_name
+from .qmgr import add_qsub_dir
 import time
 import glob
 import os
