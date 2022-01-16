@@ -20,7 +20,7 @@ def yz_rotate(geom, yz_angle=np.pi / 4):
     new_geom = np.zeros(((int(len(geom[:, 0]))), 4))
     k = 1
     for i in geom[:, 0]:
-        new_geom[k - 1: k, 0] = i
+        new_geom[k - 1 : k, 0] = i
         k += 1
 
     # rotates molecule by given yz-angle in radians
@@ -33,40 +33,40 @@ def yz_rotate(geom, yz_angle=np.pi / 4):
     for atom_y, atom_z in np.nditer([Y, Z]):
 
         if atom_y > 0 and atom_z > 0:
-            theta_0[k - 1: k] = math.degrees(math.atan(atom_y / atom_z))
+            theta_0[k - 1 : k] = math.degrees(math.atan(atom_y / atom_z))
             hyp[k - 1 : k] = math.sqrt(atom_y ** 2 + atom_z ** 2)
 
         elif atom_y < 0 and atom_z > 0:
-            theta_0[k - 1: k] = math.degrees(math.atan(atom_y / atom_z))
+            theta_0[k - 1 : k] = math.degrees(math.atan(atom_y / atom_z))
             hyp[k - 1 : k] = math.sqrt(atom_y ** 2 + atom_z ** 2)
 
         elif atom_y > 0 and atom_z < 0:
-            theta_0[k - 1: k] = math.degrees(math.atan(atom_y / atom_z)) + 180
+            theta_0[k - 1 : k] = math.degrees(math.atan(atom_y / atom_z)) + 180
             hyp[k - 1 : k] = math.sqrt(atom_y ** 2 + atom_z ** 2)
 
         elif atom_y < 0 and atom_z < 0:
-            theta_0[k - 1: k] = math.degrees(math.atan(atom_y / atom_z)) + 180
-            hyp[k - 1 :k] = math.sqrt(atom_y ** 2 + atom_z ** 2)
+            theta_0[k - 1 : k] = math.degrees(math.atan(atom_y / atom_z)) + 180
+            hyp[k - 1 : k] = math.sqrt(atom_y ** 2 + atom_z ** 2)
 
         elif atom_y == 0 and atom_z == 0:
-            theta_0[k - 1: k] = 0
-            hyp[k - 1:k] = 0
+            theta_0[k - 1 : k] = 0
+            hyp[k - 1 : k] = 0
 
         elif atom_y > 0 and atom_z == 0:
-            theta_0[k - 1: k] = math.degrees(np.pi / 2)
-            hyp[k - 1: k] = math.sqrt(atom_y ** 2 + atom_z ** 2)
+            theta_0[k - 1 : k] = math.degrees(np.pi / 2)
+            hyp[k - 1 : k] = math.sqrt(atom_y ** 2 + atom_z ** 2)
 
         elif atom_y < 0 and atom_z == 0:
-            theta_0[k - 1: k] = math.degrees(3 * np.pi / 2)
-            hyp[k - 1: k] = math.sqrt(atom_y ** 2 + atom_z ** 2)
+            theta_0[k - 1 : k] = math.degrees(3 * np.pi / 2)
+            hyp[k - 1 : k] = math.sqrt(atom_y ** 2 + atom_z ** 2)
 
         elif atom_y == 0 and atom_z > 0:
-            theta_0[k - 1: k] = math.degrees(0)
-            hyp[k - 1: k] = math.sqrt(atom_y ** 2 + atom_z ** 2)
+            theta_0[k - 1 : k] = math.degrees(0)
+            hyp[k - 1 : k] = math.sqrt(atom_y ** 2 + atom_z ** 2)
 
         elif atom_y == 0 and atom_z < 0:
-            theta_0[k - 1: k] = math.degrees(np.pi)
-            hyp[k - 1: k] = math.sqrt(atom_y ** 2 + atom_z ** 2)
+            theta_0[k - 1 : k] = math.degrees(np.pi)
+            hyp[k - 1 : k] = math.sqrt(atom_y ** 2 + atom_z ** 2)
 
         k += 1
 
@@ -352,9 +352,9 @@ def ran_dis_growth(boxlength, removed):
     """
     pos_neg = np.random.randint(2)
     if pos_neg == 1:
-        return np.random.uniform(removed, boxlength/2)
+        return np.random.uniform(removed, boxlength / 2)
     else:
-        return -np.random.uniform(removed, boxlength/2)
+        return -np.random.uniform(removed, boxlength / 2)
 
 
 def distance(geom1, geom2):
@@ -379,7 +379,7 @@ def random_arrangement_3(
     num_molecules,
     box_length,
     minimum_distance_between_molecules,
-    boxGrowth
+    boxGrowth,
 ):
     num = 0
     random_list = []
@@ -447,7 +447,7 @@ def random_arrangement_3(
         else:
             if boxGrowth["enable"]:
                 if attempts > 100:
-                    box_length += boxGrowth['increment']
+                    box_length += boxGrowth["increment"]
                     attempts = 0
                     print(box_length)
                 else:
@@ -837,12 +837,8 @@ def clean_dataframe(df):
 
 
 def make_input_dir(
-        dataPath,
-        default_dir,
-        dir_name_number,
-        method, basis_set,
-        mem_com, mem_pbs
-        ):
+    dataPath, default_dir, dir_name_number, method, basis_set, mem_com, mem_pbs
+):
     """
     Combines the geometry output and the constrained output.
     Then makes the .com and .pbs files in a subdirectory
@@ -976,22 +972,19 @@ def ice_build(
         "enable": True,
         "dataPath": "data/48_1_1_h2o_nh3",
         "inputCartesianFiles": [
-            {"file": "mon_h2o.xyz", "count": 24},
-            {"file": "mon_nh3.xyz", "count": 24},
+            {"file": "mon_h2o.xyz", "count": 5},
+            {"file": "mon_nh3.xyz", "count": 5},
         ],
-        "clusters": 48,
-        "boxLength": 12,
-        "boxGrowth": {
-            "enable": True,
-            "increment": 0.5,
-        },
-        "minDistanceMolecules": 3,
+        "clusters": 1,
+        "boxLength": 3,
+        "boxGrowth": {"enable": True, "increment": 3},
+        "minDistanceMolecules": 2,
         "optMethod": "B3LYP",
         "optBasisSet": "6-31G(d)",
         "memComFile": "1600",
         "memPBSFile": "15",
         "nProcs": "4",
-        "startNum": 1
+        "startNum": 1,
     },
 ):
     default_dir = os.getcwd()
@@ -1011,10 +1004,11 @@ def ice_build(
     dataPath = config["dataPath"]
     boxGrowth = config["boxGrowth"]
 
-    if not os.path.exists('data'):
-        os.mkdir('data')
+    if not os.path.exists("data"):
+        os.mkdir("data")
     if os.path.exists(dataPath):
-        print("ice_build.py: DataPath from %s/input.json already exists." % default_dir)
+        print("ice_build.py: DataPath from %s/input.json already exists."
+              % default_dir)
         return
     else:
         os.mkdir(dataPath)
@@ -1054,9 +1048,13 @@ def ice_build(
         clean_dataframe(df)
 
         make_input_dir(
-            dataPath, default_dir, i,
-            method_opt, basis_set_opt,
-            mem_com_opt, mem_pbs_opt
+            dataPath,
+            default_dir,
+            i,
+            method_opt,
+            basis_set_opt,
+            mem_com_opt,
+            mem_pbs_opt,
         )  # uncomment when want directories
         print("\n next directory\n")
 

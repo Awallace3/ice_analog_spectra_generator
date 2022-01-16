@@ -1,7 +1,4 @@
 import matplotlib.pyplot as plt
-
-# import error_mexc_v11
-from .error_mexc_v11 import main as err_mexc
 from .error_mexc_vib import main as err_vib
 from .gather_energies import main as gather_energies
 from .vibrational_frequencies import overtones as overtones_func
@@ -9,6 +6,8 @@ from .vibrational_frequencies import combine_modes_overtones
 from .df_latexTable import df_latexTable
 from .df_latexTable import latexTable_df
 from .ice_build import ice_build
+from .qmgr import qmgr
+from .job_progression import construct_dir_name
 import time
 import glob
 import os
@@ -21,157 +20,6 @@ import matplotlib
 
 matplotlib.use("Agg")
 
-
-def jobResubmit(
-    config={
-        "enable": {"exc": True, "vib": False},
-        "qmgr": {"minDelay": 360, "maxResub": 100},
-        "optResub": {
-            "optMethod": "B3LYP",
-            "optBasisSet": "6-31G(d)",
-            "memComFile": "1600",
-            "memPBSFile": "15",
-        },
-        "excCreate": [
-            {
-                "excMethod": "CAM-B3LYP",
-                "excBasisSet": "6-311G(d,p)",
-                "memComFile": "1600",
-                "memPBSFile": "15",
-                "nStates": 25,
-                "SCRF": "",
-            },
-            {
-                "excMethod": "CAM-B3LYP",
-                "excBasisSet": "6-311G(d,p)",
-                "memComFile": "1600",
-                "memPBSFile": "15",
-                "nStates": 50,
-                "SCRF": "",
-            },
-            {
-                "excMethod": "wB97XD",
-                "excBasisSet": "6-311G(d,p)",
-                "memComFile": "1600",
-                "memPBSFile": "15",
-                "nStates": 25,
-                "SCRF": "",
-            },
-        ],
-        "vibCreate": [
-            {
-                "excMethod": "CAM-B3LYP",
-                "excBasisSet": "6-31+G(d,p)",
-                "memComFile": "1600",
-                "memPBSFile": "15",
-            }
-        ],
-    },
-):
-    min_delay = config["qmgr"]["minDelay"]
-    number_delays = config["qmgr"]["maxResub"]
-    method_opt = config["optResub"]["optMethod"]
-    basis_set_opt = config["optResub"]["optBasisSet"]
-    mem_com_opt = config["optResub"]["memComFile"]
-    mem_pbs_opt = config["optResub"]["memPBSFile"]
-
-    method_mexc = config["excCreate"][0]["excMethod"]
-    basis_set_mexc = config["excCreate"][0]["excBasisSet"]
-    mem_com_mexc = config["excCreate"][0]["memComFile"]
-    mem_pbs_mexc = config["excCreate"][0]["memPBSFile"]
-    nStates = config["excCreate"][0]["nStates"]
-    SCRF = config["excCreate"][0]["SCRF"]
-
-    min_delay = min_delay * 60
-    cluster_list = glob.glob("calc_zone/geom*")
-    print(cluster_list)
-    complete = []
-    resubmissions = []
-    for i in range(len(cluster_list)):
-        complete.append(0)
-        resubmissions.append(2)
-    calculations_complete = False
-
-    for i in range(number_delays):
-
-        for num, j in enumerate(cluster_list):
-            os.chdir(j)
-            print(j)
-            delay = i
-            if basis_set_mexc == "6-311G(d,p)":
-                basis_dir_name = ""
-            else:
-                basis_dir_name = "_" + basis_set_mexc
-
-            if nStates == "25":
-                pass
-            else:
-                basis_dir_name += "_n%s" % nStates
-            if SCRF != "":
-                basis_dir_name += "_SCRF_%s" % SCRF
-
-            if method_mexc == "B3LYP":
-                mexc_check = glob.glob("mexc" + basis_dir_name)
-                path_mexc = "mexc" + basis_dir_name
-                print(method_mexc.lower() + basis_dir_name)
-            else:
-                mexc_check = glob.glob(method_mexc.lower() + basis_dir_name)
-                path_mexc = method_mexc.lower() + basis_dir_name
-                print(method_mexc.lower() + basis_dir_name)
-
-            # print(mexc_check)
-            if len(mexc_check) > 0:
-                print("{0} entered mexc checkpoint 1".format(num + 1))
-                complete[num] = 1
-
-                # mexc_check_out = glob.glob("mexc/mexc.o*")
-                # mexc_check_out_complete = glob.glob("mexc_o/mexc.o*")
-                mexc_check_out = glob.glob("%s/mexc.o*" % path_mexc)
-                mexc_check_out_complete = glob.glob("%s/mexc_o.o*" % path_mexc)
-
-                # if complete[num] != 2 and len(mexc_check_out) > 1:
-                if (
-                    complete[num] != 2
-                    and len(mexc_check_out) > 0
-                    and len(mexc_check_out_complete) > 0
-                ):
-                    print("{0} entered mexc checkpoint 2".format(num + 1))
-                    complete[num] = 2
-            if complete[num] < 1:
-                action, resubmissions = err_mexc(
-                    num,
-                    method_opt,
-                    basis_set_opt,
-                    mem_com_opt,
-                    mem_pbs_opt,
-                    method_mexc,
-                    basis_set_mexc,
-                    mem_com_mexc,
-                    mem_pbs_mexc,
-                    resubmissions,
-                    delay,
-                    nStates,
-                    SCRF=SCRF,
-                )
-                # print(resubmissions)
-
-            mexc_check = []
-            os.chdir("../..")
-        stage = 0
-        for k in range(len(complete)):
-            stage += complete[k]
-            if stage == len(complete) * 2:
-                calculations_complete = True
-
-        if calculations_complete:
-            print(complete)
-            print("\nCalculations are complete.")
-            print("Took %.2f hours" % (i * min_delay / 60))
-            return complete
-        print("Completion List\n", complete, "\n")
-        print("delay %d" % (i))
-        time.sleep(min_delay)
-    return complete
 
 
 def vibrational_resubmit(
@@ -273,6 +121,7 @@ def vibrational_resubmit(
     return complete
 
 
+
 def boltzmannAnalysisSetup(
     complete,
     method_mexc="B3LYP",
@@ -292,6 +141,7 @@ def boltzmannAnalysisSetup(
     else:
         os.chdir("..")
 
+    # TODO test with construct_dir_name
     if basis_set_mexc == "6-311G(d,p)":
         basis_dir_name = ""
     else:
@@ -736,9 +586,7 @@ def electronicMultiPlotExpSetup(
         "temperature": 273.15,
         "type": "exc",
         "output": {
-            "numerical": {
-                "enable": True, "type": "json", "outFile": "tmp.json"
-                },
+            "numerical": {"enable": True, "type": "json", "outFile": "tmp.json"},
             "plot": {
                 "enable": True,
                 "range": {"x": [1, 12], "y": [0, 1]},
@@ -787,7 +635,7 @@ def electronicMultiPlotExpSetup(
     SCRF = ""
     # colors = config["output"]["plot"]["excColors"]
     colors = []
-    methods_lst = config['output']['plot']["dft"]["excList"]
+    methods_lst = config["output"]["plot"]["dft"]["excList"]
     # for n, i in enumerate(config['output']['plot']["dft"]["excList"]):
     #     print(i)
     #     if n == 0:
@@ -803,9 +651,9 @@ def electronicMultiPlotExpSetup(
     x_units = config["output"]["plot"]["x_units"]
     # y_range = config["output"]["plot"]["range"]["y"]
     peaks = {
-            "exp": config["output"]["plot"]["exp"]["peaks"],
-            "dft": config["output"]["plot"]["dft"]["peaks"],
-            }
+        "exp": config["output"]["plot"]["exp"]["peaks"],
+        "dft": config["output"]["plot"]["dft"]["peaks"],
+    }
     spec_name = "spec"
     complete = []
     filename = config["output"]["plot"]["fileName"]
@@ -847,7 +695,7 @@ def electronicMultiPlot_Experiment(
     peaks={
         "exp": False,
         "dft": False,
-        },
+    },
     spec_name="spec",
     complete=[],
     exp_data=[],
@@ -856,7 +704,7 @@ def electronicMultiPlot_Experiment(
     rounding=1,
     extra_data=np.array([[-1, -1]]),
     dpi=400,
-    legendLabelBasisSet=True
+    legendLabelBasisSet=True,
 ):
 
     location = os.getcwd().split("/")[-1]
@@ -872,7 +720,7 @@ def electronicMultiPlot_Experiment(
 
     fig, ax1 = plt.subplots(dpi=dpi)
 
-    if peaks['dft']:
+    if peaks["dft"]:
         if os.path.exists("peaks.tex"):
             headers = [
                 "Method",
@@ -910,15 +758,10 @@ def electronicMultiPlot_Experiment(
         if method == "wB97XD":
             method = r"$\omega$B97XD"
         if legendLabelBasisSet:
-            label = method + '/' + basis_set_mexc
+            label = method + "/" + basis_set_mexc
         else:
             label = method
-        ax1.plot(
-                x, y,
-                l_type, c=color,
-                label=label,
-                zorder=2
-                )
+        ax1.plot(x, y, l_type, c=color, label=label, zorder=2)
 
         if peaks["dft"]:
             arr_y = np.array(y)
@@ -976,11 +819,11 @@ def electronicMultiPlot_Experiment(
                 dat[:, 0],
                 dat[:, 1],
                 i["line"]["type"],
-                c=i["line"]['color'],
-                label=i['legendLabel'],
+                c=i["line"]["color"],
+                label=i["legendLabel"],
                 zorder=2,
             )
-            if peaks['exp']:
+            if peaks["exp"]:
                 arr_y = dat[:, 1]
                 print("local maxima")
                 peaks_dat, _ = scipy.signal.find_peaks(arr_y, height=0)
@@ -990,14 +833,14 @@ def electronicMultiPlot_Experiment(
                     frequency = round(dat[j, 0], 2)
                     print("x, y = %.2f, %.2f" % (frequency, height))
                     line = "%s & %s & %.2f & %.2f \\\\\n" % (
-                        i['legendLabel'],
+                        i["legendLabel"],
                         basis_set_mexc,
                         frequency,
                         height,
                     )
                     # latexTable_addLine('latexTable.tex', line)
                     df.loc[len(df.index)] = [
-                        i['legendLabel'],
+                        i["legendLabel"],
                         basis_set_mexc,
                         frequency,
                         height,
@@ -1017,7 +860,7 @@ def electronicMultiPlot_Experiment(
             label="CAM-B3LYP (Ribbon Octamer)",
             color="blue",
         )
-        if peaks['dft']:
+        if peaks["dft"]:
             arr_y = extra_data[:, 1]
             arr_x = extra_data[:, 0]
             print(arr_y)
