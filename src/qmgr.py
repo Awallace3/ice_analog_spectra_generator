@@ -52,14 +52,17 @@ def r_qsub_dir(method_mexc, solvent):
 def qsub_to_max(max_queue=100, user=""):
     with open("qsub_queue.txt", "r") as fp:
         qsubs = fp.readlines()
-    cmd = "qstat -u %s | wc -l > ../qsub_len" % user
+    cmd = "qstat -u %s | wc -l > qsub_len" % user
     # for local testing...
     # cmd = "qstat | wc -l > ../qsub_len"
     subprocess.call(cmd, shell=True)
-    print("qsub_to_max", os.getcwd(), "qsub_len", "qsub_queue.txt")
-    with open("qsub_len", "r") as fp:
-        current_queue = int(fp.read()) - 5
-    os.remove("qsub_len")
+    if os.path.exists("qsub_len"):
+        print("qsub_to_max", os.getcwd(), "qsub_len", "qsub_queue.txt")
+        with open("qsub_len", "r") as fp:
+            current_queue = int(fp.read()) - 5
+        os.remove("qsub_len")
+    else:
+        current_queue = 0
     dif = max_queue - current_queue
     print("dif is", dif)
     if dif > 0:
