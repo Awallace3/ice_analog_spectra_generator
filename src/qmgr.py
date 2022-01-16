@@ -465,7 +465,7 @@ def queue_logic(default_dir, status, delay, enabled):
                     job_dirs[i] = stat
                     if qsub_dir != "None":
                         add_qsub_dir(
-                                qsub_dir.lower(),
+                                qsub_dir,
                                 stat[0],
                                 path_qsub_queue
                                 )
@@ -482,7 +482,7 @@ def queue_logic(default_dir, status, delay, enabled):
                     job_dirs[i] = stat
                     if qsub_dir != "None":
                         add_qsub_dir(
-                                qsub_dir.lower(),
+                                qsub_dir,
                                 stat[0],
                                 path_qsub_queue
                                 )
@@ -498,7 +498,7 @@ def queue_logic(default_dir, status, delay, enabled):
                                 )
                         if qsub_dir != "None":
                             add_qsub_dir(
-                                    qsub_dir.lower(),
+                                    qsub_dir,
                                     stat[0],
                                     path_qsub_queue
                                     )
@@ -522,7 +522,7 @@ def queue_logic(default_dir, status, delay, enabled):
                                 )
                         if qsub_dir != "None":
                             add_qsub_dir(
-                                    qsub_dir.lower(),
+                                    qsub_dir,
                                     stat[0],
                                     path_qsub_queue
                                     )
