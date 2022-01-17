@@ -4,7 +4,7 @@
 <div align="center">
 <h3 align="center">Ice Analog Spectra Generator</h3>
   <p align="center">
-  The provided scripts generate amorphous solids and manages Gaussian16 density functional theory (DFT) optimization and excited state calculations.
+  The provided scripts generate amorphous solids and manage Gaussian16 density functional theory (DFT) optimization and excited state calculations.
     <br />
     <a href="https://github.com/Awallace3/ice_analog_spectra_generator/issues">Report Bug</a>
     ·
