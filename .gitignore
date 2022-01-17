@@ -176,3 +176,8 @@ Cargo.lock
 # MSVC Windows builds of rustc generate these, which store debugging information
 *.pdb
 data
+user
+qsub_queue
+qsub_len
+qsub_queue.txt
+test_data

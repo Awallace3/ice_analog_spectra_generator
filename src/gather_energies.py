@@ -1,15 +1,7 @@
-import numpy as np
 import os
-import math
-import random
-from numpy import genfromtxt
-import numpy as npimport
-from numpy import genfromtxt
-import pandas as pd
-
-# import re
 import glob
 import subprocess
+from .job_progression import get_final_out
 
 
 def freq_hf_zero(lines, filename):
@@ -37,7 +29,6 @@ def freq_hf_zero(lines, filename):
             if zero_point in line:
                 zeros.append(line)
 
-    # print(zeros[0])
     if len(HFs) == 1:
         return freqs[0], HFs[0], 0, zeros[0]
     else:
@@ -54,11 +45,7 @@ def clean_energies(hf_1, hf_2, zero_point):
 
     if hf_2 != 0:
         hf_2 = hf_2[3:].replace("\n", "").split("\\")
-        # print(hf_1[0], hf_2[0])
         if hf_1[0] > hf_2[0]:
-            # -2119.1981428
-            # if hf_1[0] < hf_2[0]:
-            # -2119.1981419999997
             return float(hf_1[0]) + zero_point, hf_1[0]
         else:
             return float(hf_2[0]) + zero_point, hf_2[0]
@@ -67,7 +54,6 @@ def clean_energies(hf_1, hf_2, zero_point):
 
 
 def main():
-    # print("Gathering Energies")
     location = os.getcwd().split("/")[-1]
     if location == "src":
         os.chdir("../calc_zone")
@@ -80,19 +66,14 @@ def main():
         os.mkdir("../results/energies")
 
     directories = glob.glob("geom*")
-    # print(os.getcwd())
     lowest_energy = [0, 0, 0]
     cmd = "rm ../results/energies/energy_all.csv"
     subprocess.call(cmd, shell=True)
     for i in directories:
         n = i[4:]
-        # print(i)
-        # print(i[5:])
         os.chdir(i)
         out_files = glob.glob("*.out*")
         out_completion = glob.glob("mex_o.*")
-        # print(out_files)
-        # print(out_completion)
         if len(out_files) > 0:
             if len(out_files) == 1:
                 filename = out_files[-1]
@@ -103,37 +84,62 @@ def main():
                         continue
                     elif i[-1] > filename[-1]:
                         filename = i
-
-            # print("filename:", filename)
-
             f = open(filename, "r")
             lines = f.readlines()
             f.close()
 
-            freq, hf_1, hf_2, zero_point = freq_hf_zero(lines, filename=filename)
-            # print(freq, hf_1, hf_2, zero_point)
+            freq, hf_1, hf_2, zero_point = freq_hf_zero(
+                lines, filename=filename
+            )
             sum_energy, hf = clean_energies(hf_1, hf_2, zero_point)
             if sum_energy < lowest_energy[2]:
                 lowest_energy = [hf, zero_point, sum_energy]
 
-            # print("Sum Energy:",sum_energy)
-            # os.chdir("../results/energies")
             path = "../../results/energies/"
-            # print(os.getcwd())
             f = open(path + "energy%s.txt" % n, "w")
             f.write(str(sum_energy))
-            # print(sum_energy)
             f.close()
             line = "%s,%s\n" % (n, sum_energy)
             f = open(path + "energy_all.csv", "a")
             f.write(line)
             f.close()
-
             os.chdir("..")
-
     os.chdir("..")
-    # print("LOWEST ENERGY\nHF\tZPE\tSUM")
-    # print(lowest_energy)
 
 
-# main()
+def gather_default(path):
+    def_dir = os.getcwd()
+    path_r_e = def_dir + "/results/energies"
+
+    if not os.path.exists(path_r_e):
+        os.mkdir(path_r_e)
+    cmd = "rm %s/energy_all.csv" % path_r_e
+    subprocess.call(cmd, shell=True)
+
+    os.chdir(path)
+    directories = glob.glob("geom*")
+    lowest_energy = [0, 0, 0]
+    for i in directories:
+        n = i[4:]
+        os.chdir(i)
+        out_files = glob.glob("*.out*")
+        if len(out_files) > 0:
+            filename = get_final_out(out_files)
+            f = open(filename, "r")
+            lines = f.readlines()
+            f.close()
+            freq, hf_1, hf_2, zero_point = freq_hf_zero(
+                lines, filename=filename
+            )
+            sum_energy, hf = clean_energies(hf_1, hf_2, zero_point)
+            if sum_energy < lowest_energy[2]:
+                lowest_energy = [hf, zero_point, sum_energy]
+            f = open(path_r_e + "/energy%s.txt" % n, "w")
+            f.write(str(sum_energy))
+            f.close()
+            line = "%s,%s\n" % (n, sum_energy)
+            f = open(path_r_e + "/energy_all.csv", "a")
+            f.write(line)
+            f.close()
+        os.chdir("..")
+    os.chdir(def_dir)

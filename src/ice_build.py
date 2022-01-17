@@ -3,14 +3,8 @@ import os
 import math
 import random
 from numpy import genfromtxt
-import numpy as npimport
-from numpy import genfromtxt
+from .qmgr import add_qsub_dir
 import pandas as pd
-import glob
-
-from scipy.signal.signaltools import decimate
-
-# import secrets
 
 
 def yz_rotate(geom, yz_angle=np.pi / 4):
@@ -20,7 +14,7 @@ def yz_rotate(geom, yz_angle=np.pi / 4):
     new_geom = np.zeros(((int(len(geom[:, 0]))), 4))
     k = 1
     for i in geom[:, 0]:
-        new_geom[k - 1: k, 0] = i
+        new_geom[k - 1 : k, 0] = i
         k += 1
 
     # rotates molecule by given yz-angle in radians
@@ -33,40 +27,40 @@ def yz_rotate(geom, yz_angle=np.pi / 4):
     for atom_y, atom_z in np.nditer([Y, Z]):
 
         if atom_y > 0 and atom_z > 0:
-            theta_0[k - 1: k] = math.degrees(math.atan(atom_y / atom_z))
+            theta_0[k - 1 : k] = math.degrees(math.atan(atom_y / atom_z))
             hyp[k - 1 : k] = math.sqrt(atom_y ** 2 + atom_z ** 2)
 
         elif atom_y < 0 and atom_z > 0:
-            theta_0[k - 1: k] = math.degrees(math.atan(atom_y / atom_z))
+            theta_0[k - 1 : k] = math.degrees(math.atan(atom_y / atom_z))
             hyp[k - 1 : k] = math.sqrt(atom_y ** 2 + atom_z ** 2)
 
         elif atom_y > 0 and atom_z < 0:
-            theta_0[k - 1: k] = math.degrees(math.atan(atom_y / atom_z)) + 180
+            theta_0[k - 1 : k] = math.degrees(math.atan(atom_y / atom_z)) + 180
             hyp[k - 1 : k] = math.sqrt(atom_y ** 2 + atom_z ** 2)
 
         elif atom_y < 0 and atom_z < 0:
-            theta_0[k - 1: k] = math.degrees(math.atan(atom_y / atom_z)) + 180
-            hyp[k - 1 :k] = math.sqrt(atom_y ** 2 + atom_z ** 2)
+            theta_0[k - 1 : k] = math.degrees(math.atan(atom_y / atom_z)) + 180
+            hyp[k - 1 : k] = math.sqrt(atom_y ** 2 + atom_z ** 2)
 
         elif atom_y == 0 and atom_z == 0:
-            theta_0[k - 1: k] = 0
-            hyp[k - 1:k] = 0
+            theta_0[k - 1 : k] = 0
+            hyp[k - 1 : k] = 0
 
         elif atom_y > 0 and atom_z == 0:
-            theta_0[k - 1: k] = math.degrees(np.pi / 2)
-            hyp[k - 1: k] = math.sqrt(atom_y ** 2 + atom_z ** 2)
+            theta_0[k - 1 : k] = math.degrees(np.pi / 2)
+            hyp[k - 1 : k] = math.sqrt(atom_y ** 2 + atom_z ** 2)
 
         elif atom_y < 0 and atom_z == 0:
-            theta_0[k - 1: k] = math.degrees(3 * np.pi / 2)
-            hyp[k - 1: k] = math.sqrt(atom_y ** 2 + atom_z ** 2)
+            theta_0[k - 1 : k] = math.degrees(3 * np.pi / 2)
+            hyp[k - 1 : k] = math.sqrt(atom_y ** 2 + atom_z ** 2)
 
         elif atom_y == 0 and atom_z > 0:
-            theta_0[k - 1: k] = math.degrees(0)
-            hyp[k - 1: k] = math.sqrt(atom_y ** 2 + atom_z ** 2)
+            theta_0[k - 1 : k] = math.degrees(0)
+            hyp[k - 1 : k] = math.sqrt(atom_y ** 2 + atom_z ** 2)
 
         elif atom_y == 0 and atom_z < 0:
-            theta_0[k - 1: k] = math.degrees(np.pi)
-            hyp[k - 1: k] = math.sqrt(atom_y ** 2 + atom_z ** 2)
+            theta_0[k - 1 : k] = math.degrees(np.pi)
+            hyp[k - 1 : k] = math.sqrt(atom_y ** 2 + atom_z ** 2)
 
         k += 1
 
@@ -352,9 +346,9 @@ def ran_dis_growth(boxlength, removed):
     """
     pos_neg = np.random.randint(2)
     if pos_neg == 1:
-        return np.random.uniform(removed, boxlength/2)
+        return np.random.uniform(removed, boxlength / 2)
     else:
-        return -np.random.uniform(removed, boxlength/2)
+        return -np.random.uniform(removed, boxlength / 2)
 
 
 def distance(geom1, geom2):
@@ -379,7 +373,7 @@ def random_arrangement_3(
     num_molecules,
     box_length,
     minimum_distance_between_molecules,
-    boxGrowth
+    boxGrowth,
 ):
     num = 0
     random_list = []
@@ -447,7 +441,7 @@ def random_arrangement_3(
         else:
             if boxGrowth["enable"]:
                 if attempts > 100:
-                    box_length += boxGrowth['increment']
+                    box_length += boxGrowth["increment"]
                     attempts = 0
                     print(box_length)
                 else:
@@ -464,7 +458,12 @@ def clean_many_txt():
 
     f = open("many.txt", "r")
     a = ["6.000000 ", "8.000000 ", "1.000000 ", "7.000000 "]
-    table = {"6.000000 ": "C", "8.000000 ": "O", "1.000000 ": "H", "7.000000 ": "N"}
+    table = {
+        "6.000000 ": "C",
+        "8.000000 ": "O",
+        "1.000000 ": "H",
+        "7.000000 ": "N",
+    }
 
     lst = []
     cnt2 = 0
@@ -533,7 +532,9 @@ def bond_angles_2(geom, name):
         ac = distance(geom[i, :], geom[i + 2, :])
         bc = distance(geom[i + 1, :], geom[i + 2, :])
 
-        angle = math.degrees(math.acos((ab ** 2 + ac ** 2 - bc ** 2) / (2 * ab * ac)))
+        angle = math.degrees(
+            math.acos((ab ** 2 + ac ** 2 - bc ** 2) / (2 * ab * ac))
+        )
 
         angle = round(angle, 3)
         if i < length:
@@ -753,11 +754,13 @@ def constraints_2(molecule_cnt, spacer, sequence, dihedral=False):
     return df
 
 
-def constraints_3(default_dir, spacer, sequence, geo_dict, filenames, dihedral=False):
+def constraints_3(
+    default_dir, spacer, sequence, geo_dict, filenames, dihedral=False
+):
     pos = 0
-    bonds_txt = default_dir + "bonds.txt"
-    angles_txt = default_dir + "angles.txt"
-    dihedral_txt = default_dir + "dihedral.txt"
+    bonds_txt = default_dir + "/bonds.txt"
+    angles_txt = default_dir + "/angles.txt"
+    dihedral_txt = default_dir + "/dihedral.txt"
     for i in sequence:
         dict_name = filenames[i]
         spacer = len(geo_dict[dict_name])
@@ -837,12 +840,8 @@ def clean_dataframe(df):
 
 
 def make_input_dir(
-        dataPath,
-        default_dir,
-        dir_name_number,
-        method, basis_set,
-        mem_com, mem_pbs
-        ):
+    dataPath, default_dir, dir_name_number, method, basis_set, mem_com, mem_pbs
+):
     """
     Combines the geometry output and the constrained output.
     Then makes the .com and .pbs files in a subdirectory
@@ -865,7 +864,8 @@ def make_input_dir(
         fp.write("%mem={0}mb\n".format(mem_com))
         fp.write("%nprocs=4\n")
         fp.write(
-            "#N {0}/".format(method) + "{0} opt=ModRedundant FREQ\n".format(basis_set)
+            "#N {0}/".format(method)
+            + "{0} opt=ModRedundant FREQ\n".format(basis_set)
         )
         fp.write("\n")
         fp.write("Name ModRedundant\n")
@@ -875,7 +875,9 @@ def make_input_dir(
 
     with open(new_dir + "/mex.pbs", "w") as fp:
         fp.write("#!/bin/sh\n")
-        fp.write("#PBS -N mex_o\n#PBS -S /bin/bash\n#PBS -j oe\n#PBS -m abe\n#PBS -l")
+        fp.write(
+            "#PBS -N mex_o\n#PBS -S /bin/bash\n#PBS -j oe\n#PBS -m abe\n#PBS -l "
+        )
         fp.write("mem={0}gb\n".format(mem_pbs))
         fp.write(
             "#PBS -l nodes=1:ppn=4\n#PBS -q gpu\n\nscrdir=/tmp/$USER.$PBS_JOBID\n\n"
@@ -899,17 +901,21 @@ def make_input_dir(
         fp.write(
             """  then\n    echo "Using AVX2 version";\n    export g16root=/usr/local/apps/gaussian/g16-b01-avx2/\n  else\n"""
         )
-        fp.write("""    echo "Unexpected condition!"\n    exit 1;\n  fi\nelse\n""")
+        fp.write(
+            """    echo "Unexpected condition!"\n    exit 1;\n  fi\nelse\n"""
+        )
         fp.write("""  echo "Not on a compute node!"\n  exit 1;\nfi\n\n""")
         fp.write(
             "cd $PBS_O_WORKDIR\n. $g16root/g16/bsd/g16.profile\ng16 mex.com mex.out\n\nrm -r $scrdir\n"
         )
 
     print("geom" + str(dir_name_number))
-    os.chdir(new_dir)
-    os.system("qsub mex.pbs")
-    os.chdir(default_dir)
-    os.chdir("../..")
+    add_qsub_dir("./", new_dir, default_dir + "/qsub_queue.txt")
+    # os.chdir(new_dir)
+    # os.system("qsub mex.pbs")
+    # os.chdir(default_dir)
+
+    # os.chdir("../..")
 
 
 def make_input_files():
@@ -933,14 +939,18 @@ def make_input_files():
         fp.write("%nprocs=1\n")
         fp.write("#N wB97XD/6-31G(d) opt=ModRedundant FREQ\n")
         fp.write("\n")
-        fp.write("CH2O3 ModRedundant - Minimalist working constrained optimisation\n")
+        fp.write(
+            "CH2O3 ModRedundant - Minimalist working constrained optimisation\n"
+        )
         fp.write("\n")
         fp.write(charges + "\n")
         fp.write(data)
 
     with open("mex.pbs", "w") as fp:
         fp.write("#!/bin/sh\n")
-        fp.write("#PBS -N mex_o\n#PBS -S /bin/bash\n#PBS -j oe\n#PBS -m abe\n#PBS -l")
+        fp.write(
+            "#PBS -N mex_o\n#PBS -S /bin/bash\n#PBS -j oe\n#PBS -m abe\n#PBS -l "
+        )
         fp.write("mem=15gb\n")
         fp.write(
             "#PBS -l nodes=1:ppn=4\n#PBS -q gpu\n\nscrdir=/tmp/$USER.$PBS_JOBID\n\n"
@@ -964,7 +974,9 @@ def make_input_files():
         fp.write(
             """  then\n    echo "Using AVX2 version";\n    export g16root=/usr/local/apps/gaussian/g16-b01-avx2/\n  else\n"""
         )
-        fp.write("""    echo "Unexpected condition!"\n    exit 1;\n  fi\nelse\n""")
+        fp.write(
+            """    echo "Unexpected condition!"\n    exit 1;\n  fi\nelse\n"""
+        )
         fp.write("""  echo "Not on a compute node!"\n  exit 1;\nfi\n\n""")
         fp.write(
             "cd $PBS_O_WORKDIR\n. $g16root/g16/bsd/g16.profile\ng16 mex.com mex.out\n\nrm -r $scrdir\n"
@@ -974,95 +986,122 @@ def make_input_files():
 def ice_build(
     config={
         "enable": True,
-        "dataPath": "data/48_1_1_h2o_nh3",
-        "inputCartesianFiles": [
-            {"file": "mon_h2o.xyz", "count": 24},
-            {"file": "mon_nh3.xyz", "count": 24},
+        "jobList": [
+            {
+                "dataPath": "data/test",
+                "inputCartesianFiles": [
+                    {"file": "mon_h2o.xyz", "count": 1},
+                    {"file": "mon_nh3.xyz", "count": 0},
+                ],
+                "clusters": 5,
+                "boxLength": 3,
+                "boxGrowth": {"enable": True, "increment": 3},
+                "minDistanceMolecules": 2,
+                "optMethod": "B3LYP",
+                "optBasisSet": "6-31G(d)",
+                "memComFile": "1600",
+                "memPBSFile": "15",
+                "startNum": 1,
+            },
+            {
+                "dataPath": "data/test2",
+                "inputCartesianFiles": [
+                    {"file": "mon_h2o.xyz", "count": 0},
+                    {"file": "mon_nh3.xyz", "count": 1},
+                ],
+                "clusters": 5,
+                "boxLength": 3,
+                "boxGrowth": {"enable": True, "increment": 3},
+                "minDistanceMolecules": 2,
+                "optMethod": "B3LYP",
+                "optBasisSet": "6-31G(d)",
+                "memComFile": "1600",
+                "memPBSFile": "15",
+                "startNum": 1,
+            },
         ],
-        "clusters": 48,
-        "boxLength": 12,
-        "boxGrowth": {
-            "enable": True,
-            "increment": 0.5,
-        },
-        "minDistanceMolecules": 3,
-        "optMethod": "B3LYP",
-        "optBasisSet": "6-31G(d)",
-        "memComFile": "1600",
-        "memPBSFile": "15",
-        "nProcs": "4",
-        "startNum": 1
     },
 ):
-    default_dir = os.getcwd()
-    filenames = []
-    molecules_in_cluster = []
-    for i in config["inputCartesianFiles"]:
-        filenames.append("input_geoms/" + i["file"])
-        molecules_in_cluster.append(i["count"])
-    number_clusters = config["clusters"]
-    box_length = config["boxLength"]
-    minium_distance_between_molecules = config["minDistanceMolecules"]
-    method_opt = config["optMethod"]
-    basis_set_opt = config["optBasisSet"]
-    mem_com_opt = config["memComFile"]
-    mem_pbs_opt = config["memPBSFile"]
-    start_num = config["startNum"]
-    dataPath = config["dataPath"]
-    boxGrowth = config["boxGrowth"]
+    for job in config["jobList"]:
+        default_dir = os.getcwd()
+        filenames = []
+        molecules_in_cluster = []
+        for i in job["inputCartesianFiles"]:
+            filenames.append("input_geoms/" + i["file"])
+            molecules_in_cluster.append(i["count"])
+        number_clusters = job["clusters"]
+        box_length = job["boxLength"]
+        minium_distance_between_molecules = job["minDistanceMolecules"]
+        method_opt = job["optMethod"]
+        basis_set_opt = job["optBasisSet"]
+        mem_com_opt = job["memComFile"]
+        mem_pbs_opt = job["memPBSFile"]
+        start_num = job["startNum"]
+        dataPath = job["dataPath"]
+        boxGrowth = job["boxGrowth"]
 
-    if not os.path.exists('data'):
-        os.mkdir('data')
-    if os.path.exists(dataPath):
-        print("ice_build.py: DataPath from %s/input.json already exists." % default_dir)
-        return
-    else:
-        os.mkdir(dataPath)
+        if not os.path.exists("data"):
+            os.mkdir("data")
+        if os.path.exists(dataPath):
+            print(
+                "ice_build.py: DataPath from %s/input.json already exists."
+                % default_dir
+            )
+            return
+        else:
+            os.mkdir(dataPath)
 
-    geo_dict = {}
-    for f in filenames:
-        geo_dict[f] = genfromtxt(f, delimiter=" ")
+        geo_dict = {}
+        for f in filenames:
+            geo_dict[f] = genfromtxt(f, delimiter=" ")
 
-    for i in range(start_num, number_clusters + start_num, 1):
-        final, mole, spacer, sequence = random_arrangement_3(
-            filenames,
-            geo_dict,
-            i,
-            molecules_in_cluster,
-            box_length,
-            minium_distance_between_molecules,
-            boxGrowth,
-        )
+        for i in range(start_num, number_clusters + start_num, 1):
+            final, mole, spacer, sequence = random_arrangement_3(
+                filenames,
+                geo_dict,
+                i,
+                molecules_in_cluster,
+                box_length,
+                minium_distance_between_molecules,
+                boxGrowth,
+            )
 
-        out_file = "many.txt"
+            out_file = "many.txt"
 
-        np.savetxt(out_file, final, fmt="%.6f")
+            np.savetxt(out_file, final, fmt="%.6f")
 
-        clean_many_txt()
-        pos = 0
-        for key, val in geo_dict.items():
-            bonds_txt = default_dir + "bonds.txt"
-            angles_txt = default_dir + "angles.txt"
-            dihedral_txt = default_dir + "dihedral.txt"
+            clean_many_txt()
+            pos = 0
+            for key, val in geo_dict.items():
+                bonds_txt = default_dir + "/bonds.txt"
+                angles_txt = default_dir + "/angles.txt"
+                # dihedral_txt = default_dir + "/dihedral.txt"
 
-            bond_lengths_2(val, bonds_txt)
-            bond_angles_2(val, angles_txt)
-            pos += 1
+                bond_lengths_2(val, bonds_txt)
+                bond_angles_2(val, angles_txt)
+                pos += 1
 
-        df = constraints_3(default_dir, spacer, sequence, geo_dict, filenames)
+            df = constraints_3(
+                default_dir, spacer, sequence, geo_dict, filenames
+            )
 
-        clean_dataframe(df)
+            clean_dataframe(df)
 
-        make_input_dir(
-            dataPath, default_dir, i,
-            method_opt, basis_set_opt,
-            mem_com_opt, mem_pbs_opt
-        )  # uncomment when want directories
-        print("\n next directory\n")
+            make_input_dir(
+                dataPath,
+                default_dir,
+                i,
+                method_opt,
+                basis_set_opt,
+                mem_com_opt,
+                mem_pbs_opt,
+            )  # uncomment when want directories
+            print("\n next directory\n")
 
-    # os.remove("*.txt")
-    os.chdir(default_dir)
-    os.remove("dataframe_test.csv")
+        os.remove("bonds.txt")
+        os.remove("angles.txt")
+        os.remove("many.txt")
+        os.remove("dataframe_test.csv")
 
 
 # main()
