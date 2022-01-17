@@ -6,11 +6,6 @@
   <p align="center">
   The provided scripts generate amorphous solids and manages Gaussian16 density functional theory (DFT) optimization and excited state calculations.
     <br />
-    <a href="https://github.com/Awallace3/ice_analog_spectra_generator"><strong>Explore the docs »</strong></a>
-    <br />
-    <br />
-    <a href="https://github.com/Awallace3/ice_analog_spectra_generator">View Demo</a>
-    ·
     <a href="https://github.com/Awallace3/ice_analog_spectra_generator/issues">Report Bug</a>
     ·
     <a href="https://github.com/Awallace3/ice_analog_spectra_generator/issues">Request Feature</a>
@@ -50,19 +45,10 @@
 <!-- ABOUT THE PROJECT -->
 ## About The Project
 
-[![Product Name Screen Shot][product-screenshot]](https://example.com)
-
-Here's a blank template to get started: To avoid retyping too much info. Do a search and replace with your text editor for the following: `Awallace3`, `ice_analog_spectra_generator`, `twitter_handle`, `linkedin_username`, `email`, `email_client`, `Ice Analog Spectra Generator`, `  The provided scripts generate amorphous solids and manages Gaussian16 density functional theory (DFT) optimization and excited state calculations.`
-
-<p align="right">(<a href="#top">back to top</a>)</p>
-
-
-
 ### Built With
 
 * [Python3](https://www.python.org/)
 
-<p align="right">(<a href="#top">back to top</a>)</p>
 
 
 
