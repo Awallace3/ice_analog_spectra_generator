@@ -598,7 +598,8 @@ def make_exc(
     geomDirName,
     SCRF="",
     nStates="25",
-    spec_type="electronic"
+    spec_type="electronic",
+    outName=""
 ):
 
     if spec_type == 'electronic':
@@ -633,7 +634,11 @@ def make_exc(
 
     # solvent = 'SCRF=(Solvent=dichloromethane)'
 
-    outName = geomDirName + "_%s_%s" % (baseName, SCRF)
+    if outName == '':
+        outName = geomDirName + "_%s_%s" % (baseName, SCRF)
+    else:
+        outName += "_" + geomDirName + "_%s_%s" % (baseName, SCRF)
+
     gaussianInputFiles(
         output_num,
         method_mexc,
@@ -881,6 +886,7 @@ def construct_dir_name(
 def job_progression(
     config={
             'dataPath': 'data/30_8_co2',
+            "outName": "co2",
             'optResub': {
                 'optMethod': 'B3LYP',
                 'optBasisSet': '6-31G(d)',
@@ -914,6 +920,7 @@ def job_progression(
     spec_type='electronic',
     vib_only=False,
 ):
+    outName = config["outName"]
     method_opt = config['optResub']['optMethod']
     basis_set_opt = config['optResub']['optBasisSet']
     mem_com_opt = config['optResub']['memComFile']
@@ -1052,7 +1059,8 @@ def job_progression(
                     cluster,
                     geomDirName,
                     SCRF,
-                    nStates=nStates
+                    nStates=nStates,
+                    outName=outName
                 )
                 qsub_dir = dir_name
             elif spec_type == "vibrational":
@@ -1064,7 +1072,8 @@ def job_progression(
                     cluster,
                     geomDirName,
                     SCRF,
-                    spec_type='vibrational'
+                    spec_type='vibrational',
+                    outName=outName
                 )
                 qsub_dir = dir_name
             else:
@@ -1078,6 +1087,3 @@ def job_progression(
     else:
         print("No output files detected for %s" % (stat[0]))
         return True, stat, "None"
-
-
-# main()

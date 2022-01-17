@@ -1,8 +1,12 @@
 import json
 import src
+import os
 
 
 def main():
+    if not os.path.exists('input.json'):
+        print("Please create an input.json file.")
+        return
     with open("input.json") as f:
         config = json.load(f)
 
@@ -21,14 +25,15 @@ def main():
         and config["dataAnalysis"]["output"]["plot"]["enable"]
     ):
         src.electronicMultiPlotExpSetup(config["dataAnalysis"])
+    return
 
     """
     overTones = False
     overTonesBoltzmannAnalysis = True
-    if overTones: 
+    if overTones:
         filename = "30_8_rand_%s_vib_wB97XD_overtones.png" % moleculeName
         title = "30 8 rand %s with overtones" % moleculeName
-    else: 
+    else:
         filename = "30_8_rand_%s_vib_wB97XD_none.png" % moleculeName
         title = "30 8 rand %s with no" % moleculeName
 

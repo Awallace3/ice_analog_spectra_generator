@@ -1,56 +1,59 @@
 {
   "buildGeoms": {
-    "enable": true,
-    "jobList": [
-        {
-            "dataPath": "data/test",
-            "inputCartesianFiles": [
-              { "file": "mon_h2o.xyz", "count": 1 },
-              { "file": "mon_nh3.xyz", "count": 0 }
-            ],
-            "clusters": 5,
-            "boxLength": 3,
-            "boxGrowth": {
-              "enable": true,
-              "increment": 3
-            },
-            "minDistanceMolecules": 2,
-            "optMethod": "B3LYP",
-            "optBasisSet": "6-31G(d)",
-            "memComFile": "1600",
-            "memPBSFile": "10",
-            "startNum": 1
-        },
-        {
-            "dataPath": "data/test2",
-            "inputCartesianFiles": [
-              { "file": "mon_h2o.xyz", "count": 0 },
-              { "file": "mon_nh3.xyz", "count": 1 }
-            ],
-            "clusters": 5,
-            "boxLength": 3,
-            "boxGrowth": {
-              "enable": true,
-              "increment": 3
-            },
-            "minDistanceMolecules": 2,
-            "optMethod": "B3LYP",
-            "optBasisSet": "6-31G(d)",
-            "memComFile": "1600",
-            "memPBSFile": "10",
-            "startNum": 1
-        }
-    ]
-  },
-  "qmgr": {
-    "enable": { "exc": true, "vib": true},
-        "options": {
-            "minDelay": 1, "maxResub": 1000,
-            "maxQueue": 200, "cluster": "map"
-            },
+    "enable": false,
     "jobList": [
       {
         "dataPath": "data/test",
+        "inputCartesianFiles": [
+          { "file": "mon_h2o.xyz", "count": 1 },
+          { "file": "mon_nh3.xyz", "count": 0 }
+        ],
+        "clusters": 5,
+        "boxLength": 3,
+        "boxGrowth": {
+          "enable": true,
+          "increment": 3
+        },
+        "minDistanceMolecules": 2,
+        "optMethod": "B3LYP",
+        "optBasisSet": "6-31G(d)",
+        "memComFile": "1600",
+        "memPBSFile": "10",
+        "startNum": 1
+      },
+      {
+        "dataPath": "data/test2",
+        "inputCartesianFiles": [
+          { "file": "mon_h2o.xyz", "count": 0 },
+          { "file": "mon_nh3.xyz", "count": 1 }
+        ],
+        "clusters": 5,
+        "boxLength": 3,
+        "boxGrowth": {
+          "enable": true,
+          "increment": 3
+        },
+        "minDistanceMolecules": 2,
+        "optMethod": "B3LYP",
+        "optBasisSet": "6-31G(d)",
+        "memComFile": "1600",
+        "memPBSFile": "10",
+        "startNum": 1
+      }
+    ]
+  },
+  "qmgr": {
+    "enable": { "exc": false, "vib": false},
+    "options": {
+      "minDelay": 1,
+      "maxResub": 1000,
+      "maxQueue": 200,
+      "cluster": "map"
+    },
+    "jobList": [
+      {
+        "dataPath": "data/test",
+        "outName": "t1",
         "optResub": {
           "optMethod": "B3LYP",
           "optBasisSet": "6-31G(d)",
@@ -79,6 +82,7 @@
       },
       {
         "dataPath": "data/test2",
+        "outName": "t2",
         "optResub": {
           "optMethod": "B3LYP",
           "optBasisSet": "6-31G(d)",
@@ -108,8 +112,8 @@
     ]
   },
   "dataAnalysis": {
-    "enable": false,
-    "dataPath": "data/48_1_1_h2o_nh3",
+    "enable": true,
+    "dataPath": "data/",
     "temperature": 273.15,
     "type": "exc",
     "output": {
@@ -136,9 +140,9 @@
       },
       "plot": {
         "enable": true,
-        "range": { "x": [1, 12], "y": [0, 1] },
+        "range": { "x": [1, 12], "y": [0, 1.5] },
         "x_units": "eV",
-        "fileName": "data",
+        "fileName": "data.png",
         "title": "",
         "dpi": 400,
         "dft": {
@@ -146,20 +150,13 @@
           "peaks": false,
           "excList": [
             {
-              "excMethod": "CAM-B3LYP",
-              "excBasisSet": "6-311G(d,p)",
+              "dataPath": "data/test2",
+              "excMethod": "wB97XD",
+              "excBasisSet": "6-31G(d)",
               "nStates": 25,
               "acquiredStates": "25",
               "SCRF": "",
               "line": { "color": "red", "type": "-" }
-            },
-            {
-              "excMethod": "wB97XD",
-              "excBasisSet": "6-311G(d,p)",
-              "nStates": 25,
-              "acquiredStates": "25",
-              "SCRF": "",
-              "line": { "color": "green", "type": "-" }
             }
           ]
         },
