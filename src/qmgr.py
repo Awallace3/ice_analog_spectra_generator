@@ -50,6 +50,7 @@ def r_qsub_dir(method_mexc, solvent):
 
 
 def qsub_to_max(max_queue=100, user=""):
+    def_dir = os.getcwd()
     with open("qsub_queue.txt", "r") as fp:
         qsubs = fp.readlines()
     cmd = "qstat -u %s | wc -l > qsub_len" % user
@@ -57,7 +58,6 @@ def qsub_to_max(max_queue=100, user=""):
     # cmd = "qstat | wc -l > ../qsub_len"
     subprocess.call(cmd, shell=True)
     if os.path.exists("qsub_len"):
-        print("qsub_to_max", os.getcwd(), "qsub_len", "qsub_queue.txt")
         with open("qsub_len", "r") as fp:
             current_queue = int(fp.read()) - 5
         os.remove("qsub_len")
@@ -71,7 +71,7 @@ def qsub_to_max(max_queue=100, user=""):
             qsub_path = qsubs.pop(0)
             qsub_path = qsub_path.rstrip().replace("\n", "")
             print("\n", qsub_path, os.getcwd(), "\n")
-            qsub(qsub_path)
+            qsub(qsub_path, def_dir)
             cnt += 1
     with open("qsub_queue.txt", "w") as fp:
         for i in qsubs:
@@ -79,18 +79,16 @@ def qsub_to_max(max_queue=100, user=""):
     return 1
 
 
-def qsub(path="."):
+def qsub(path=".", def_dir='./'):
+    if def_dir == './':
+        def_dir = os.getcwd()
     print("qsub dir", path)
-    resetDirNum = len(path.split("/"))
-    if path != ".":
-        os.chdir(path)
+    os.chdir(path)
     pbs_file = glob.glob("*.pbs")[0]
     cmd = "qsub %s" % pbs_file
     print(os.getcwd(), "cmd", cmd)
     subprocess.call(cmd, shell=True)
-    if path != ".":
-        for i in range(resetDirNum):
-            os.chdir("..")
+    os.chdir(def_dir)
 
 
 def jobResubmit_v2(

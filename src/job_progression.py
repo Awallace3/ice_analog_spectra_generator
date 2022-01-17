@@ -610,7 +610,7 @@ def make_exc(
                 method_mexc,
                 clean=False
                 )
-        print(dir_name)
+        procedure = "TD(NStates=%s)" % (str(nStates))
     elif spec_type == 'vibrational':
         baseName = 'vib'
         dir_name = construct_dir_name(
@@ -621,13 +621,13 @@ def make_exc(
                 clean=False,
                 spec_type="vibrational"
                 )
+        procedure = "OPT FREQ"
 
     if os.path.exists(dir_name):
         print(dir_name, "already exists")
         return 'None'
 
     os.mkdir(dir_name)
-    procedure = "TD(NStates=%s)" % (str(nStates))
     output_num = 0
     # basis_set_mexc='CAM-B3LYP'
 

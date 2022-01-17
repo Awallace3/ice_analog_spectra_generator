@@ -43,35 +43,12 @@
             "memPBSFile": "15",
             "nStates": 25,
             "SCRF": ""
-          },
-          {
-            "excMethod": "CAM-B3LYP",
-            "excBasisSet": "6-31G(d,p)",
-            "memComFile": "1600",
-            "memPBSFile": "15",
-            "nStates": 25,
-            "SCRF": ""
-          },
-          {
-            "excMethod": "wB97XD",
-            "excBasisSet": "6-311G(d,p)",
-            "memComFile": "1600",
-            "memPBSFile": "15",
-            "nStates": 25,
-            "SCRF": ""
           }
         ],
         "vibList": [
           {
             "excMethod": "CAM-B3LYP",
-            "excBasisSet": "6-31+G(d,p)",
-            "memComFile": "1600",
-            "memPBSFile": "15",
-            "SCRF": ""
-          },
-          {
-            "excMethod": "wB97XD",
-            "excBasisSet": "6-31+G(d,p)",
+            "excBasisSet": "6-31G(d)",
             "memComFile": "1600",
             "memPBSFile": "15",
             "SCRF": ""
@@ -88,22 +65,6 @@
         },
         "excList": [
           {
-            "excMethod": "CAM-B3LYP",
-            "excBasisSet": "6-311G(d,p)",
-            "memComFile": "1600",
-            "memPBSFile": "15",
-            "nStates": 25,
-            "SCRF": ""
-          },
-          {
-            "excMethod": "CAM-B3LYP",
-            "excBasisSet": "6-31G(d,p)",
-            "memComFile": "1600",
-            "memPBSFile": "15",
-            "nStates": 25,
-            "SCRF": ""
-          },
-          {
             "excMethod": "wB97XD",
             "excBasisSet": "6-311G(d,p)",
             "memComFile": "1600",
@@ -114,15 +75,8 @@
         ],
         "vibList": [
           {
-            "excMethod": "CAM-B3LYP",
-            "excBasisSet": "6-31+G(d,p)",
-            "memComFile": "1600",
-            "memPBSFile": "15",
-            "SCRF": ""
-          },
-          {
             "excMethod": "wB97XD",
-            "excBasisSet": "6-31+G(d,p)",
+            "excBasisSet": "6-31G(d)",
             "memComFile": "1600",
             "memPBSFile": "15",
             "SCRF": ""

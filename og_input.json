@@ -1,12 +1,12 @@
 {
   "buildGeoms": {
-    "enable": false,
-    "dataPath": "data/48_1_1_h2o_nh3",
+    "enable": true,
+    "dataPath": "data/test",
     "inputCartesianFiles": [
-      { "file": "mon_h2o.xyz", "count": 24 },
-      { "file": "mon_nh3.xyz", "count": 24 }
+      { "file": "mon_h2o.xyz", "count": 1 },
+      { "file": "mon_nh3.xyz", "count": 0 }
     ],
-    "clusters": 1,
+    "clusters": 5,
     "boxLength": 3,
     "boxGrowth": {
       "enable": true,
@@ -21,11 +21,14 @@
     "startNum": 1
   },
   "qmgr": {
-    "enable": { "exc": true, "vib": false },
-    "options": { "minDelay": 0.01, "maxResub": 1, "maxQueue": 200 },
+    "enable": { "exc": true, "vib": false},
+        "options": {
+            "minDelay": 0.2, "maxResub": 1000,
+            "maxQueue": 200, "cluster": "map"
+            },
     "jobList": [
       {
-        "dataPath": "data/30_8_co2_2",
+        "dataPath": "data/test",
         "optResub": {
           "optMethod": "B3LYP",
           "optBasisSet": "6-31G(d)",
@@ -40,29 +43,10 @@
             "memPBSFile": "15",
             "nStates": 25,
             "SCRF": ""
-          }
-        ],
-        "vibList": [
+          },
           {
             "excMethod": "CAM-B3LYP",
-            "excBasisSet": "6-31+G(d,p)",
-            "memComFile": "1600",
-            "memPBSFile": "15"
-          }
-        ]
-      },
-      {
-        "dataPath": "data/30_8_co2",
-        "optResub": {
-          "optMethod": "B3LYP",
-          "optBasisSet": "6-31G(d)",
-          "memComFile": "1600",
-          "memPBSFile": "15"
-        },
-        "excList": [
-          {
-            "excMethod": "CAM-B3LYP",
-            "excBasisSet": "6-311G(d,p)",
+            "excBasisSet": "6-31G(d,p)",
             "memComFile": "1600",
             "memPBSFile": "15",
             "nStates": 25,
@@ -82,13 +66,66 @@
             "excMethod": "CAM-B3LYP",
             "excBasisSet": "6-31+G(d,p)",
             "memComFile": "1600",
-            "memPBSFile": "15"
+            "memPBSFile": "15",
+            "SCRF": ""
+          },
+          {
+            "excMethod": "wB97XD",
+            "excBasisSet": "6-31+G(d,p)",
+            "memComFile": "1600",
+            "memPBSFile": "15",
+            "SCRF": ""
+          }
+        ]
+      },
+      {
+        "dataPath": "data/test2",
+        "optResub": {
+          "optMethod": "B3LYP",
+          "optBasisSet": "6-31G(d)",
+          "memComFile": "1600",
+          "memPBSFile": "15"
+        },
+        "excList": [
+          {
+            "excMethod": "CAM-B3LYP",
+            "excBasisSet": "6-311G(d,p)",
+            "memComFile": "1600",
+            "memPBSFile": "15",
+            "nStates": 25,
+            "SCRF": ""
           },
           {
             "excMethod": "CAM-B3LYP",
             "excBasisSet": "6-31G(d,p)",
             "memComFile": "1600",
-            "memPBSFile": "15"
+            "memPBSFile": "15",
+            "nStates": 25,
+            "SCRF": ""
+          },
+          {
+            "excMethod": "wB97XD",
+            "excBasisSet": "6-311G(d,p)",
+            "memComFile": "1600",
+            "memPBSFile": "15",
+            "nStates": 25,
+            "SCRF": ""
+          }
+        ],
+        "vibList": [
+          {
+            "excMethod": "CAM-B3LYP",
+            "excBasisSet": "6-31+G(d,p)",
+            "memComFile": "1600",
+            "memPBSFile": "15",
+            "SCRF": ""
+          },
+          {
+            "excMethod": "wB97XD",
+            "excBasisSet": "6-31+G(d,p)",
+            "memComFile": "1600",
+            "memPBSFile": "15",
+            "SCRF": ""
           }
         ]
       }
