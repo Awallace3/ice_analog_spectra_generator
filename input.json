@@ -18,7 +18,7 @@
             "optMethod": "B3LYP",
             "optBasisSet": "6-31G(d)",
             "memComFile": "1600",
-            "memPBSFile": "15",
+            "memPBSFile": "10",
             "startNum": 1
         },
         {
@@ -37,7 +37,7 @@
             "optMethod": "B3LYP",
             "optBasisSet": "6-31G(d)",
             "memComFile": "1600",
-            "memPBSFile": "15",
+            "memPBSFile": "10",
             "startNum": 1
         }
     ]
@@ -55,14 +55,14 @@
           "optMethod": "B3LYP",
           "optBasisSet": "6-31G(d)",
           "memComFile": "1600",
-          "memPBSFile": "15"
+          "memPBSFile": "10"
         },
         "excList": [
           {
             "excMethod": "CAM-B3LYP",
             "excBasisSet": "6-311G(d)",
             "memComFile": "1600",
-            "memPBSFile": "15",
+            "memPBSFile": "10",
             "nStates": 25,
             "SCRF": ""
           }
@@ -72,7 +72,7 @@
             "excMethod": "CAM-B3LYP",
             "excBasisSet": "6-31G(d)",
             "memComFile": "1600",
-            "memPBSFile": "15",
+            "memPBSFile": "10",
             "SCRF": ""
           }
         ]
@@ -83,14 +83,14 @@
           "optMethod": "B3LYP",
           "optBasisSet": "6-31G(d)",
           "memComFile": "1600",
-          "memPBSFile": "15"
+          "memPBSFile": "10"
         },
         "excList": [
           {
             "excMethod": "wB97XD",
             "excBasisSet": "6-31G(d)",
             "memComFile": "1600",
-            "memPBSFile": "15",
+            "memPBSFile": "10",
             "nStates": 25,
             "SCRF": ""
           }
@@ -100,7 +100,7 @@
             "excMethod": "wB97XD",
             "excBasisSet": "6-31G(d)",
             "memComFile": "1600",
-            "memPBSFile": "15",
+            "memPBSFile": "10",
             "SCRF": ""
           }
         ]
