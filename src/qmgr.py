@@ -14,7 +14,10 @@ def check_add_methods(add_methods, funct_name):
     ):
         return True
     else:
-        print("\nIncorrect input.", "\nTerminating %s before start\n" % funct_name)
+        print(
+            "\nIncorrect input.",
+            "\nTerminating %s before start\n" % funct_name,
+        )
         return False
 
 
@@ -79,8 +82,8 @@ def qsub_to_max(max_queue=100, user=""):
     return 1
 
 
-def qsub(path=".", def_dir='./'):
-    if def_dir == './':
+def qsub(path=".", def_dir="./"):
+    if def_dir == "./":
         def_dir = os.getcwd()
     print("qsub dir", path)
     os.chdir(path)
@@ -186,7 +189,8 @@ def jobResubmit_v2(
             if complete[num] <= 2:
                 for pos in range(add_methods_length):
                     test_dir = r_qsub_dir(
-                        add_methods["methods"][pos], add_methods["solvent"][pos]
+                        add_methods["methods"][pos],
+                        add_methods["solvent"][pos],
                     )
                     if not os.path.exists(test_dir):
                         print("add method", add_methods)
@@ -352,7 +356,9 @@ def jobResubmit(
                 # mexc_check_out = glob.glob("mexc/mexc.o*")
                 # mexc_check_out_complete = glob.glob("mexc_o/mexc.o*")
                 mexc_check_out = glob.glob("%s/mexc.o*" % path_mexc)
-                mexc_check_out_complete = glob.glob("%s/mexc_o.o*" % path_mexc)
+                mexc_check_out_complete = glob.glob(
+                    "%s/mexc_o.o*" % path_mexc
+                )
 
                 # if complete[num] != 2 and len(mexc_check_out) > 1:
                 if (
@@ -415,10 +421,10 @@ def qmgr_setup_status_list(jobList):
         for i in jobs:
             # insertion = [dataPath, step, resub, numExcJobs, numVibJobs]
             insertion = [i, -1, 2, 0, 0]
-            excList = job['excList']
+            excList = job["excList"]
             for excJob in excList:
                 insertion[3] += 1
-            vibList = job['vibList']
+            vibList = job["vibList"]
             for vibJob in vibList:
                 insertion[4] += 1
             el[1].append(insertion)
@@ -428,14 +434,14 @@ def qmgr_setup_status_list(jobList):
     return status
 
 
-def queue_logic(default_dir, status, delay, enabled):
+def queue_logic(default_dir, status, delay, enabled, cluster="map"):
     """
     determines which step the directory is at in the requested jobs
     and places jobs in the qsub_queue
     """
     job_term = []
-    path_qsub_queue = default_dir + '/qsub_queue.txt'
-    if not enabled["exc"] and enabled['vib']:
+    path_qsub_queue = default_dir + "/qsub_queue.txt"
+    if not enabled["exc"] and enabled["vib"]:
         vib_only = True
     else:
         vib_only = False
@@ -445,8 +451,8 @@ def queue_logic(default_dir, status, delay, enabled):
         kill_list = []
         for i in range(len(job_dirs)):
             stat = job_dirs[i]
-            geomDirName = stat[0].split('/')[-1]
-            print('stat', stat)
+            geomDirName = stat[0].split("/")[-1]
+            print("stat", stat)
             job_dir = stat[0]
             lStat = stat[1]
             os.chdir(job_dir)
@@ -454,86 +460,73 @@ def queue_logic(default_dir, status, delay, enabled):
                 # optimization step
                 if lStat == -1 and not vib_only:
                     action, stat, qsub_dir = job_progression(
-                            config=jobs,
-                            delay=delay,
-                            stat=stat,
-                            cluster='map',
-                            geomDirName=geomDirName,
-                            )
+                        config=jobs,
+                        delay=delay,
+                        stat=stat,
+                        cluster=cluster,
+                        geomDirName=geomDirName,
+                    )
                     job_dirs[i] = stat
                     if qsub_dir != "None":
-                        add_qsub_dir(
-                                qsub_dir,
-                                stat[0],
-                                path_qsub_queue
-                                )
+                        add_qsub_dir(qsub_dir, stat[0], path_qsub_queue)
                 elif lStat == -1 and vib_only:
                     action, stat, qsub_dir = job_progression(
+                        config=jobs,
+                        delay=delay,
+                        stat=stat,
+                        cluster=cluster,
+                        geomDirName=geomDirName,
+                        vib_only=vib_only,
+                        spec_type="vibrational",
+                    )
+                    job_dirs[i] = stat
+                    if qsub_dir != "None":
+                        add_qsub_dir(qsub_dir, stat[0], path_qsub_queue)
+                # electrobnic excited states
+                elif lStat == 0 and enabled["exc"]:
+                    for j in range(len(jobs["excList"])):
+                        action, stat, qsub_dir = job_progression(
                             config=jobs,
                             delay=delay,
                             stat=stat,
-                            cluster='map',
+                            cluster=cluster,
                             geomDirName=geomDirName,
-                            vib_only=vib_only,
-                            spec_type='vibrational'
-                            )
-                    job_dirs[i] = stat
-                    if qsub_dir != "None":
-                        add_qsub_dir(
-                                qsub_dir,
-                                stat[0],
-                                path_qsub_queue
-                                )
-                # electrobnic excited states
-                elif lStat == 0 and enabled["exc"]:
-                    for j in range(len(jobs['excList'])):
-                        action, stat, qsub_dir = job_progression(
-                                config=jobs,
-                                delay=delay,
-                                stat=stat,
-                                cluster='map',
-                                geomDirName=geomDirName,
-                                )
+                        )
                         if qsub_dir != "None":
-                            add_qsub_dir(
-                                    qsub_dir,
-                                    stat[0],
-                                    path_qsub_queue
-                                    )
+                            add_qsub_dir(qsub_dir, stat[0], path_qsub_queue)
                     job_dirs[i] = stat
                 # vibrational excited states
                 elif (
-                        lStat == stat[3] and enabled["vib"]
-                        or
-                        lStat == 0 and not enabled['exc'] and enabled['vib']
-                     ):
+                    lStat == stat[3]
+                    and enabled["vib"]
+                    or lStat == 0
+                    and not enabled["exc"]
+                    and enabled["vib"]
+                ):
 
-                    for j in range(len(jobs['vibList'])):
+                    for j in range(len(jobs["vibList"])):
                         action, stat, qsub_dir = job_progression(
-                                config=jobs,
-                                delay=delay,
-                                stat=stat,
-                                cluster='map',
-                                geomDirName=geomDirName,
-                                spec_type='vibrational',
-                                vib_only=vib_only
-                                )
+                            config=jobs,
+                            delay=delay,
+                            stat=stat,
+                            cluster=cluster,
+                            geomDirName=geomDirName,
+                            spec_type="vibrational",
+                            vib_only=vib_only,
+                        )
                         if qsub_dir != "None":
-                            add_qsub_dir(
-                                    qsub_dir,
-                                    stat[0],
-                                    path_qsub_queue
-                                    )
+                            add_qsub_dir(qsub_dir, stat[0], path_qsub_queue)
                     job_dirs[i] = stat
                 else:
-                    print(i, 'added to kill list')
+                    print(i, "added to kill list")
                     kill_list.append(i)
-            except:
+            except Exception as e:
+                print("ERROR:", e)
                 print("%%% Need to help", stat[0])
             os.chdir(default_dir)
         for k in reversed(kill_list):
             val = job_dirs.pop(k)
-            print('popped', val)
+            print("popped", val)
         if len(job_dirs) == 0:
             job_term.append(n)
         else:
@@ -547,9 +540,11 @@ def qmgr(
     config={
         "enable": {"exc": True, "vib": False},
         "options": {
-            "minDelay": 360, "maxResub": 100,
-            "maxQueue": 200, "cluster": "map"
-            },
+            "minDelay": 360,
+            "maxResub": 100,
+            "maxQueue": 200,
+            "cluster": "map",
+        },
         "jobList": [
             {
                 "dataPath": "data/48_1_1_h2o_nh3",
@@ -637,25 +632,24 @@ def qmgr(
         subprocess.call("touch qsub_queue.txt", shell=True)
     jobList = config["jobList"]
     status = qmgr_setup_status_list(jobList)
-    minDelay = config["options"]['minDelay']
-    maxResub = config["options"]['maxResub']
-    maxQueue = config["options"]['maxQueue']
+    minDelay = config["options"]["minDelay"]
+    maxResub = config["options"]["maxResub"]
+    maxQueue = config["options"]["maxQueue"]
+    cluster = config["options"]["cluster"]
     user = read_user()
 
     enabled = config["enable"]
     delay = False
     # total_time = minDelay * maxResub
     for i in range(maxResub):
-        status = queue_logic(default_dir, status, delay, enabled)
+        status = queue_logic(default_dir, status, delay, enabled, cluster)
         qsub_to_max(maxQueue, user)
         if not delay:
             delay = True
         if len(status) == 0:
             print("All qmgr jobs are finished.")
             return
-        print(
-                "\nDelay:", i, 'out of', maxResub, "\n"
-                )
+        print("\nDelay:", i, "out of", maxResub, "\n")
         time.sleep(minDelay)
 
     return
