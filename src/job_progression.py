@@ -820,11 +820,10 @@ def main(
 
 def get_final_out(files):
     if len(files) == 0:
-        print('no files detected')
         return 'false'
-    val = 0
-    for i in files:
-        if i[-1]:
+    val, ind = 0, 0
+    for n, i in enumerate(files):
+        if i[-1] == 't':
             continue
         elif i[-1] == '0':
             print("Doomed")
@@ -832,7 +831,8 @@ def get_final_out(files):
             c = int(i[-1]) - 1
             if c > val:
                 val = c
-    return files[val]
+                ind = n
+    return files[ind]
 
 
 def construct_dir_name(

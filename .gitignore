@@ -181,3 +181,4 @@ qsub_queue
 qsub_len
 qsub_queue.txt
 test_data
+input_files

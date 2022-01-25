@@ -1,4 +1,4 @@
-#!/usr/bin/perl 
+#!/usr/bin/perl
 
 #Full width half max
 # eV - 0.2
@@ -11,7 +11,7 @@ my $PWD = cwd();
 my $INPUT = "data";
 my $SPECTRUM = "spec";
 my $NPOINTS = 4000;
-my $DELTAG = 2;
+my $DELTAG = 2.0;
 my @EX;
 my @PROP;
 my $NSTATES;
@@ -73,13 +73,13 @@ sub max_el_array
   my $A = $_[0];
   my $dim = @$A;
   my $max = @$A[0];
-  
+
   for($i=1; $i < $dim; $i++) {
     if(@$A[$i] > $max) {
       $max = @$A[$i];
     }
-  } 
-  
+  }
+
   return $max;
 }
 
@@ -88,13 +88,13 @@ sub min_el_array
   my $A = $_[0];
   my $dim = @$A;
   my $min = @$A[0];
-  
+
   for($i=1; $i < $dim; $i++) {
     if(@$A[$i] < $min) {
       $min = @$A[$i];
     }
-  } 
-  
+  }
+
   return $min;
 }
 
@@ -106,7 +106,7 @@ sub energy_range
   #my $max = $_[1]+$fwhm*$fwhm;
   my $min = 100;
   my $max = 300;
-  my $spacing = ($max-$min)/$np; 
+  my $spacing = ($max-$min)/$np;
 
   print "MIN X $min\n";
   print "MAX X $max\n";
@@ -114,7 +114,7 @@ sub energy_range
   $range[0] = $min;
   for($i=1; $i < $np; $i++) {
     $range[$i] = $min + $i * $spacing;
-  } 
+  }
 
   return @range;
 }
@@ -152,7 +152,7 @@ sub gaussian
   my @y;
   my $i = 0;
   my $tmp = 0;
-  
+
   for($i=0; $i < $dim; $i++) {
     $tmp = (-(@$x[$i]-$ex)**2/(2*$fwhm**2))/($fwhm*sqrt(2*3.1459));
     $y[$i] = $ab * exp($tmp);

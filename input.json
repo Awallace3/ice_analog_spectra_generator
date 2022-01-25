@@ -43,9 +43,9 @@
     ]
   },
   "qmgr": {
-    "enable": { "exc": false, "vib": false},
+    "enable": { "exc": false, "vib": false },
     "options": {
-      "minDelay": 1,
+      "minDelay": 360,
       "maxResub": 1000,
       "maxQueue": 200,
       "cluster": "map"
@@ -114,7 +114,7 @@
   "dataAnalysis": {
     "enable": true,
     "dataPath": "data/",
-    "temperature": 273.15,
+    "temperature": 20,
     "type": "exc",
     "output": {
       "numerical": {
@@ -140,7 +140,7 @@
       },
       "plot": {
         "enable": true,
-        "range": { "x": [1, 12], "y": [0, 1.5] },
+        "range": { "x": [4, 10.5], "y": [0, 1.5] },
         "x_units": "eV",
         "fileName": "data.png",
         "title": "",
@@ -150,13 +150,24 @@
           "peaks": false,
           "excList": [
             {
-              "dataPath": "data/test2",
+              "dataPath": "data/40_co3h2",
               "excMethod": "wB97XD",
-              "excBasisSet": "6-31G(d)",
+              "excBasisSet": "6-311G(d,p)",
               "nStates": 25,
-              "acquiredStates": "25",
+              "acquiredStates": "15",
               "SCRF": "",
-              "line": { "color": "red", "type": "-" }
+              "line": { "color": "green", "type": "-" },
+              "legendLabel": "$\\omega$B97XD (Amorphous)"
+            },
+            {
+              "dataPath": "data/40_co3h2",
+              "excMethod": "CAM-B3LYP",
+              "excBasisSet": "6-311G(d,p)",
+              "nStates": 25,
+              "acquiredStates": "15",
+              "SCRF": "",
+              "line": { "color": "red", "type": "-" },
+              "legendLabel": "CAM-B3LYP (Amorphous)"
             }
           ]
         },
@@ -165,16 +176,21 @@
           "peaks": false,
           "expData": [
             {
-              "path": "exp_data/nh3_gas.csv",
-              "units": { "input": "eV", "output": "eV" },
+              "path": "./exp_data/co3h2_20_225_20.csv",
+              "units": { "input": "nm", "output": "eV" },
               "line": { "color": "k", "type": "--" },
-              "legendLabel": "Test 1"
-            },
+              "legendLabel": "Exp. Solid A"
+            }
+          ]
+        },
+        "extra_data": {
+          "enable": true,
+          "peak": false,
+          "extraData": [
             {
-              "path": "exp_data/nh3_solid.csv",
-              "units": { "input": "eV", "output": "eV" },
-              "line": { "color": "b", "type": "-" },
-              "legendLabel": "Test 2"
+              "path": "./theoretical_data/8rib_cam.csv",
+              "legendLabel": "CAM-B3LYP (Ribbon)",
+              "line": { "color": "red", "type": "-" }
             }
           ]
         }

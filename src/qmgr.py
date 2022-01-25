@@ -650,6 +650,6 @@ def qmgr(
             print("All qmgr jobs are finished.")
             return
         print("\nDelay:", i, "out of", maxResub, "\n")
-        time.sleep(minDelay)
+        time.sleep(minDelay * 60)
 
     return

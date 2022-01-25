@@ -750,78 +750,99 @@ def electronicMultiPlot(
 def electronicMultiPlotExpSetup(
     config={
         "enable": True,
+        "dataPath": "data/",
         "temperature": 273.15,
         "type": "exc",
         "output": {
             "numerical": {
                 "enable": True,
-                "type": "json",
+                "type": ".json",
                 "outFile": "tmp.json",
+                "excList": [
+                    {
+                        "excMethod": "CAM-B3LYP",
+                        "excBasisSet": "6-311G(d,p)",
+                        "nStates": 25,
+                        "acquiredStates": "25",
+                        "SCRF": "",
+                    },
+                    {
+                        "excMethod": "wB97XD",
+                        "excBasisSet": "6-311G(d,p)",
+                        "nStates": 25,
+                        "acquiredStates": "25",
+                        "SCRF": "",
+                    },
+                ],
             },
             "plot": {
                 "enable": True,
-                "range": {"x": [1, 12], "y": [0, 1]},
+                "range": {"x": [1, 12], "y": [0, 1.5]},
                 "x_units": "eV",
-                "fileName": "data",
+                "fileName": "data.png",
                 "title": "",
-                "excColors": ["red", "green"],
+                "dpi": 400,
+                "dft": {
+                    "legendLabelBasisSet": False,
+                    "peaks": False,
+                    "excList": [
+                        {
+                            "dataPath": "data/40_co3h2",
+                            "excMethod": "wB97XD",
+                            "excBasisSet": "6-311G(d,p)",
+                            "nStates": 25,
+                            "acquiredStates": "15",
+                            "SCRF": "",
+                            "line": {"color": "green", "type": "-"},
+                            "legendLabel": "$\\omega$B97XD (Amorphous)",
+                        },
+                        {
+                            "dataPath": "data/40_co3h2",
+                            "excMethod": "CAM-B3LYP",
+                            "excBasisSet": "6-311G(d,p)",
+                            "nStates": 25,
+                            "acquiredStates": "15",
+                            "SCRF": "",
+                            "line": {"color": "red", "type": "-"},
+                            "legendLabel": "CAM-B3LYP (Amorphous)",
+                        },
+                    ],
+                },
                 "exp": {
                     "enable": True,
+                    "peaks": False,
                     "expData": [
                         {
-                            "path": "exp_data/nh3_gas.csv",
+                            "path": "./exp_data/co3h2_20_225_20.csv",
                             "units": {"input": "nm", "output": "eV"},
-                            "line": {"color": "black", "type": "dotted"},
-                        },
+                            "line": {"color": "k", "type": "--"},
+                            "legendLabel": "Exp. Solid A",
+                        }
+                    ],
+                },
+                "extra_data": {
+                    "enable": True,
+                    "peak": False,
+                    "extraData": [
                         {
-                            "path": "exp_data/nh3_solid.csv",
-                            "units": {"input": "nm", "output": "eV"},
-                            "line": {"color": "black", "type": "line"},
-                        },
+                            "path": "./theoretical_data/8rib_cam.csv",
+                            "legendLabel": "CAM-B3LYP (Ribbon)",
+                            "line": {"color": "red", "type": "-"},
+                        }
                     ],
                 },
             },
         },
-        "excList": [
-            {
-                "excMethod": "CAM-B3LYP",
-                "excBasisSet": "6-311G(d,p)",
-                "nStates": 25,
-                "acquiredStates": "25",
-                "SCRF": "",
-            },
-            {
-                "excMethod": "wB97XD",
-                "excBasisSet": "6-31G(d,p)",
-                "nStates": 25,
-                "acquiredStates": "25",
-                "SCRF": "",
-            },
-        ],
     }
 ):
     methods_lst = []
-    nStates = ""
-    basis_set_mexc = ""
-    SCRF = ""
-    # colors = config["output"]["plot"]["excColors"]
     colors = []
     methods_lst = config["output"]["plot"]["dft"]["excList"]
-    # for n, i in enumerate(config['output']['plot']["dft"]["excList"]):
-    #     print(i)
-    #     if n == 0:
-    #         nStates = str(i["nStates"])
-    #         acquiredStates = str(i["acquiredStates"])
-    #         basis_set_mexc = i["excBasisSet"]
-    #         SCRF = i["SCRF"]
-    #     methods_lst.append(i["excMethod"])
-    #     colors.append(i["color"])
     T = config["temperature"]
     title = config["output"]["plot"]["title"]
     x_range = config["output"]["plot"]["range"]["x"]
     y_range = config["output"]["plot"]["range"]["y"]
     x_units = config["output"]["plot"]["x_units"]
-    # y_range = config["output"]["plot"]["range"]["y"]
     peaks = {
         "exp": config["output"]["plot"]["exp"]["peaks"],
         "dft": config["output"]["plot"]["dft"]["peaks"],
@@ -852,11 +873,11 @@ def electronicMultiPlotExpSetup(
         exp_data,
         colors,
         sec_y_axis=True,
+        extra_data=config["output"]["plot"]['extra_data'],
         rounding=1,
-        extra_data=np.array([[-1, -1]]),
         dpi=dpi,
         legendLabelBasisSet=legendLabelBasisSet,
-        y_range=y_range
+        y_range=y_range,
     )
 
 
@@ -913,7 +934,17 @@ def electronicMultiPlot_Experiment(
     colors=[],
     sec_y_axis=False,
     rounding=1,
-    extra_data=np.array([[-1, -1]]),
+    extra_data={
+        "enable": True,
+        "peak": False,
+        "extraData": [
+            {
+                "path": "./theoretical_data/8rib_cam.csv",
+                "legendLabel": "CAM-B3LYP (Ribbon)",
+                "line": {"color": "red", "type": "-"},
+            }
+        ],
+    },
     dpi=400,
     legendLabelBasisSet=True,
     y_range=[0, 1.5],
@@ -956,8 +987,8 @@ def electronicMultiPlot_Experiment(
         l_type = i["line"]["type"]
         dataPath = i["dataPath"]
         complete = glob.glob(dataPath + "/geom*")
-        for i in range(len(complete)):
-            complete[i] = 2
+        for j in range(len(complete)):
+            complete[j] = 2
         gather_default(dataPath)
         boltzmannAnalysisSetupDefault(
             complete,
@@ -976,7 +1007,7 @@ def electronicMultiPlot_Experiment(
         if legendLabelBasisSet:
             label = method + "/" + basis_set_mexc
         else:
-            label = method
+            label = r"%s" % i["legendLabel"]
         ax1.plot(x, y, l_type, c=color, label=label, zorder=2)
 
         if peaks["dft"]:
@@ -1030,36 +1061,37 @@ def electronicMultiPlot_Experiment(
                     "latex_df_%s.tex" % basis_set_mexc, df, rounding
                 )
     # ax1.set_xlim([x[0], x[-1]])
-    if extra_data[0, 0] != -1 and extra_data[0, 1] != -1:
-        print("\n extra data\n")
-        ymax = np.amax(extra_data[:, 1], axis=0)
-        for i in range(len(extra_data[:, 1])):
-            extra_data[i, 1] /= ymax
+    if extra_data["enable"]:
+        for x in extra_data['extraData']:
+            dat = get_extra_data(x['path'])
 
-        ax1.plot(
-            extra_data[:, 0],
-            extra_data[:, 1],
-            "-",
-            label="CAM-B3LYP (Ribbon Octamer)",
-            color="blue",
-        )
-        if peaks["dft"]:
-            arr_y = extra_data[:, 1]
-            arr_x = extra_data[:, 0]
-            print(arr_y)
-            peaks_dat, _ = scipy.signal.find_peaks(arr_y, height=0)
-            print(peaks_dat)
-            for j in peaks_dat:
-                height = arr_y[j]
-                frequency = round(arr_x[j], 4)
+            ymax = np.amax(dat[:, 1], axis=0)
+            for j in range(len(dat[:, 1])):
+                dat[j, 1] /= ymax
 
-                print("x, y = %.1f, %.1f\n" % (frequency, height))
-                df.loc[len(df.index)] = [
-                    "8 Ribbon",
-                    basis_set_mexc,
-                    frequency,
-                    height,
-                ]
+            ax1.plot(
+                dat[:, 0],
+                dat[:, 1],
+                x["line"]["type"],
+                label=x["legendLabel"],
+                color=x['line']['color'],
+            )
+            if peaks["dft"]:
+                arr_y = dat[:, 1]
+                arr_x = dat[:, 0]
+                peaks_dat, _ = scipy.signal.find_peaks(arr_y, height=0)
+                print(peaks_dat)
+                for j in peaks_dat:
+                    height = arr_y[j]
+                    frequency = round(arr_x[j], 4)
+
+                    print("x, y = %.1f, %.1f\n" % (frequency, height))
+                    df.loc[len(df.index)] = [
+                        "8 Ribbon",
+                        basis_set_mexc,
+                        frequency,
+                        height,
+                    ]
 
     if sec_y_axis:
         ax2.set_ylim(y_range[0], y_range[1])
@@ -1087,9 +1119,9 @@ def electronicMultiPlot_Experiment(
     # plt.grid(zorder=0, b=None, which='major', axis='y', linewidth=1)
     # plt.grid(zorder=0, b=None, which='major', axis='x', linewidth=1)
     # os.chdir("results/final/graphs")
-    if not os.path.exists('results/graphs'):
-        os.mkdir('results/graphs')
-    plt.savefig('results/graphs/' + filename)
+    if not os.path.exists("results/graphs"):
+        os.mkdir("results/graphs")
+    plt.savefig("results/graphs/" + filename)
     return
 
 
@@ -1128,3 +1160,34 @@ def nmLst_evLst(nmData):
         nmData[i, 0] = h * c / (nmData[i, 0] * Joules_to_eV)
     nmData = nmData[nmData[:, 0].argsort()]
     return nmData
+
+
+def discrete_to_art(
+    path, x_units=["nm", "eV"], x_range=[100, 320], broadening=2.0
+):
+    path_src = os.getcwd() + '/src/'
+    data = np.genfromtxt(path, delimiter=" ")
+    os.chdir('./results')
+    np.savetxt("data", data, delimiter=" ")
+    cmd = "perl %sspecsim_args.pl %.2f %.2f %.2f" % (
+        path_src,
+        x_range[0],
+        x_range[1],
+        broadening,
+    )
+    subprocess.call(cmd, shell=True)
+    data = np.genfromtxt("spec")
+    os.remove("data")
+    os.remove("spec")
+    os.chdir('../')
+    if x_units[0] != x_units[1]:
+        data = nmLst_evLst(data)
+    return data
+
+
+def get_extra_data(path_data):
+    """
+    Takes csv
+    """
+    octa_rib = discrete_to_art(path_data, ["nm", "eV"], [100, 320], 2)
+    return octa_rib
