@@ -1,0 +1,152 @@
+{
+  "buildGeoms": {
+    "enable": false,
+    "jobList": [
+      {
+        "dataPath": "data/test",
+        "inputCartesianFiles": [
+          { "file": "mon_h2o.xyz", "count": 1 },
+          { "file": "mon_nh3.xyz", "count": 0 }
+        ],
+        "clusters": 5,
+        "boxLength": 3,
+        "boxGrowth": {
+          "enable": true,
+          "increment": 3
+        },
+        "minDistanceMolecules": 2,
+        "optMethod": "STO-3G",
+        "optBasisSet": "6-31G",
+        "memComFile": "1600",
+        "memPBSFile": "10",
+        "startNum": 1
+      }
+    ]
+  },
+  "qmgr": {
+    "enable": { "exc": true, "vib": false },
+    "options": {
+      "minDelay": 360,
+      "maxResub": 1000,
+      "maxQueue": 200,
+      "cluster": "map"
+    },
+    "jobList": [
+      {
+        "dataPath": "data/test",
+        "outName": "t1",
+        "optResub": {
+          "optMethod": "STO-3G",
+          "optBasisSet": "6-31G",
+          "memComFile": "1600",
+          "memPBSFile": "10"
+        },
+        "excList": [
+          {
+            "excMethod": "CAM-B3LYP",
+            "excBasisSet": "6-311G(d)",
+            "memComFile": "1600",
+            "memPBSFile": "10",
+            "nStates": 25,
+            "SCRF": ""
+          }
+        ],
+        "vibList": [
+          {
+            "excMethod": "CAM-B3LYP",
+            "excBasisSet": "6-31G(d)",
+            "memComFile": "1600",
+            "memPBSFile": "10",
+            "SCRF": ""
+          }
+        ]
+      }
+    ]
+  },
+  "dataAnalysis": {
+    "enable": true,
+    "dataPath": "data/",
+    "temperature": 20,
+    "type": "exc",
+    "output": {
+      "numerical": {
+        "enable": true,
+        "type": ".json",
+        "outFile": "tmp.json",
+        "excList": [
+          {
+            "excMethod": "CAM-B3LYP",
+            "excBasisSet": "6-311G(d,p)",
+            "nStates": 25,
+            "acquiredStates": "25",
+            "SCRF": ""
+          },
+          {
+            "excMethod": "wB97XD",
+            "excBasisSet": "6-311G(d,p)",
+            "nStates": 25,
+            "acquiredStates": "25",
+            "SCRF": ""
+          }
+        ]
+      },
+      "plot": {
+        "enable": true,
+        "range": { "x": [4, 10.5], "y": [0, 1.5] },
+        "x_units": "eV",
+        "fileName": "data.png",
+        "title": "",
+        "dpi": 400,
+        "dft": {
+          "legendLabelBasisSet": false,
+          "peaks": false,
+          "excList": [
+            {
+              "dataPath": "data/40_co3h2",
+              "excMethod": "wB97XD",
+              "excBasisSet": "6-311G(d,p)",
+              "nStates": 25,
+              "acquiredStates": "15",
+              "SCRF": "",
+              "line": { "color": "green", "type": "-" },
+              "legendLabel": "$\\omega$B97XD (Amorphous)"
+            },
+            {
+              "dataPath": "data/40_co3h2",
+              "excMethod": "CAM-B3LYP",
+              "excBasisSet": "6-311G(d,p)",
+              "nStates": 25,
+              "acquiredStates": "15",
+              "SCRF": "",
+              "line": { "color": "red", "type": "-" },
+              "legendLabel": "CAM-B3LYP (Amorphous)"
+            }
+          ]
+        },
+        "exp": {
+          "enable": true,
+          "peaks": false,
+          "expData": [
+            {
+              "path": "./exp_data/co3h2_20_225_20.csv",
+              "units": { "input": "nm", "output": "eV" },
+              "line": { "color": "k", "type": "--" },
+              "legendLabel": "Exp. Solid A"
+            }
+          ]
+        },
+        "extra_data": {
+          "enable": true,
+          "peak": false,
+          "extraData": [
+            {
+              "path": "./theoretical_data/8rib_cam.csv",
+              "legendLabel": "CAM-B3LYP (Ribbon)",
+              "line": { "color": "red", "type": "-" }
+            }
+          ]
+        }
+      }
+    }
+  }
+}

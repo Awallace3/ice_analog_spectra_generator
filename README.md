@@ -379,6 +379,7 @@ array should not have a comma afterwards.
 ## Roadmap
 
 - [] Vibrational Spectroscopy Graphs
+- [] Restructure qstat call based on queue type
 
 See the [open issues](https://github.com/Awallace3/ice_analog_spectra_generator/issues) for a full list of proposed features (and known issues).
 

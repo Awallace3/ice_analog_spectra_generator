@@ -56,7 +56,7 @@ def qsub_to_max(max_queue=100, user=""):
     def_dir = os.getcwd()
     with open("qsub_queue.txt", "r") as fp:
         qsubs = fp.readlines()
-    cmd = "qstat -u %s | wc -l > qsub_len" % user
+    cmd = "qstat -u %s | grep gpu | wc -l > qsub_len" % user
     # for local testing...
     # cmd = "qstat | wc -l > ../qsub_len"
     subprocess.call(cmd, shell=True)
