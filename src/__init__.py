@@ -942,6 +942,7 @@ def electronicMultiPlot_Experiment(
                 "path": "./theoretical_data/8rib_cam.csv",
                 "legendLabel": "CAM-B3LYP (Ribbon)",
                 "line": {"color": "red", "type": "-"},
+                "units": ["nm", "eV"],
             }
         ],
     },
@@ -1064,7 +1065,6 @@ def electronicMultiPlot_Experiment(
     if extra_data["enable"]:
         for x in extra_data['extraData']:
             dat = get_extra_data(x['path'])
-
             ymax = np.amax(dat[:, 1], axis=0)
             for j in range(len(dat[:, 1])):
                 dat[j, 1] /= ymax
@@ -1185,9 +1185,9 @@ def discrete_to_art(
     return data
 
 
-def get_extra_data(path_data):
+def get_extra_data(path_data, units=["nm", "eV"]):
     """
     Takes csv
     """
-    octa_rib = discrete_to_art(path_data, ["nm", "eV"], [100, 320], 2)
+    octa_rib = discrete_to_art(path_data, units, [100, 320], 2)
     return octa_rib

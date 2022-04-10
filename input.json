@@ -148,28 +148,7 @@
         "dft": {
           "legendLabelBasisSet": false,
           "peaks": false,
-          "excList": [
-            {
-              "dataPath": "data/40_co3h2",
-              "excMethod": "wB97XD",
-              "excBasisSet": "6-311G(d,p)",
-              "nStates": 25,
-              "acquiredStates": "15",
-              "SCRF": "",
-              "line": { "color": "green", "type": "-" },
-              "legendLabel": "$\\omega$B97XD (Amorphous)"
-            },
-            {
-              "dataPath": "data/40_co3h2",
-              "excMethod": "CAM-B3LYP",
-              "excBasisSet": "6-311G(d,p)",
-              "nStates": 25,
-              "acquiredStates": "15",
-              "SCRF": "",
-              "line": { "color": "red", "type": "-" },
-              "legendLabel": "CAM-B3LYP (Amorphous)"
-            }
-          ]
+          "excList": []
         },
         "exp": {
           "enable": true,
@@ -188,9 +167,22 @@
           "peak": false,
           "extraData": [
             {
-              "path": "./theoretical_data/8rib_cam.csv",
-              "legendLabel": "CAM-B3LYP (Ribbon)",
-              "line": { "color": "red", "type": "-" }
+              "path": "./theoretical_data/perp_cam.csv",
+              "legendLabel": "CAM-B3LYP",
+              "line": { "color": "#ffcc00", "type": "-" },
+              "units": ["nm", "eV"]
+            },
+            {
+              "path": "./theoretical_data/perp_b3lyp.csv",
+              "legendLabel": "B3LYP",
+              "line": { "color": "blue", "type": "-" },
+              "units": ["nm", "eV"]
+            },
+            {
+              "path": "./theoretical_data/perp_wb97xd.csv",
+              "legendLabel": "wB97XD",
+              "line": { "color": "green", "type": "-" },
+              "units": ["nm", "eV"]
             }
           ]
         }
