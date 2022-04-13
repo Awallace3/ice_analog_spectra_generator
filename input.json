@@ -145,8 +145,26 @@
         "fileName": "data.png",
         "title": "",
         "dpi": 400,
+        "specsims": {
+          "dft": {
+            "range": [0, 12],
+            "units": "eV",
+            "FWHM": 0.5
+          },
+          "extra": {
+            "range": [0, 12],
+            "units": ["nm", "eV"],
+            "broadening_units": "eV",
+            "FWHM": 0.5
+          }
+        },
         "dft": {
           "legendLabelBasisSet": false,
+          "specsim": {
+            "range": [0, 10.5],
+            "units": "eV",
+            "FWHM": 2
+          },
           "peaks": false,
           "excList": [
             {
@@ -154,27 +172,17 @@
               "excMethod": "wB97XD",
               "excBasisSet": "6-311G(d,p)",
               "nStates": 25,
-              "acquiredStates": "15",
+              "acquiredStates": "25",
               "SCRF": "",
               "line": { "color": "green", "type": "-" },
               "legendLabel": "$\\omega$B97XD (Amorphous)"
             },
             {
               "dataPath": "data/40_co3h2",
-              "excMethod": "B3LYP",
-              "excBasisSet": "6-311G(d,p)",
-              "nStates": 25,
-              "acquiredStates": "25",
-              "SCRF": "",
-              "line": { "color": "blue", "type": "-" },
-              "legendLabel": "B3LYP (Amorphous)"
-            },
-            {
-              "dataPath": "data/40_co3h2",
               "excMethod": "CAM-B3LYP",
               "excBasisSet": "6-311G(d,p)",
               "nStates": 25,
-              "acquiredStates": "15",
+              "acquiredStates": "25",
               "SCRF": "",
               "line": { "color": "red", "type": "-" },
               "legendLabel": "CAM-B3LYP (Amorphous)"
@@ -190,6 +198,12 @@
               "units": { "input": "nm", "output": "eV" },
               "line": { "color": "k", "type": "--" },
               "legendLabel": "Exp. Solid A"
+            },
+            {
+              "path": "./exp_data/co3h2_80_225k.csv",
+              "units": { "input": "nm", "output": "eV" },
+              "line": { "color": "grey", "type": "--" },
+              "legendLabel": "Exp. Solid B"
             }
           ]
         },
@@ -197,6 +211,24 @@
           "enable": true,
           "peak": false,
           "extraData": [
+            {
+              "path": "./theoretical_data/8rib_cam.csv",
+              "legendLabel": "CAM-B3LYP (Ribbon)",
+              "line": { "color": "blue", "type": "-" },
+              "units": ["nm", "eV"]
+            },
+            {
+              "path": "./theoretical_data/exc_cam.csv",
+              "legendLabel": "CAM-B3LYP (Perpendicular Tetramer)",
+              "line": { "color": "#ffcc00", "type": "-" },
+              "units": ["nm", "eV"]
+            },
+            {
+              "path": "./theoretical_data/spiral_cam.csv",
+              "legendLabel": "CAM-B3LYP (Helical)",
+              "line": { "color": "purple", "type": "-" },
+              "units": ["nm", "eV"]
+            }
           ]
         }
       }

@@ -75,15 +75,10 @@ def vibrational_resubmit(
                 print("{0} entered mexc checkpoint 1".format(num + 1))
                 complete[num] = 1
                 mexc_check_out = glob.glob("%s/mexc.o*" % path_mexc)
-                mexc_check_out_complete = glob.glob(
-                    "%s/mexc_o.o*" % path_mexc
-                )
+                mexc_check_out_complete = glob.glob("%s/mexc_o.o*" % path_mexc)
 
-                if (
-                    complete[num] != 2
-                    and len(mexc_check_out) > 0
-                    and len(mexc_check_out_complete) > 0
-                ):
+                if (complete[num] != 2 and len(mexc_check_out) > 0
+                        and len(mexc_check_out_complete) > 0):
                     print("{0} entered mexc checkpoint 2".format(num + 1))
                     complete[num] = 2
             if complete[num] < 1:
@@ -193,17 +188,14 @@ def boltzmannAnalysisSetup(
             analysis_ready.append(i)
         else:
             # print('geom%d/mexc %d is not finished with TD-DFT' % (i+1, i+1))
-            print(
-                "geom%d/%s %d is not finished with TD-DFT"
-                % (i + 1, path_mexc, i + 1)
-            )
+            print("geom%d/%s %d is not finished with TD-DFT" %
+                  (i + 1, path_mexc, i + 1))
     os.chdir("calc_zone")
     for i in analysis_ready:
 
         cmd = (
             """awk '/Excited State/ {print $7, $9}' geom%d/%s/mexc.out | sed 's/f=//g' | tac | tail -n %s > ../results/mexc_values/mexc_out%d.csv"""
-            % (i + 1, path_mexc, acquiredStates, i + 1)
-        )
+            % (i + 1, path_mexc, acquiredStates, i + 1))
 
         failure = subprocess.call(cmd, shell=True)
     os.chdir("..")
@@ -235,6 +227,11 @@ def boltzmannAnalysisSetupDefault(
     nStates="25",
     acquiredStates="25",
     SCRF="",
+    # specsim={
+    #     "range": [0, 10.5],
+    #     "units": "eV",
+    #     "FWHM": 2
+    # }
 ):
     """
     boltzmannAnalysisSetupDefault accumulates the ELECTRONIC
@@ -255,40 +252,46 @@ def boltzmannAnalysisSetupDefault(
         if complete[i] == 2:
             analysis_ready.append(i)
         else:
-            print(
-                "geom%d/%s %d is not finished with TD-DFT"
-                % (i + 1, path_mexc, i + 1)
-            )
+            print("geom%d/%s %d is not finished with TD-DFT" %
+                  (i + 1, path_mexc, i + 1))
 
     os.chdir(dataPath)
     for i in analysis_ready:
         cmd = (
             """awk '/Excited State/ {print $7, $9}' geom%d/%s/mexc.out | sed 's/f=//g' | tac | tail -n %s > %s/results/mexc_values/mexc_out%d.csv"""
-            % (i + 1, path_mexc, acquiredStates, def_dir, i + 1)
-        )
+            % (i + 1, path_mexc, acquiredStates, def_dir, i + 1))
         subprocess.call(cmd, shell=True)
     os.chdir(def_dir)
     return
 
 
-def boltzmannAnalysisDefault(
-    T,
-    energy_levels="electronic",
-    DeltaN="2",
-    x_range=[50, 4100],
-    overtones=False,
-):
+def boltzmannAnalysisDefault(T,
+                             energy_levels="electronic",
+                             overtones=False,
+                             specsim={
+                                 "range": [0, 10.5],
+                                 "units": "eV",
+                                 "FWHM": 2
+                             }):
     """
     After calling boltzmannAnalysisSetupDefault, this function may
     be called to acquire the weighted excited states through a
     Boltzmann Distribution
     """
     def_dir = os.getcwd()
+    DeltaN = specsim["FWHM"]
+    x_range = specsim["range"]
 
     if energy_levels == "electronic":
         os.chdir("results/mexc_values")
         csv_name = "mexc_out"
-        perl_exc = "perl %s/src/specsim.pl" % def_dir
+        # perl_exc = "perl %s/src/specsim.pl" % def_dir
+        perl_exc = "perl %s/src/specsim_args.pl %d %d %s" % (
+            def_dir,
+            x_range[0],
+            x_range[1],
+            DeltaN,
+        )
     elif energy_levels == "vibrational":
         os.chdir("results/vibrational_values")
         csv_name = "vib"
@@ -311,9 +314,8 @@ def boltzmannAnalysisDefault(
     print("lowest energy:", lowest_energy, "hartrees")
     lowest_energy = lowest_energy * 4.3597e-18
     kb = 1.380649e-23
-    combining_mexc = mexc_dict[
-        "{0}".format(csv_name + str(lowest_energy_ind + 1))
-    ]
+    combining_mexc = mexc_dict["{0}".format(csv_name +
+                                            str(lowest_energy_ind + 1))]
     for key, value in mexc_dict.items():
         if key == "mexc_out{0}".format(lowest_energy_ind + 1):
             continue
@@ -326,6 +328,17 @@ def boltzmannAnalysisDefault(
         for i in range(len(value)):
             value[i][1] = value[i][1] * ni_nj
         combining_mexc = np.concatenate((combining_mexc, value), axis=0)
+    if specsim["units"] == 'eV':
+        h = 6.62607004e-34
+        c = 299792458
+        c = 3e17
+        Joules_to_eV = 1.602e-19
+
+        for i in range(len(combining_mexc[:, 0])):
+            combining_mexc[i,
+                           0] = h * c / (combining_mexc[i, 0] * Joules_to_eV)
+        combining_mexc = combining_mexc[combining_mexc[:, 0].argsort()]
+
     os.chdir("..")
     construct_helper_dirs()
     os.chdir("final/data")
@@ -333,7 +346,10 @@ def boltzmannAnalysisDefault(
     subprocess.call(perl_exc, shell=True)
 
     if overtones:
-        x, y = collectSpecSimData(x_units="cm-1", path_to_data="./")
+        conv = True
+        if specsim["units"] == 'eV':
+            conv = False
+        x, y = collectSpecSimData(x_units="cm-1", path_to_data="./", conv=conv)
         arr_y = np.array(y)
         print("local maxima")
         peaks_dat, _ = scipy.signal.find_peaks(arr_y, height=0)
@@ -393,9 +409,8 @@ def boltzmannAnalysis(
     lowest_energy = lowest_energy * 4.3597e-18  # convert hartrees to joules
     kb = 1.380649e-23
 
-    combining_mexc = mexc_dict[
-        "{0}".format(csv_name + str(lowest_energy_ind + 1))
-    ]
+    combining_mexc = mexc_dict["{0}".format(csv_name +
+                                            str(lowest_energy_ind + 1))]
 
     # print(combining_mexc)
     # print("energy_all:\n", energy_all)
@@ -477,12 +492,10 @@ def generateGraph(
 
     data = np.genfromtxt("results/final/data/" + spec_name, delimiter=" ")
     data = data.tolist()
-    # print(data)
     x = []
     y = []
     highest_y = 0
     for i in data:
-        # print(i)
         x.append(i[0])
         y.append(i[1])
         if i[1] > highest_y:
@@ -502,8 +515,6 @@ def generateGraph(
         y.reverse()
         # maxima = scipy.signal.argrelextrema(y, np.greater)
 
-    # print(x)
-    # print('\n', y)
     ax1.plot(x, y, "k-", label="T = {0} K".format(T))
     # ax1.set_xlim([x[0], x[-1]])
     ax1.set_xlim(x_range)
@@ -522,9 +533,8 @@ def generateGraph(
                 height = arr_y[i]
                 frequency = round(x[i], 2)
                 if height > 0.02:
-                    plt.text(
-                        frequency - 0.08, arr_y[i] + 0.05, "%.2f" % frequency
-                    )
+                    plt.text(frequency - 0.08, arr_y[i] + 0.05,
+                             "%.2f" % frequency)
 
     elif x_units == "cm-1":
         plt.xlabel(r"Wavenumbers cm$^{-1}$")
@@ -537,9 +547,7 @@ def generateGraph(
                 height = arr_y[i]
                 frequency = round(x[i])
                 if height > 0.02:
-                    plt.text(
-                        frequency + 100, arr_y[i] + 0.1, "%d" % frequency
-                    )
+                    plt.text(frequency + 100, arr_y[i] + 0.1, "%d" % frequency)
     else:
         plt.xlabel("Wavelength (nm)")
         ax1.legend(shadow=True, fancybox=True)
@@ -560,20 +568,17 @@ def generateGraph(
     return
 
 
-def collectSpecSimData(
-    x_units="eV",
-    spec_name="spec",
-    normalize=True,
-    path_to_data="results/final/data/",
-):
+def collectSpecSimData(x_units="eV",
+                       spec_name="spec",
+                       normalize=True,
+                       path_to_data="results/final/data/",
+                       conv=True):
     data = np.genfromtxt(path_to_data + spec_name, delimiter=" ")
     data = data.tolist()
-    # print(data)
     x = []
     y = []
     highest_y = 0
     for i in data:
-        # print(i)
         x.append(i[0])
         y.append(i[1])
         if i[1] > highest_y:
@@ -584,11 +589,10 @@ def collectSpecSimData(
     # cam_b3lyp_n125_y = 1.9835017
     # cam_b3lyp_n125_y = 10.17985964
 
-    # print("CAM-B3LYP:", highest_y)
     for i in range(len(y)):
         y[i] /= highest_y
         # y[i] /= cam_b3lyp_n125_y
-    if x_units == "eV" or x_units == "ev":
+    if conv and (x_units == "eV" or x_units == "ev"):
         h = 6.626e-34
         c = 3e17
         ev_to_joules = 1.60218e-19
@@ -614,8 +618,7 @@ def latexTable_addLine(path, line):
     else:
         with open(path, "w") as fp:
             fp.write(
-                "\\begin{center}\n\\begin{tabular}{ |c|c|c|c| }\n\t\\hline\n"
-            )
+                "\\begin{center}\n\\begin{tabular}{ |c|c|c|c| }\n\t\\hline\n")
             fp.write("\tMethod & Basis Set & Excitation (eV) &")
             fp.write(
                 "\\vtop{\\hbox{\\strut Oscillator Strength}\\hbox{\\strut (Normalized)}}\\\\\n\t\\hline\n"
@@ -651,7 +654,6 @@ def electronicMultiPlot(
     fig, ax1 = plt.subplots()
 
     if peaks:
-        print(os.path.exists("latex_df_6-311++G(2d,2p)"))
         if os.path.exists("latex_df_6-311++G(2d,2p).tex"):
 
             headers = [
@@ -675,7 +677,8 @@ def electronicMultiPlot(
                 "Method": [],
                 "Basis Set": [],
                 "Excitation (eV)": [],
-                "\\vtop{\\hbox{\\strut Oscillator Strength}\\hbox{\\strut (Normalized)}}": [],
+                "\\vtop{\\hbox{\\strut Oscillator Strength}\\hbox{\\strut (Normalized)}}":
+                [],
             }  # 4 col
             df = pd.DataFrame(df)
 
@@ -684,10 +687,6 @@ def electronicMultiPlot(
         boltzmannAnalysisSetup(complete, i, basis_set_mexc, nStates, nStates)
         boltzmannAnalysis(T, energy_levels="electronic")
         x, y = collectSpecSimData(x_units=x_units)
-        """
-        if i == 'B3LYP':
-            print(x, y)
-        """
         ax1.plot(x, y, "-", label="%s" % i)
 
         if peaks:
@@ -695,7 +694,6 @@ def electronicMultiPlot(
             print("local maxima")
             peaks_dat, _ = scipy.signal.find_peaks(arr_y, height=0)
             for j in peaks_dat:
-                # print(round(x[i],2), arr_y[i])
                 height = arr_y[j]
                 frequency = round(x[j], 2)
                 print("x, y = %.2f, %.2f" % (frequency, height))
@@ -711,7 +709,6 @@ def electronicMultiPlot(
                 with open('latexTabel.tex', 'a') as fp:
                     fp.write("%s/%s,%.2f,%.2f\n" % (i, basis_set_mexc, frequency, height))
                 """
-
                 """
                 if height > 0.02:
                     plt.text(frequency - 0.08, arr_y[i]+0.05, '%.2f' % frequency )
@@ -724,7 +721,6 @@ def electronicMultiPlot(
 
     plt.title(title)
     if x_units == "ev" or x_units == "eV":
-        # print(x)
         plt.xlabel("Electronvolts (eV)")
         ax1.legend(shadow=True, fancybox=True, loc="upper right")
 
@@ -755,9 +751,12 @@ def electronicMultiPlotExpSetup(
         "type": "exc",
         "output": {
             "numerical": {
-                "enable": True,
-                "type": ".json",
-                "outFile": "tmp.json",
+                "enable":
+                True,
+                "type":
+                ".json",
+                "outFile":
+                "tmp.json",
                 "excList": [
                     {
                         "excMethod": "CAM-B3LYP",
@@ -777,14 +776,36 @@ def electronicMultiPlotExpSetup(
             },
             "plot": {
                 "enable": True,
-                "range": {"x": [1, 12], "y": [0, 1.5]},
+                "range": {
+                    "x": [1, 12],
+                    "y": [0, 1.5]
+                },
                 "x_units": "eV",
                 "fileName": "data.png",
                 "title": "",
                 "dpi": 400,
+                "specsims": {
+                    "dft": {
+                        "range": [0, 10.5],
+                        "units": "eV",
+                        "FWHM": 2
+                    },
+                    "extra": {
+                        "range": [0, 10.5],
+                        "units": "eV",
+                        "FWHM": 2
+                    },
+                    "exp": {
+                        "range": [0, 10.5],
+                        "units": "eV",
+                        "FWHM": 2
+                    }
+                },
                 "dft": {
-                    "legendLabelBasisSet": False,
-                    "peaks": False,
+                    "legendLabelBasisSet":
+                    False,
+                    "peaks":
+                    False,
                     "excList": [
                         {
                             "dataPath": "data/40_co3h2",
@@ -793,7 +814,10 @@ def electronicMultiPlotExpSetup(
                             "nStates": 25,
                             "acquiredStates": "15",
                             "SCRF": "",
-                            "line": {"color": "green", "type": "-"},
+                            "line": {
+                                "color": "green",
+                                "type": "-"
+                            },
                             "legendLabel": "$\\omega$B97XD (Amorphous)",
                         },
                         {
@@ -803,38 +827,49 @@ def electronicMultiPlotExpSetup(
                             "nStates": 25,
                             "acquiredStates": "15",
                             "SCRF": "",
-                            "line": {"color": "red", "type": "-"},
+                            "line": {
+                                "color": "red",
+                                "type": "-"
+                            },
                             "legendLabel": "CAM-B3LYP (Amorphous)",
                         },
                     ],
                 },
                 "exp": {
-                    "enable": True,
-                    "peaks": False,
-                    "expData": [
-                        {
-                            "path": "./exp_data/co3h2_20_225_20.csv",
-                            "units": {"input": "nm", "output": "eV"},
-                            "line": {"color": "k", "type": "--"},
-                            "legendLabel": "Exp. Solid A",
-                        }
-                    ],
+                    "enable":
+                    True,
+                    "peaks":
+                    False,
+                    "expData": [{
+                        "path": "./exp_data/co3h2_20_225_20.csv",
+                        "units": {
+                            "input": "nm",
+                            "output": "eV"
+                        },
+                        "line": {
+                            "color": "k",
+                            "type": "--"
+                        },
+                        "legendLabel": "Exp. Solid A",
+                    }],
                 },
                 "extra_data": {
-                    "enable": True,
-                    "peak": False,
-                    "extraData": [
-                        {
-                            "path": "./theoretical_data/8rib_cam.csv",
-                            "legendLabel": "CAM-B3LYP (Ribbon)",
-                            "line": {"color": "red", "type": "-"},
-                        }
-                    ],
+                    "enable":
+                    True,
+                    "peak":
+                    False,
+                    "extraData": [{
+                        "path": "./theoretical_data/8rib_cam.csv",
+                        "legendLabel": "CAM-B3LYP (Ribbon)",
+                        "line": {
+                            "color": "red",
+                            "type": "-"
+                        },
+                    }],
                 },
             },
         },
-    }
-):
+    }):
     methods_lst = []
     colors = []
     methods_lst = config["output"]["plot"]["dft"]["excList"]
@@ -857,8 +892,7 @@ def electronicMultiPlotExpSetup(
 
     dpi = config["output"]["plot"]["dpi"]
     legendLabelBasisSet = config["output"]["plot"]["dft"][
-        "legendLabelBasisSet"
-    ]
+        "legendLabelBasisSet"]
 
     electronicMultiPlot_Experiment(
         methods_lst,
@@ -878,7 +912,7 @@ def electronicMultiPlotExpSetup(
         dpi=dpi,
         legendLabelBasisSet=legendLabelBasisSet,
         y_range=y_range,
-    )
+        specsims=config["output"]["plot"]["specsims"])
 
 
 def peaks_to_latex(y, x, rounding, method, basis_set_mexc, i, df):
@@ -886,7 +920,6 @@ def peaks_to_latex(y, x, rounding, method, basis_set_mexc, i, df):
     print("local maxima")
     peaks_dat, _ = scipy.signal.find_peaks(arr_y, height=0)
     for j in peaks_dat:
-        # print(round(x[i],2), arr_y[i])
         height = arr_y[j]
         frequency = round(x[j], 4)
         if rounding == 1:
@@ -917,39 +950,58 @@ def peaks_to_latex(y, x, rounding, method, basis_set_mexc, i, df):
     df_latexTable("latex_df_%s.tex" % basis_set_mexc, df, rounding)
 
 
-def electronicMultiPlot_Experiment(
-    methods_lst,
-    T,
-    title,
-    filename,
-    x_range=[2, 16],
-    x_units="eV",
-    peaks={
-        "exp": False,
-        "dft": False,
-    },
-    spec_name="spec",
-    complete=[],
-    exp_data=[],
-    colors=[],
-    sec_y_axis=False,
-    rounding=1,
-    extra_data={
-        "enable": True,
-        "peak": False,
-        "extraData": [
-            {
-                "path": "./theoretical_data/8rib_cam.csv",
-                "legendLabel": "CAM-B3LYP (Ribbon)",
-                "line": {"color": "red", "type": "-"},
-                "units": ["nm", "eV"],
-            }
-        ],
-    },
-    dpi=400,
-    legendLabelBasisSet=True,
-    y_range=[0, 1.5],
-):
+def electronicMultiPlot_Experiment(methods_lst,
+                                   T,
+                                   title,
+                                   filename,
+                                   x_range=[2, 16],
+                                   x_units="eV",
+                                   peaks={
+                                       "exp": False,
+                                       "dft": False,
+                                   },
+                                   spec_name="spec",
+                                   complete=[],
+                                   exp_data=[],
+                                   colors=[],
+                                   sec_y_axis=False,
+                                   rounding=1,
+                                   extra_data={
+                                       "enable":
+                                       True,
+                                       "peak":
+                                       False,
+                                       "extraData": [{
+                                           "path":
+                                           "./theoretical_data/8rib_cam.csv",
+                                           "legendLabel": "CAM-B3LYP (Ribbon)",
+                                           "line": {
+                                               "color": "red",
+                                               "type": "-"
+                                           },
+                                           "units": ["nm", "eV"],
+                                       }],
+                                   },
+                                   dpi=400,
+                                   legendLabelBasisSet=True,
+                                   y_range=[0, 1.5],
+                                   specsims={
+                                       "dft": {
+                                           "range": [0, 10.5],
+                                           "units": "eV",
+                                           "FWHM": 2
+                                       },
+                                       "extra": {
+                                           "range": [0, 10.5],
+                                           "units": "eV",
+                                           "FWHM": 2
+                                       },
+                                       "exp": {
+                                           "range": [0, 10.5],
+                                           "units": "eV",
+                                           "FWHM": 2
+                                       },
+                                   }):
 
     location = os.getcwd().split("/")[-1]
     if location == "src" or location == "calc_zone":
@@ -973,7 +1025,8 @@ def electronicMultiPlot_Experiment(
                 "Method": [],
                 "Basis Set": [],
                 "Excitation (eV)": [],
-                "\\vtop{\\hbox{\\strut Oscillator Strength}\\hbox{\\strut (Normalized)}}": [],
+                "\\vtop{\\hbox{\\strut Oscillator Strength}\\hbox{\\strut (Normalized)}}":
+                [],
             }  # 4 col
             df = pd.DataFrame(df)
 
@@ -1000,8 +1053,13 @@ def electronicMultiPlot_Experiment(
             acquiredStates,
             SCRF,
         )
-        boltzmannAnalysisDefault(T, energy_levels="electronic")
-        x, y = collectSpecSimData(x_units=x_units)
+        boltzmannAnalysisDefault(T,
+                                 energy_levels="electronic",
+                                 specsim=specsims["dft"])
+        conv = True
+        if specsims['dft']["units"] == 'eV':
+            conv = False
+        x, y = collectSpecSimData(x_units=x_units, conv=conv)
 
         if method == "wB97XD":
             method = r"$\omega$B97XD"
@@ -1027,7 +1085,6 @@ def electronicMultiPlot_Experiment(
                 dat = nmLst_evLst(dat)
             ymax = np.amax(dat[:, 1], axis=0)
             dat[:, 1] /= ymax
-            # print(i)
             ax2.plot(
                 dat[:, 0],
                 dat[:, 1],
@@ -1041,7 +1098,6 @@ def electronicMultiPlot_Experiment(
                 print("local maxima")
                 peaks_dat, _ = scipy.signal.find_peaks(arr_y, height=0)
                 for j in peaks_dat:
-                    # print(round(x[i],2), arr_y[i])
                     height = arr_y[j]
                     frequency = round(dat[j, 0], 2)
                     print("x, y = %.2f, %.2f" % (frequency, height))
@@ -1058,13 +1114,11 @@ def electronicMultiPlot_Experiment(
                         frequency,
                         height,
                     ]
-                df_latexTable(
-                    "latex_df_%s.tex" % basis_set_mexc, df, rounding
-                )
+                df_latexTable("latex_df_%s.tex" % basis_set_mexc, df, rounding)
     # ax1.set_xlim([x[0], x[-1]])
     if extra_data["enable"]:
         for x in extra_data['extraData']:
-            dat = get_extra_data(x['path'])
+            dat = get_extra_data(x['path'], specsims["extra"])
             ymax = np.amax(dat[:, 1], axis=0)
             for j in range(len(dat[:, 1])):
                 dat[j, 1] /= ymax
@@ -1080,7 +1134,6 @@ def electronicMultiPlot_Experiment(
                 arr_y = dat[:, 1]
                 arr_x = dat[:, 0]
                 peaks_dat, _ = scipy.signal.find_peaks(arr_y, height=0)
-                print(peaks_dat)
                 for j in peaks_dat:
                     height = arr_y[j]
                     frequency = round(arr_x[j], 4)
@@ -1103,7 +1156,6 @@ def electronicMultiPlot_Experiment(
     ax1.legend(shadow=True, fancybox=True, loc="upper left")
     ax2.legend(shadow=True, fancybox=True, loc="upper right")
     if x_units == "ev" or x_units == "eV":
-        # print(x)
         plt.xlabel("Electronvolts (eV)")
         ax1.set_xlabel("Electronvolts (eV)")
         # ax1.legend(shadow=True, fancybox=True)
@@ -1162,12 +1214,22 @@ def nmLst_evLst(nmData):
     return nmData
 
 
-def discrete_to_art(
-    path, x_units=["nm", "eV"], x_range=[100, 320], broadening=2.0
-):
+def discrete_to_art(path,
+                    x_units=["nm", "eV"],
+                    x_range=[100, 320],
+                    broadening=2.0,
+                    broadening_units="nm"
+                    ):
+
     path_src = os.getcwd() + '/src/'
     data = np.genfromtxt(path, delimiter=" ")
     os.chdir('./results')
+
+    conv = False
+    if x_units[0] != broadening_units:
+        conv = True
+        data = nmLst_evLst(data)
+
     np.savetxt("data", data, delimiter=" ")
     cmd = "perl %sspecsim_args.pl %.2f %.2f %.2f" % (
         path_src,
@@ -1175,19 +1237,31 @@ def discrete_to_art(
         x_range[1],
         broadening,
     )
+    print(cmd)
     subprocess.call(cmd, shell=True)
     data = np.genfromtxt("spec")
     os.remove("data")
     os.remove("spec")
     os.chdir('../')
-    if x_units[0] != x_units[1]:
+    if not conv and x_units[0] != x_units[1]:
         data = nmLst_evLst(data)
     return data
 
 
-def get_extra_data(path_data, units=["nm", "eV"]):
+def get_extra_data(
+    path_data,
+    specsim={
+        "range": [0, 10.5],
+        "units": ["nm", "eV"],
+        "broadening_units": "eV",
+        "FWHM": 2.0
+    }):
     """
     Takes csv
     """
-    octa_rib = discrete_to_art(path_data, units, [100, 320], 2)
+    units = specsim["units"]
+    x_range = specsim["range"]
+    DeltaN = float(specsim["FWHM"])
+    octa_rib = discrete_to_art(path_data, units, x_range, DeltaN,
+                               specsim["broadening_units"])
     return octa_rib
