@@ -45,7 +45,7 @@
   "qmgr": {
     "enable": { "exc": false, "vib": false },
     "options": {
-      "minDelay": 360,
+      "minDelay": 1,
       "maxResub": 1000,
       "maxQueue": 200,
       "cluster": "map"
@@ -148,7 +148,38 @@
         "dft": {
           "legendLabelBasisSet": false,
           "peaks": false,
-          "excList": []
+          "excList": [
+            {
+              "dataPath": "data/40_co3h2",
+              "excMethod": "wB97XD",
+              "excBasisSet": "6-311G(d,p)",
+              "nStates": 25,
+              "acquiredStates": "15",
+              "SCRF": "",
+              "line": { "color": "green", "type": "-" },
+              "legendLabel": "$\\omega$B97XD (Amorphous)"
+            },
+            {
+              "dataPath": "data/40_co3h2",
+              "excMethod": "B3LYP",
+              "excBasisSet": "6-311G(d,p)",
+              "nStates": 25,
+              "acquiredStates": "25",
+              "SCRF": "",
+              "line": { "color": "blue", "type": "-" },
+              "legendLabel": "B3LYP (Amorphous)"
+            },
+            {
+              "dataPath": "data/40_co3h2",
+              "excMethod": "CAM-B3LYP",
+              "excBasisSet": "6-311G(d,p)",
+              "nStates": 25,
+              "acquiredStates": "15",
+              "SCRF": "",
+              "line": { "color": "red", "type": "-" },
+              "legendLabel": "CAM-B3LYP (Amorphous)"
+            }
+          ]
         },
         "exp": {
           "enable": true,
@@ -166,24 +197,6 @@
           "enable": true,
           "peak": false,
           "extraData": [
-            {
-              "path": "./theoretical_data/perp_cam.csv",
-              "legendLabel": "CAM-B3LYP",
-              "line": { "color": "#ffcc00", "type": "-" },
-              "units": ["nm", "eV"]
-            },
-            {
-              "path": "./theoretical_data/perp_b3lyp.csv",
-              "legendLabel": "B3LYP",
-              "line": { "color": "blue", "type": "-" },
-              "units": ["nm", "eV"]
-            },
-            {
-              "path": "./theoretical_data/perp_wb97xd.csv",
-              "legendLabel": "wB97XD",
-              "line": { "color": "green", "type": "-" },
-              "units": ["nm", "eV"]
-            }
           ]
         }
       }
