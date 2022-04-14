@@ -43,7 +43,7 @@
     ]
   },
   "qmgr": {
-    "enable": { "exc": false, "vib": false },
+    "enable": { "exc": true, "vib": false },
     "options": {
       "minDelay": 1,
       "maxResub": 1000,
@@ -52,8 +52,8 @@
     },
     "jobList": [
       {
-        "dataPath": "data/test",
-        "outName": "t1",
+        "dataPath": "./data/40_co3h2",
+        "outName": "40_co3h2",
         "optResub": {
           "optMethod": "B3LYP",
           "optBasisSet": "6-31G(d)",
@@ -62,23 +62,15 @@
         },
         "excList": [
           {
-            "excMethod": "CAM-B3LYP",
+            "excMethod": "B3LYP",
             "excBasisSet": "6-311G(d)",
             "memComFile": "1600",
             "memPBSFile": "10",
-            "nStates": 25,
+            "nStates": 50,
             "SCRF": ""
           }
         ],
-        "vibList": [
-          {
-            "excMethod": "CAM-B3LYP",
-            "excBasisSet": "6-31G(d)",
-            "memComFile": "1600",
-            "memPBSFile": "10",
-            "SCRF": ""
-          }
-        ]
+        "vibList": []
       },
       {
         "dataPath": "data/test2",
