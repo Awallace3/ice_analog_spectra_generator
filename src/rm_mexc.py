@@ -15,7 +15,9 @@ def rm_mexc(method_mexc,
             basis_set_mexc,
             nStates,
             SCRF='',
-            spectroscopy_type='mexc'):
+            spectroscopy_type='mexc',
+            path="./data/40_co3h2"
+            ):
     """
     if method_mexc == 'PBE0':
         path_mexc = 'pbe0'
@@ -52,13 +54,14 @@ def rm_mexc(method_mexc,
         path_mexc = method_mexc.lower() + basis_dir_name
         #path_mexc = path_mexc.replace("(", "\(").replace(")", "\)")
 
-    location = os.getcwd().split('/')[-1]
-    if location == 'src':
-        os.chdir("../calc_zone")
-    elif location == 'calc_zone':
-        pass
-    else:
-        os.chdir("calc_zone")
+    # location = os.getcwd().split('/')[-1]
+    # if location == 'src':
+    #     os.chdir("../calc_zone")
+    # elif location == 'calc_zone':
+    #     pass
+    # else:
+    #     os.chdir("calc_zone")
+    os.chdir(path)
 
     directories = glob.glob("geom*")
     cmd = 'rm -r "%s"' % path_mexc
@@ -75,7 +78,8 @@ def rm_mexc(method_mexc,
 
 
 def main():
-    method_mexc = "b3lyp"
+    # method_mexc = "b3lyp"
+    method_mexc = "B3LYP"
     #method_mexc = "pbe0"
     #method_mexc = "wb97xd"
     # method_mexc = "cam-b3lyp"
@@ -84,21 +88,26 @@ def main():
 
     basis_set_mexc = '6-311++G(2d,2p)'
     basis_set_mexc = '6-311G(d,p)'
-    basis_set_mexc = 'aug-cc-pVDZ'
+    # basis_set_mexc = 'aug-cc-pVDZ'
 
-    nStates = '25'
-    #nStates = '50'
+    # nStates = '25'
+    nStates = '50'
     #nStates = '150'
     #nStates = '125'
 
     SCRF = ''
     #SCRF='PCM'
 
+    # rm_mexc(method_mexc,
+    #         basis_set_mexc,
+    #         nStates,
+    #         SCRF=SCRF,
+    #         spectroscopy_type='vib')
     rm_mexc(method_mexc,
             basis_set_mexc,
             nStates,
             SCRF=SCRF,
-            spectroscopy_type='vib')
+            spectroscopy_type='mexc')
 
 
 main()
