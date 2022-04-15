@@ -7,11 +7,9 @@ from .job_progression import job_progression
 
 def check_add_methods(add_methods, funct_name):
     ln = len(add_methods["methods"])
-    if (
-        ln == len(add_methods["basis_set"])
-        and ln == len(add_methods["mem_com"])
-        and ln == len(add_methods["mem_pbs"])
-    ):
+    if (ln == len(add_methods["basis_set"])
+            and ln == len(add_methods["mem_com"])
+            and ln == len(add_methods["mem_pbs"])):
         return True
     else:
         print(
@@ -95,31 +93,31 @@ def qsub(path=".", def_dir="./"):
 
 
 def jobResubmit_v2(
-    monitor_jobs,
-    min_delay,
-    number_delays,
-    method_opt,
-    basis_set_opt,
-    mem_com_opt,
-    mem_pbs_opt,
-    method_mexc,
-    basis_set_mexc,
-    mem_com_mexc,
-    mem_pbs_mexc,
-    cluster,
-    route="results",
-    add_methods={
-        "methods": [],
-        "basis_set": [],
-        "solvent": [],
-        "mem_com": [],
-        "mem_pbs": [],
-    },
-    max_queue=200,
-    results_json="results.json",
-    user=read_user(),
-    identify_zeros=False,
-    create_smiles=True,
+        monitor_jobs,
+        min_delay,
+        number_delays,
+        method_opt,
+        basis_set_opt,
+        mem_com_opt,
+        mem_pbs_opt,
+        method_mexc,
+        basis_set_mexc,
+        mem_com_mexc,
+        mem_pbs_mexc,
+        cluster,
+        route="results",
+        add_methods={
+            "methods": [],
+            "basis_set": [],
+            "solvent": [],
+            "mem_com": [],
+            "mem_pbs": [],
+        },
+        max_queue=200,
+        results_json="results.json",
+        user=read_user(),
+        identify_zeros=False,
+        create_smiles=True,
 ):
     """
     Modified from jobResubmit_v2 from
@@ -158,11 +156,8 @@ def jobResubmit_v2(
                 complete[num] = 1
                 mexc_check_out = glob.glob("mexc/mexc.o*")
                 mexc_check_out_complete = glob.glob("mexc/*_o*")
-                if (
-                    complete[num] < 2
-                    and len(mexc_check_out) > 0
-                    and len(mexc_check_out_complete) > 0
-                ):
+                if (complete[num] < 2 and len(mexc_check_out) > 0
+                        and len(mexc_check_out_complete) > 0):
                     complete[num] = 2
             if complete[num] < 1:
                 if identify_zeros:
@@ -250,9 +245,16 @@ def jobResubmit_v2(
 
 def jobResubmit(
     config={
-        "enable": {"exc": True, "vib": False},
-        "dataPath": "data/48_1_1_h2o_nh3",
-        "qmgr": {"minDelay": 360, "maxResub": 100},
+        "enable": {
+            "exc": True,
+            "vib": False
+        },
+        "dataPath":
+        "data/48_1_1_h2o_nh3",
+        "qmgr": {
+            "minDelay": 360,
+            "maxResub": 100
+        },
         "optResub": {
             "optMethod": "B3LYP",
             "optBasisSet": "6-31G(d)",
@@ -285,16 +287,13 @@ def jobResubmit(
                 "SCRF": "",
             },
         ],
-        "vibCreate": [
-            {
-                "excMethod": "CAM-B3LYP",
-                "excBasisSet": "6-31+G(d,p)",
-                "memComFile": "1600",
-                "memPBSFile": "15",
-            }
-        ],
-    },
-):
+        "vibCreate": [{
+            "excMethod": "CAM-B3LYP",
+            "excBasisSet": "6-31+G(d,p)",
+            "memComFile": "1600",
+            "memPBSFile": "15",
+        }],
+    }, ):
     default_dir = os.getcwd()
     dataPath = config["dataPath"]
     min_delay = config["qmgr"]["minDelay"]
@@ -356,16 +355,11 @@ def jobResubmit(
                 # mexc_check_out = glob.glob("mexc/mexc.o*")
                 # mexc_check_out_complete = glob.glob("mexc_o/mexc.o*")
                 mexc_check_out = glob.glob("%s/mexc.o*" % path_mexc)
-                mexc_check_out_complete = glob.glob(
-                    "%s/mexc_o.o*" % path_mexc
-                )
+                mexc_check_out_complete = glob.glob("%s/mexc_o.o*" % path_mexc)
 
                 # if complete[num] != 2 and len(mexc_check_out) > 1:
-                if (
-                    complete[num] != 2
-                    and len(mexc_check_out) > 0
-                    and len(mexc_check_out_complete) > 0
-                ):
+                if (complete[num] != 2 and len(mexc_check_out) > 0
+                        and len(mexc_check_out_complete) > 0):
                     print("{0} entered mexc checkpoint 2".format(num + 1))
                     complete[num] = 2
             if complete[num] < 1:
@@ -496,13 +490,8 @@ def queue_logic(default_dir, status, delay, enabled, cluster="map"):
                             add_qsub_dir(qsub_dir, stat[0], path_qsub_queue)
                     job_dirs[i] = stat
                 # vibrational excited states
-                elif (
-                    lStat == stat[3]
-                    and enabled["vib"]
-                    or lStat == 0
-                    and not enabled["exc"]
-                    and enabled["vib"]
-                ):
+                elif (lStat == stat[3] and enabled["vib"]
+                      or lStat == 0 and not enabled["exc"] and enabled["vib"]):
 
                     for j in range(len(jobs["vibList"])):
                         action, stat, qsub_dir = job_progression(
@@ -538,7 +527,10 @@ def queue_logic(default_dir, status, delay, enabled, cluster="map"):
 
 def qmgr(
     config={
-        "enable": {"exc": True, "vib": False},
+        "enable": {
+            "exc": True,
+            "vib": False
+        },
         "options": {
             "minDelay": 360,
             "maxResub": 100,
@@ -547,7 +539,8 @@ def qmgr(
         },
         "jobList": [
             {
-                "dataPath": "data/48_1_1_h2o_nh3",
+                "dataPath":
+                "data/48_1_1_h2o_nh3",
                 "optResub": {
                     "optMethod": "B3LYP",
                     "optBasisSet": "6-31G(d)",
@@ -572,17 +565,16 @@ def qmgr(
                         "SCRF": "",
                     },
                 ],
-                "vibList": [
-                    {
-                        "excMethod": "CAM-B3LYP",
-                        "excBasisSet": "6-31+G(d,p)",
-                        "memComFile": "1600",
-                        "memPBSFile": "15",
-                    }
-                ],
+                "vibList": [{
+                    "excMethod": "CAM-B3LYP",
+                    "excBasisSet": "6-31+G(d,p)",
+                    "memComFile": "1600",
+                    "memPBSFile": "15",
+                }],
             },
             {
-                "dataPath": "data/48_1_1_h2o_nh3",
+                "dataPath":
+                "data/48_1_1_h2o_nh3",
                 "optResub": {
                     "optMethod": "B3LYP",
                     "optBasisSet": "6-31G(d)",
@@ -607,18 +599,15 @@ def qmgr(
                         "SCRF": "",
                     },
                 ],
-                "vibList": [
-                    {
-                        "excMethod": "CAM-B3LYP",
-                        "excBasisSet": "6-31+G(d,p)",
-                        "memComFile": "1600",
-                        "memPBSFile": "15",
-                    }
-                ],
+                "vibList": [{
+                    "excMethod": "CAM-B3LYP",
+                    "excBasisSet": "6-31+G(d,p)",
+                    "memComFile": "1600",
+                    "memPBSFile": "15",
+                }],
             },
         ],
-    }
-):
+    }):
     """
     qmgr jobLists submitted to this function will handle
     each cluster's requested calculations in the order of

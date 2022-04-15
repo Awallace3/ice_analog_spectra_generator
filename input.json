@@ -63,7 +63,7 @@
         "excList": [
           {
             "excMethod": "B3LYP",
-            "excBasisSet": "6-311G(d)",
+            "excBasisSet": "6-311G(d,p)",
             "memComFile": "1600",
             "memPBSFile": "10",
             "nStates": 50,
@@ -71,41 +71,12 @@
           }
         ],
         "vibList": []
-      },
-      {
-        "dataPath": "data/test2",
-        "outName": "t2",
-        "optResub": {
-          "optMethod": "B3LYP",
-          "optBasisSet": "6-31G(d)",
-          "memComFile": "1600",
-          "memPBSFile": "10"
-        },
-        "excList": [
-          {
-            "excMethod": "wB97XD",
-            "excBasisSet": "6-31G(d)",
-            "memComFile": "1600",
-            "memPBSFile": "10",
-            "nStates": 25,
-            "SCRF": ""
-          }
-        ],
-        "vibList": [
-          {
-            "excMethod": "wB97XD",
-            "excBasisSet": "6-31G(d)",
-            "memComFile": "1600",
-            "memPBSFile": "10",
-            "SCRF": ""
-          }
-        ]
       }
     ]
   },
   "dataAnalysis": {
     "enable": true,
-    "dataPath": "data/",
+    "dataPath": "data/40_co3h2",
     "temperature": 20,
     "type": "exc",
     "output": {

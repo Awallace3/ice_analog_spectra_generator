@@ -109,8 +109,8 @@ def gaussianInputFiles(
             )
             fp.write("mem={0}gb\n".format(mem_pbs_opt))
             # r410 node
-            fp.write("#PBS -q r410\n")
-            # fp.write("#PBS -q gpu\n")
+            # fp.write("#PBS -q r410\n")
+            fp.write("#PBS -q gpu\n")
             fp.write("#PBS -W umask=022\n")
             # fp.write("#PBS -l nodes=1:ppn=1\n#PBS -q gpu\n\nscrdir=/tmp/$USER.$PBS_JOBID\n\n")
             fp.write("#PBS -l nodes=1:ppn=1\n\nscrdir=/tmp/$USER.$PBS_JOBID\n\n")
