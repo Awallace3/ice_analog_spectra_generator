@@ -81,6 +81,7 @@ def gaussianInputFiles(
     charges = "0 1"
 
     if cluster == "map":
+        print('map here', dir_name, baseName, os.getcwd())
         with open("%s/%s.com" % (dir_name, baseName), "w") as fp:
             fp.write("%mem={0}mb\n".format(mem_com_opt))
             fp.write("%nprocs=4\n")
@@ -143,6 +144,7 @@ def gaussianInputFiles(
                 + "\n\nrm -r $scrdir\n"
             )
     elif cluster == "seq":
+        print('seq here', dir_name, baseName, os.getcwd())
         with open("%s/%s.com" % (dir_name, baseName), "w") as fp:
             fp.write("%mem=8gb\n")
             if solvent == "":
@@ -978,11 +980,14 @@ def job_progression(
 
         else:
             output_num = int(output_num[-1]) + 1
+            # print('out num', output_num)
             if not delay:
                 stat[2] = output_num
         if len(out_completion) != len(out_files):
+            print('lengths do not match!')
             return True, stat, "None"
         if stat[2] > output_num:
+            print('this case!')
             return True, stat, "None"
 
         # print('reading', filename)
