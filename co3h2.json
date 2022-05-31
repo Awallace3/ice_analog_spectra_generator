@@ -48,7 +48,7 @@
       "minDelay": 1,
       "maxResub": 1000,
       "maxQueue": 200,
-      "cluster": "map"
+      "cluster": "seq"
     },
     "jobList": [
       {
@@ -58,15 +58,15 @@
           "optMethod": "B3LYP",
           "optBasisSet": "6-31G(d)",
           "memComFile": "1600",
-          "memPBSFile": "10"
+          "memPBSFile": "14"
         },
         "excList": [
           {
             "excMethod": "B3LYP",
             "excBasisSet": "6-311G(d,p)",
             "memComFile": "1600",
-            "memPBSFile": "10",
-            "nStates": 50,
+            "memPBSFile": "14",
+            "nStates": 100,
             "SCRF": ""
           }
         ],
