@@ -145,7 +145,11 @@ def gaussianInputFiles(
             )
     elif cluster == "seq":
         print('seq here', dir_name, baseName, os.getcwd())
-        with open("%s/%s.com" % (dir_name, baseName), "w") as fp:
+        if dir_name == "./":
+            fn = "%s.com" % baseName
+        else:
+            fn = "%s/%s.com" % (dir_name, baseName)
+        with open(fn, "w") as fp:
             fp.write("%mem=8gb\n")
             if solvent == "":
                 fp.write("#N %s/%s %s" % (method_opt, basis_set_opt, procedure))
@@ -162,7 +166,11 @@ def gaussianInputFiles(
             fp.write(data)
             fp.write("\n")
 
-        with open("%s/%s.pbs" % (dir_name, baseName), "w") as fp:
+        if dir_name == "./":
+            fn = "%s.pbs" % baseName
+        else:
+            fn = "%s/%s.pbs" % (dir_name, baseName)
+        with open(fn, "w") as fp:
             fp.write("#!/bin/sh\n")
             fp.write(
                 "#PBS -N %s_o\n#PBS -S /bin/bash\n#PBS -W umask=022\n#PBS -j oe\n#PBS -m abe\n#PBS -l cput=1000:00:00\n#PBS -l "
@@ -183,6 +191,7 @@ def gaussianInputFiles(
                 "/usr/local/apps/bin/g09setup %s.com %s.out%s"
                 % (baseName, baseName, output_num)
             )
+        print('seq finished writing')
 
 
 # from ice_analogs, but modified input files
@@ -493,6 +502,7 @@ def make_input_files_no_constraints(
     charges = "0 1"
 
     if cluster == "map":
+        print("map only")
         with open("mex.com", "w") as fp:
             fp.write("%mem={0}mb\n".format(mem_com_opt))
             fp.write("%nprocs=4\n")
@@ -549,7 +559,8 @@ def make_input_files_no_constraints(
             mem_com_opt,
             mem_pbs_opt,
             cluster,
-            baseName="./",
+            dir_name="./",
+            baseName="mex",
             procedure="OPT",
         )
 
@@ -987,7 +998,7 @@ def job_progression(
             print('lengths do not match!')
             return True, stat, "None"
         if stat[2] > output_num:
-            print('this case!')
+            # print('this case!')
             return True, stat, "None"
 
         # print('reading', filename)
