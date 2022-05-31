@@ -641,13 +641,13 @@ def qmgr(
     # total_time = minDelay * maxResub
     for i in range(maxResub):
         status = queue_logic(default_dir, status, delay, enabled, cluster)
-        # qsub_to_max(maxQueue, user)
+        qsub_to_max(maxQueue, user)
         if not delay:
             delay = True
         if len(status) == 0:
             print("All qmgr jobs are finished.")
             return
-        print("\nDelay:", i, "out of", maxResub, "\n")
+        print("\nDelay:", i + 1, "out of", maxResub, "\n")
         time.sleep(minDelay * 60)
 
     return
