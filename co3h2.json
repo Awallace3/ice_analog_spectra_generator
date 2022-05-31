@@ -43,7 +43,7 @@
     ]
   },
   "qmgr": {
-    "enable": { "exc": true, "vib": false },
+    "enable": { "exc": false, "vib": false },
     "options": {
       "minDelay": 1,
       "maxResub": 1000,
@@ -86,17 +86,10 @@
         "outFile": "tmp.json",
         "excList": [
           {
-            "excMethod": "CAM-B3LYP",
+            "excMethod": "B3LYP",
             "excBasisSet": "6-311G(d,p)",
-            "nStates": 25,
-            "acquiredStates": "25",
-            "SCRF": ""
-          },
-          {
-            "excMethod": "wB97XD",
-            "excBasisSet": "6-311G(d,p)",
-            "nStates": 25,
-            "acquiredStates": "25",
+            "nStates": 50,
+            "acquiredStates": "50",
             "SCRF": ""
           }
         ]
@@ -105,7 +98,7 @@
         "enable": true,
         "range": { "x": [4, 10.5], "y": [0, 1.5] },
         "x_units": "eV",
-        "fileName": "data.png",
+        "fileName": "co3h2_graphical_abstract.png",
         "title": "",
         "dpi": 400,
         "specsims": {
@@ -132,23 +125,13 @@
           "excList": [
             {
               "dataPath": "data/40_co3h2",
-              "excMethod": "wB97XD",
+              "excMethod": "B3LYP",
               "excBasisSet": "6-311G(d,p)",
-              "nStates": 25,
-              "acquiredStates": "25",
-              "SCRF": "",
-              "line": { "color": "green", "type": "-" },
-              "legendLabel": "$\\omega$B97XD (Amorphous)"
-            },
-            {
-              "dataPath": "data/40_co3h2",
-              "excMethod": "CAM-B3LYP",
-              "excBasisSet": "6-311G(d,p)",
-              "nStates": 25,
-              "acquiredStates": "25",
+              "nStates": 100,
+              "acquiredStates": "100",
               "SCRF": "",
               "line": { "color": "red", "type": "-" },
-              "legendLabel": "CAM-B3LYP (Amorphous)"
+              "legendLabel": "Amorphous"
             }
           ]
         },
@@ -175,21 +158,15 @@
           "peak": false,
           "extraData": [
             {
-              "path": "./theoretical_data/8rib_cam.csv",
-              "legendLabel": "CAM-B3LYP (Ribbon)",
+              "path": "./theoretical_data/ribbon_b3lyp.csv",
+              "legendLabel": "Ribbon",
               "line": { "color": "blue", "type": "-" },
               "units": ["nm", "eV"]
             },
             {
-              "path": "./theoretical_data/exc_cam.csv",
-              "legendLabel": "CAM-B3LYP (Perpendicular Tetramer)",
+              "path": "./theoretical_data/perp_b3lyp.csv",
+              "legendLabel": "Perpendicular Tetramer",
               "line": { "color": "#ffcc00", "type": "-" },
-              "units": ["nm", "eV"]
-            },
-            {
-              "path": "./theoretical_data/spiral_cam.csv",
-              "legendLabel": "CAM-B3LYP (Helical)",
-              "line": { "color": "purple", "type": "-" },
               "units": ["nm", "eV"]
             }
           ]

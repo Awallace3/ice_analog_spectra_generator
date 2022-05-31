@@ -20,7 +20,7 @@ import scipy.signal
 import math
 import matplotlib
 
-matplotlib.use("Agg")
+# matplotlib.use("Agg")
 
 
 def vibrational_resubmit(
@@ -923,7 +923,7 @@ def peaks_to_latex(y, x, rounding, method, basis_set_mexc, i, df):
         height = arr_y[j]
         frequency = round(x[j], 4)
         if rounding == 1:
-            print("x, y = %.1f, %.1f" % (frequency, height))
+            print("x, y = %.2f, %.2f" % (frequency, height))
             line = "%s & %s & %.1f & %.1f \\\\\n" % (
                 method,
                 basis_set_mexc,
@@ -1075,6 +1075,9 @@ def electronicMultiPlot_Experiment(methods_lst,
 
     if len(exp_data) > 0:
         for n, i in enumerate(exp_data):
+            if 'wB97XD' in i['legendLabel']:
+                v = i["legendLabel"].replace("wB97XD", "$\omega$B97XD")
+                i["legendLabel"] = r'%s' % v
             print(i)
             dat = np.genfromtxt(i["path"], delimiter=", ")
             In = i["units"]["input"]
@@ -1122,7 +1125,6 @@ def electronicMultiPlot_Experiment(methods_lst,
             ymax = np.amax(dat[:, 1], axis=0)
             for j in range(len(dat[:, 1])):
                 dat[j, 1] /= ymax
-
             ax1.plot(
                 dat[:, 0],
                 dat[:, 1],
@@ -1130,21 +1132,20 @@ def electronicMultiPlot_Experiment(methods_lst,
                 label=x["legendLabel"],
                 color=x['line']['color'],
             )
-            if peaks["dft"]:
+            if extra_data["peak"]:
                 arr_y = dat[:, 1]
                 arr_x = dat[:, 0]
                 peaks_dat, _ = scipy.signal.find_peaks(arr_y, height=0)
                 for j in peaks_dat:
                     height = arr_y[j]
                     frequency = round(arr_x[j], 4)
-
-                    print("x, y = %.1f, %.1f\n" % (frequency, height))
-                    df.loc[len(df.index)] = [
-                        "8 Ribbon",
-                        basis_set_mexc,
-                        frequency,
-                        height,
-                    ]
+                    print("x, y = %.2f, %.2f\n" % (frequency, height))
+                    # df.loc[len(df.index)] = [
+                    #     "8 Ribbon",
+                    #     basis_set_mexc,
+                    #     frequency,
+                    #     height,
+                    # ]
 
     if sec_y_axis:
         ax2.set_ylim(y_range[0], y_range[1])
@@ -1153,8 +1154,10 @@ def electronicMultiPlot_Experiment(methods_lst,
     ax1.set_ylim(y_range[0], y_range[1])
 
     plt.title(title)
-    ax1.legend(shadow=True, fancybox=True, loc="upper left")
-    ax2.legend(shadow=True, fancybox=True, loc="upper right")
+    # ax1.legend(shadow=True, fancybox=True, loc="upper left")
+    # ax2.legend(shadow=True, fancybox=True, loc="upper right")
+    ax1.legend(shadow=False, fancybox=False, loc="upper left", framealpha=0.0)
+    ax2.legend(shadow=False, fancybox=False, loc="upper right", framealpha=0.0)
     if x_units == "ev" or x_units == "eV":
         plt.xlabel("Electronvolts (eV)")
         ax1.set_xlabel("Electronvolts (eV)")
@@ -1173,7 +1176,8 @@ def electronicMultiPlot_Experiment(methods_lst,
     # os.chdir("results/final/graphs")
     if not os.path.exists("results/graphs"):
         os.mkdir("results/graphs")
-    plt.savefig("results/graphs/" + filename)
+    plt.savefig("results/graphs/" + filename, transparent=True)
+    # plt.show()
     return
 
 
@@ -1218,8 +1222,7 @@ def discrete_to_art(path,
                     x_units=["nm", "eV"],
                     x_range=[100, 320],
                     broadening=2.0,
-                    broadening_units="nm"
-                    ):
+                    broadening_units="nm"):
 
     path_src = os.getcwd() + '/src/'
     data = np.genfromtxt(path, delimiter=" ")

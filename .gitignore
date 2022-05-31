@@ -182,3 +182,6 @@ qsub_len
 qsub_queue.txt
 test_data
 input_files
+
+theoretical_data
+results/final/data
